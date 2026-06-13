@@ -8,7 +8,7 @@ import { getProductImageUrl } from "@/lib/storage";
 import { ProductModal } from "@/components/manager/product-modal";
 import { DeleteDialog } from "@/components/manager/delete-dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -540,7 +540,7 @@ export default function ProductsPage() {
                     </TableCell>
                     <TableCell>
                       {product.image_url &&
-                      product.image_url !== "pending-upload" ? (
+                        product.image_url !== "pending-upload" ? (
                         <img
                           src={getProductImageUrl(product.image_url)}
                           alt={product.name}
@@ -591,14 +591,8 @@ export default function ProductsPage() {
 
                     <TableCell className="text-right">
                       <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
+                        <DropdownMenuTrigger className={buttonVariants({ variant: "ghost", size: "icon", className: "h-8 w-8" })}>
+                          <MoreHorizontal className="w-4 h-4" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleEdit(product)}>

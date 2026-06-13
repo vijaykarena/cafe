@@ -71,11 +71,10 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`block px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
-                    isActive
-                      ? 'bg-[#F9F5F2] text-black'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                  }`}
+                  className={`block px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors ${isActive
+                    ? 'bg-[#F9F5F2] text-black'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                    }`}
                 >
                   {item.name}
                 </Link>
@@ -94,14 +93,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
               <p className="text-[10px] text-zinc-500 truncate">{profile?.email}</p>
             </div>
           </div>
-          
-          <button
-            onClick={() => router.push('/cashier')}
-            className="w-full py-2 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
-          >
-            Launch POS Cashier
-          </button>
-          
+
           <button
             onClick={handleLogout}
             className="w-full py-2 bg-red-950/20 border border-red-900/30 hover:bg-red-900/30 text-red-400 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
