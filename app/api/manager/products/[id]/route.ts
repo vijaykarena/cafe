@@ -16,7 +16,7 @@ export async function GET(
       .select('*, categories(id, name, color)')
       .eq('id', id)
       .eq('manager_id', userId)
-      .is('deleted_at', null)
+      .eq('status', 'enable')
       .single();
 
     if (error || !data) {
@@ -50,7 +50,7 @@ export async function PUT(
         .select('id')
         .eq('id', body.category_id)
         .eq('manager_id', userId)
-        .is('deleted_at', null)
+        .eq('status', 'enable')
         .single();
 
       if (catError || !category) {
@@ -66,7 +66,7 @@ export async function PUT(
     if (body.category_id !== undefined) updatePayload.category_id = body.category_id;
     if (body.price !== undefined) updatePayload.price = body.price;
     if (body.tax !== undefined) updatePayload.tax = body.tax;
-    if (body.unit_of_measure !== undefined) updatePayload.unit_of_measure = body.unit_of_measure;
+
     if (body.description !== undefined) updatePayload.description = body.description || null;
     if (body.image_url !== undefined) updatePayload.image_url = body.image_url;
     if (body.is_available !== undefined) updatePayload.is_available = body.is_available;
@@ -76,7 +76,7 @@ export async function PUT(
       .update(updatePayload)
       .eq('id', id)
       .eq('manager_id', userId)
-      .is('deleted_at', null)
+      .eq('status', 'enable')
       .select('*, categories(id, name, color)')
       .single();
 
@@ -103,10 +103,10 @@ export async function DELETE(
 
     const { data, error } = await supabaseAdmin
       .from('products')
-      .update({ deleted_at: new Date().toISOString() })
+      .update({ status: 'disable' })
       .eq('id', id)
       .eq('manager_id', userId)
-      .is('deleted_at', null)
+      .eq('status', 'enable')
       .select()
       .single();
 

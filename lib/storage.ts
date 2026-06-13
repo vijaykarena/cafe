@@ -20,7 +20,7 @@ export async function uploadProductImage(
     throw new Error(`Image upload failed: ${error.message}`);
   }
 
-  return getProductImageUrl(filePath);
+  return filePath;
 }
 
 export async function deleteProductImage(productId: string): Promise<void> {

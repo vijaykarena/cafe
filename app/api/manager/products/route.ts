@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       .from("products")
       .select(selectStr, { count: "exact" })
       .eq("manager_id", userId)
-      .is("deleted_at", null);
+      .eq("status", "enable");
 
     if (search.trim())
       query = query.or(
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       .select("id")
       .eq("id", body.category_id)
       .eq("manager_id", userId)
-      .is("deleted_at", null)
+      .eq("status", "enable")
       .single();
 
     if (catError || !category) {
@@ -96,11 +96,11 @@ export async function POST(request: Request) {
         name: body.name.trim(),
         price: body.price,
         tax: body.tax,
-        unit_of_measure: body.unit_of_measure,
         description: body.description || null,
         image_url: body.image_url,
         is_available:
           body.is_available !== undefined ? body.is_available : true,
+        status: "enable",
       })
       .select("*, categories(id, name, color)")
       .single();

@@ -19,7 +19,7 @@ export async function GET(request: Request) {
       .from('categories')
       .select('*', { count: 'exact' })
       .eq('manager_id', userId)
-      .is('deleted_at', null);
+      .eq('status', 'enable');
 
     if (search.trim()) {
       query = query.ilike('name', `%${search.trim()}%`);
@@ -62,6 +62,7 @@ export async function POST(request: Request) {
         manager_id: userId,
         name: body.name.trim(),
         color: body.color,
+        status: 'enable',
       })
       .select()
       .single();

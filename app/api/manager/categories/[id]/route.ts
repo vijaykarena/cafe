@@ -16,7 +16,7 @@ export async function GET(
       .select('*')
       .eq('id', id)
       .eq('manager_id', userId)
-      .is('deleted_at', null)
+      .eq('status', 'enable')
       .single();
 
     if (error || !data) {
@@ -52,7 +52,7 @@ export async function PUT(
       })
       .eq('id', id)
       .eq('manager_id', userId)
-      .is('deleted_at', null)
+      .eq('status', 'enable')
       .select()
       .single();
 
@@ -90,7 +90,7 @@ export async function DELETE(
       .select('id')
       .eq('category_id', id)
       .eq('manager_id', userId)
-      .is('deleted_at', null)
+      .eq('status', 'enable')
       .limit(1);
 
     if (checkError) throw checkError;
@@ -104,10 +104,10 @@ export async function DELETE(
 
     const { data, error } = await supabaseAdmin
       .from('categories')
-      .update({ deleted_at: new Date().toISOString() })
+      .update({ status: 'disable' })
       .eq('id', id)
       .eq('manager_id', userId)
-      .is('deleted_at', null)
+      .eq('status', 'enable')
       .select()
       .single();
 

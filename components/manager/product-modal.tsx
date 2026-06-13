@@ -24,6 +24,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { CategoryModal } from "@/components/manager/category-modal";
 import { Product, Category } from "@/lib/types";
+import { getProductImageUrl } from "@/lib/supabase";
 import { productValidation } from "@/lib/validations/product";
 import { ImagePlus, Loader2, X } from "lucide-react";
 
@@ -32,7 +33,6 @@ interface ProductFormData {
   category_id: string;
   price: string;
   tax: string;
-  unit_of_measure: string;
   description: string;
   is_available: boolean;
 }
@@ -72,7 +72,6 @@ export function ProductModal({
       category_id: "",
       price: "",
       tax: "5",
-      unit_of_measure: "piece",
       description: "",
       is_available: true,
     },
@@ -89,11 +88,10 @@ export function ProductModal({
           category_id: product.category_id,
           price: String(product.price),
           tax: product.tax,
-          unit_of_measure: product.unit_of_measure,
           description: product.description || "",
           is_available: product.is_available,
         });
-        setImagePreview(product.image_url || null);
+        setImagePreview(getProductImageUrl(product.image_url) || null);
         setImageFile(null);
       } else {
         reset({
@@ -101,7 +99,6 @@ export function ProductModal({
           category_id: categories.length > 0 ? categories[0].id : "",
           price: "",
           tax: "5",
-          unit_of_measure: "piece",
           description: "",
           is_available: true,
         });
@@ -155,8 +152,7 @@ export function ProductModal({
             name: data.name,
             category_id: data.category_id,
             price: parseFloat(data.price),
-            tax: data.tax,
-            unit_of_measure: data.unit_of_measure,
+            tax: parseFloat(data.tax),
             description: data.description || null,
             is_available: data.is_available,
           }),
@@ -192,8 +188,7 @@ export function ProductModal({
             name: data.name,
             category_id: data.category_id,
             price: parseFloat(data.price),
-            tax: data.tax,
-            unit_of_measure: data.unit_of_measure,
+            tax: parseFloat(data.tax),
             description: data.description || null,
             image_url: "pending-upload",
             is_available: data.is_available,
@@ -328,6 +323,8 @@ export function ProductModal({
                 <Label htmlFor="product-tax">Tax (%)</Label>
                 <Input
                   id="product-tax"
+                  type="number"
+                  step="0.01"
                   placeholder="5"
                   {...register("tax", productValidation.tax)}
                 />
@@ -339,22 +336,7 @@ export function ProductModal({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="product-unit">Unit of Measure</Label>
-              <Input
-                id="product-unit"
-                placeholder="piece, kg, ml, plate"
-                {...register(
-                  "unit_of_measure",
-                  productValidation.unit_of_measure,
-                )}
-              />
-              {errors.unit_of_measure && (
-                <p className="text-sm text-destructive">
-                  {errors.unit_of_measure.message}
-                </p>
-              )}
-            </div>
+
 
             <div className="space-y-2">
               <Label htmlFor="product-desc">Description (optional)</Label>

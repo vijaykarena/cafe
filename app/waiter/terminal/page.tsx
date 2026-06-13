@@ -224,7 +224,6 @@ export default function WaiterTerminalPage() {
                   <p className="text-zinc-500 text-xs mt-1 line-clamp-2">{prod.description || 'No description available.'}</p>
                 </div>
                 <div className="flex items-end justify-between mt-4">
-                  <span className="text-xs text-zinc-400 font-medium">{prod.unit_of_measure}</span>
                   <span className="font-bold text-[#F9F5F2]">{formatCurrency(Number(prod.price))}</span>
                 </div>
               </div>

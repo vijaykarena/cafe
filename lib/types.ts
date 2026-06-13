@@ -17,8 +17,7 @@ export interface Category {
   name: string;
   color: string;
   created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
+  status: 'enable' | 'disable';
 }
 
 export interface Product {
@@ -28,13 +27,11 @@ export interface Product {
   name: string;
   price: number;
   tax: string;
-  unit_of_measure: string;
   description: string | null;
   image_url: string;
   is_available: boolean;
+  status: 'enable' | 'disable';
   created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
 }
 
 export interface Floor {

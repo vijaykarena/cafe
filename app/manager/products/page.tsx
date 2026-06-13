@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Product, Category } from "@/lib/types";
+import { getProductImageUrl } from "@/lib/supabase";
 import { ProductModal } from "@/components/manager/product-modal";
 import { DeleteDialog } from "@/components/manager/delete-dialog";
 import { Input } from "@/components/ui/input";
@@ -222,8 +223,7 @@ export default function ProductsPage() {
             name: product.name,
             category_id: product.category_id,
             price: Number(product.price),
-            tax: String(product.tax),
-            unit_of_measure: product.unit_of_measure,
+            tax: Number(product.tax),
             is_available: false,
           }),
         });
@@ -320,8 +320,7 @@ export default function ProductsPage() {
           name: product.name,
           category_id: product.category_id,
           price: product.price,
-          tax: product.tax,
-          unit_of_measure: product.unit_of_measure,
+          tax: Number(product.tax),
           is_available: newValue,
         }),
       });
@@ -499,7 +498,7 @@ export default function ProductsPage() {
                 <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Tax</TableHead>
-                <TableHead>Unit</TableHead>
+
                 <TableHead>Availability</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="w-16 text-right">Actions</TableHead>
@@ -528,7 +527,7 @@ export default function ProductsPage() {
                       {product.image_url &&
                       product.image_url !== "pending-upload" ? (
                         <img
-                          src={product.image_url}
+                          src={getProductImageUrl(product.image_url)}
                           alt={product.name}
                           className="w-10 h-10 rounded-md object-cover border"
                         />
@@ -560,9 +559,7 @@ export default function ProductsPage() {
                     <TableCell className="text-muted-foreground">
                       {product.tax}%
                     </TableCell>
-                    <TableCell className="text-muted-foreground capitalize">
-                      {product.unit_of_measure}
-                    </TableCell>
+
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Switch

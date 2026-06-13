@@ -16,7 +16,6 @@ export const productValidation = {
     min: { value: 0.01, message: "Price must be greater than 0" },
   },
   tax: { required: "Tax is required" },
-  unit_of_measure: { required: "Unit of measure is required" },
   image: { required: "Product image is required" },
   description: {},
   is_available: {},
@@ -26,8 +25,7 @@ interface ProductInput {
   name?: string;
   category_id?: string;
   price?: number;
-  tax?: string;
-  unit_of_measure?: string;
+  tax?: number;
   image_url?: string;
   description?: string;
   is_available?: boolean;
@@ -54,12 +52,12 @@ export function validateProductInput(body: ProductInput, requireImage = true) {
     errors.push("Price must be greater than 0");
   }
 
-  if (!body.tax) {
+  if (body.tax === undefined || body.tax === null) {
     errors.push("Tax is required");
-  }
-
-  if (!body.unit_of_measure) {
-    errors.push("Unit of measure is required");
+  } else if (typeof body.tax !== 'number') {
+    errors.push("Tax must be a number");
+  } else if (body.tax < 0) {
+    errors.push("Tax cannot be negative");
   }
 
   if (requireImage && !body.image_url) {

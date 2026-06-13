@@ -16,14 +16,17 @@ export async function POST(
       .select('id')
       .eq('id', id)
       .eq('manager_id', userId)
-      .is('deleted_at', null)
+      .eq('status', 'enable')
       .single();
 
     if (findError || !product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    const formData = await request.formData();
+    const contentType = request.headers.get('content-type') || '';
+    const buffer = await request.arrayBuffer();
+    const formData = await new Response(buffer, { headers: { 'content-type': contentType } }).formData();
+    
     const file = formData.get('image') as File | null;
 
     if (!file) {
