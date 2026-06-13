@@ -14,7 +14,10 @@ export function APITester() {
     try {
       const form = e.currentTarget;
       const formData = new FormData(form);
-      const endpoint = formData.get("endpoint") as string;
+      let endpoint = formData.get("endpoint") as string;
+      if (endpoint.startsWith("/api/")) {
+        endpoint = `http://localhost:5500${endpoint}`.replace("5500", "5050");
+      }
       const url = new URL(endpoint, location.href);
       const method = formData.get("method") as string;
       const res = await fetch(url, { method });

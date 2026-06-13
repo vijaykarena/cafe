@@ -21,22 +21,14 @@ apiRouter.get("/db-test", async (req, res) => {
 });
 
 apiRouter.get("/hello", (req, res) => {
-  res.json({
-    message: "Hello from Express!",
-    method: "GET",
-  });
+  res.json({ message: "Hello from Express!", method: "GET" });
 });
 
 apiRouter.put("/hello", (req, res) => {
-  res.json({
-    message: "Hello from Express!",
-    method: "PUT",
-  });
+  res.json({ message: "Hello from Express!", method: "PUT" });
 });
 
 apiRouter.get("/hello/:name", (req, res) => {
   const name = req.params.name;
-  res.json({
-    message: `Hello, ${name}!`,
-  });
+  res.json({ message: `Hello, ${name}!` });
 });
