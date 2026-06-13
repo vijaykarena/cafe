@@ -218,6 +218,26 @@ export default function KdsPage() {
   >(null);
 
   useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const res = await fetch("/api/kds");
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setTickets(data);
+        } else {
+          console.error(
+            "API returned error or invalid format:",
+            data?.error || data,
+          );
+          setTickets([]);
+        }
+      } catch (err) {
+        console.error("Error fetching kitchen queue:", err);
+        setTickets([]);
+      }
+    };
+
     fetchTickets();
 
     // Setup Supabase Realtime Listener
@@ -226,9 +246,12 @@ export default function KdsPage() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "kds_tickets" },
-        () => {
-          fetchTickets();
-        },
+        () => fetchTickets(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        () => fetchTickets(),
       )
       .subscribe();
 
@@ -236,26 +259,6 @@ export default function KdsPage() {
       supabase.removeChannel(channel);
     };
   }, []);
-
-  const fetchTickets = async () => {
-    try {
-      const res = await fetch("/api/kds");
-      const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setTickets(data);
-      } else {
-        console.error(
-          "API returned error or invalid format:",
-          data?.error || data,
-        );
-        setTickets([]);
-      }
-    } catch (err) {
-      console.error("Error fetching kitchen queue:", err);
-      setTickets([]);
-    }
-  };
 
   // Toggle item strike-through
   const handleToggleItem = async (
@@ -324,10 +327,7 @@ export default function KdsPage() {
         await fetch("/api/kds", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ticket_id: ticketId,
-            status: newStatus,
-          }),
+          body: JSON.stringify({ ticket_id: ticketId, status: newStatus }),
         });
       } catch (err) {
         console.error("Error syncing ticket stage:", err);
@@ -342,16 +342,6 @@ export default function KdsPage() {
     router.push("/login");
   };
 
-  // Unique Products & Categories list extracted dynamically from tickets for sidebar filtering
-  const allProducts = useMemo(() => {
-    const list = tickets.flatMap((t) => t.items.map((i) => i.name));
-    return Array.from(new Set(list));
-  }, [tickets]);
-
-  const allCategories = useMemo(() => {
-    const list = tickets.flatMap((t) => t.items.map((i) => i.category));
-    return Array.from(new Set(list));
-  }, [tickets]);
 
   // Filters Clear handler
   const clearFilters = () => {

@@ -505,6 +505,16 @@ export default function WaiterDashboard() {
     return cart.some((item) => dbItemIds.has(item.product.id));
   }, [cart, activeOrderForTable]);
 
+  const hasUnservedItems = useMemo(() => {
+    if (cart.length === 0) return false;
+    const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
+    if (kdsTicket) return true;
+    const dbItemIds = new Set(
+      (activeOrderForTable?.order_items || []).map((oi: any) => oi.product_id),
+    );
+    return cart.some((item) => !dbItemIds.has(item.product.id));
+  }, [cart, activeOrderForTable]);
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center bg-zinc-950">
@@ -836,21 +846,23 @@ export default function WaiterDashboard() {
             )}
 
           <div className="flex gap-3">
-            <button
-              onClick={handleSendToKds}
-              disabled={cart.length === 0 || actionLoading || isSubmitted}
-              className="flex-1 h-11 bg-[#F9F5F2] hover:bg-[#e5e1de] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold text-black flex items-center justify-center gap-2 cursor-pointer transition-all"
-            >
-              {actionLoading ? (
-                "Sending..."
-              ) : isSubmitted ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4" /> Sent!
-                </>
-              ) : (
-                "Send to Kitchen"
-              )}
-            </button>
+            {hasUnservedItems && (
+              <button
+                onClick={handleSendToKds}
+                disabled={cart.length === 0 || actionLoading || isSubmitted}
+                className="flex-1 h-11 bg-[#F9F5F2] hover:bg-[#e5e1de] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold text-black flex items-center justify-center gap-2 cursor-pointer transition-all"
+              >
+                {actionLoading ? (
+                  "Sending..."
+                ) : isSubmitted ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" /> Sent!
+                  </>
+                ) : (
+                  "Send to Kitchen"
+                )}
+              </button>
+            )}
 
             <button
               onClick={() => setShowBillModal(true)}

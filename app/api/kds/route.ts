@@ -80,6 +80,20 @@ export async function DELETE(request: Request) {
 
     if (error) throw error;
 
+    // Retrieve order to perform a "touch" update and trigger realtime events on the orders table
+    const { data: order } = await supabaseAdmin
+      .from('orders')
+      .select('total')
+      .eq('id', orderId)
+      .maybeSingle();
+
+    if (order) {
+      await supabaseAdmin
+        .from('orders')
+        .update({ total: order.total })
+        .eq('id', orderId);
+    }
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
