@@ -7,7 +7,7 @@ export async function proxy(request: NextRequest) {
   const path = url.pathname;
 
   // 1. Update session and retrieve current user
-  const { supabaseResponse, user } = await updateSession(request);
+  const { supabaseResponse, user, profile } = await updateSession(request);
 
   // 2. Exclude public auth pages, signup, login, and assets from RBAC redirects
   if (
@@ -30,9 +30,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 4. Extract role and status from JWT user metadata
-  const role = user.user_metadata?.role || "cashier";
-  const isArchived = user.user_metadata?.is_archived === true;
+  // 4. Extract role and status from DB profile, fallback to user metadata
+  const role = profile?.role || user.user_metadata?.role || "cashier";
+  const isArchived = profile?.is_archived === true || user.user_metadata?.is_archived === true;
 
   if (isArchived) {
     if (path.startsWith("/api/")) {

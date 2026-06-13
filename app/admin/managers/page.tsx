@@ -11,25 +11,24 @@ export default function AdminManagersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/staff");
+        const data = await res.json();
+        // Filter only manager profiles
+        const filtered = (data || []).filter(
+          (p: Profile) => p.role === "manager",
+        );
+        setManagers(filtered);
+      } catch (err) {
+        console.error("Error fetching managers list:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
     loadData();
   }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/staff");
-      const data = await res.json();
-      // Filter only manager profiles
-      const filtered = (data || []).filter(
-        (p: Profile) => p.role === "manager",
-      );
-      setManagers(filtered);
-    } catch (err) {
-      console.error("Error fetching managers list:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleToggleArchive = async (id: string, currentStatus: boolean) => {
     try {

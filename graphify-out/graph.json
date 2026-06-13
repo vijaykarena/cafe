@@ -493,7 +493,7 @@
       "label": "config",
       "file_type": "code",
       "source_file": "proxy.ts",
-      "source_location": "L205",
+      "source_location": "L203",
       "id": "cafe_proxy_config",
       "community": 9,
       "norm_label": "config"
@@ -1438,7 +1438,7 @@
       "label": "CreateUserPage()",
       "file_type": "code",
       "source_file": "app/manager/staff/create/page.tsx",
-      "source_location": "L8",
+      "source_location": "L17",
       "id": "create_page_createuserpage",
       "community": 4,
       "norm_label": "createuserpage()"
@@ -2041,7 +2041,7 @@
       "label": "useAuth()",
       "file_type": "code",
       "source_file": "providers/auth-provider.tsx",
-      "source_location": "L101",
+      "source_location": "L106",
       "id": "providers_auth_provider_useauth",
       "community": 4,
       "norm_label": "useauth()"
@@ -4038,9 +4038,9 @@
       "source_file": "package.json",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "cafe_package_dependencies",
-      "target": "cafe_package_dependencies_supabase_ssr",
-      "confidence_score": 1.0
+      "target": "cafe_package_dependencies_supabase_ssr"
     },
     {
       "relation": "contains",
@@ -4280,9 +4280,9 @@
       "source_file": "proxy.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "proxy_ts",
-      "target": "lib_supabase_proxy_ts",
-      "confidence_score": 1.0
+      "target": "lib_supabase_proxy_ts"
     },
     {
       "relation": "imports",
@@ -4291,9 +4291,9 @@
       "source_file": "proxy.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "proxy_ts",
-      "target": "supabase_proxy_updatesession",
-      "confidence_score": 1.0
+      "target": "supabase_proxy_updatesession"
     },
     {
       "relation": "contains",
@@ -12803,9 +12803,9 @@
       "source_file": "lib/supabase/proxy.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "lib_supabase_proxy_ts",
-      "target": "supabase_proxy_updatesession",
-      "confidence_score": 1.0
+      "target": "supabase_proxy_updatesession"
     },
     {
       "relation": "contains",
@@ -12929,5 +12929,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "a83c8efc7cbbc63eefdb5bfa96fb55c9c194297e"
+  "built_at_commit": "85d96bfc568252c563aa51b37e1404f3dba3abe2"
 }

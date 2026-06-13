@@ -37,5 +37,23 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return { supabaseResponse, user };
+  let profile = null;
+  if (user) {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role, is_archived")
+        .eq("id", user.id)
+        .single();
+      if (!error && data) {
+        profile = data;
+      } else if (error) {
+        console.error("updateSession: Error fetching profile from db:", error.message);
+      }
+    } catch (err) {
+      console.error("updateSession: Failed to fetch profile:", err);
+    }
+  }
+
+  return { supabaseResponse, user, profile };
 }
