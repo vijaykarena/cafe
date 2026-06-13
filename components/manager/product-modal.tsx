@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { useEffect, useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { CategoryModal } from '@/components/manager/category-modal';
-import { Product, Category } from '@/lib/types';
-import { productValidation } from '@/lib/validations/product';
-import { ImagePlus, Loader2, X } from 'lucide-react';
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { CategoryModal } from "@/components/manager/category-modal";
+import { Product, Category } from "@/lib/types";
+import { productValidation } from "@/lib/validations/product";
+import { ImagePlus, Loader2, X } from "lucide-react";
 
 interface ProductFormData {
   name: string;
@@ -68,18 +68,18 @@ export function ProductModal({
     formState: { errors, isSubmitting },
   } = useForm<ProductFormData>({
     defaultValues: {
-      name: '',
-      category_id: '',
-      price: '',
-      tax: '5',
-      unit_of_measure: 'piece',
-      description: '',
+      name: "",
+      category_id: "",
+      price: "",
+      tax: "5",
+      unit_of_measure: "piece",
+      description: "",
       is_available: true,
     },
   });
 
-  const watchedCategoryId = watch('category_id');
-  const watchedAvailable = watch('is_available');
+  const watchedCategoryId = watch("category_id");
+  const watchedAvailable = watch("is_available");
 
   useEffect(() => {
     if (open) {
@@ -90,19 +90,19 @@ export function ProductModal({
           price: String(product.price),
           tax: product.tax,
           unit_of_measure: product.unit_of_measure,
-          description: product.description || '',
+          description: product.description || "",
           is_available: product.is_available,
         });
         setImagePreview(product.image_url || null);
         setImageFile(null);
       } else {
         reset({
-          name: '',
-          category_id: categories.length > 0 ? categories[0].id : '',
-          price: '',
-          tax: '5',
-          unit_of_measure: 'piece',
-          description: '',
+          name: "",
+          category_id: categories.length > 0 ? categories[0].id : "",
+          price: "",
+          tax: "5",
+          unit_of_measure: "piece",
+          description: "",
           is_available: true,
         });
         setImagePreview(null);
@@ -111,26 +111,29 @@ export function ProductModal({
     }
   }, [open, product, categories, reset]);
 
-  const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleImageChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowed.includes(file.type)) {
-      toast.error('Invalid file type. Allowed: JPEG, PNG, WebP');
-      return;
-    }
+      const allowed = ["image/jpeg", "image/png", "image/webp"];
+      if (!allowed.includes(file.type)) {
+        toast.error("Invalid file type. Allowed: JPEG, PNG, WebP");
+        return;
+      }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File too large. Maximum size is 5MB');
-      return;
-    }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File too large. Maximum size is 5MB");
+        return;
+      }
 
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
-  }, []);
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    },
+    [],
+  );
 
   const removeImage = () => {
     setImageFile(null);
@@ -139,15 +142,15 @@ export function ProductModal({
 
   const onSubmit = async (data: ProductFormData) => {
     if (!isEditing && !imageFile) {
-      toast.error('Product image is required');
+      toast.error("Product image is required");
       return;
     }
 
     try {
       if (isEditing) {
         const res = await fetch(`/api/manager/products/${product.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: data.name,
             category_id: data.category_id,
@@ -161,30 +164,30 @@ export function ProductModal({
 
         const result = await res.json();
         if (!res.ok) {
-          toast.error(result.error || 'Failed to update product');
+          toast.error(result.error || "Failed to update product");
           return;
         }
 
         if (imageFile) {
           const formData = new FormData();
-          formData.append('image', imageFile);
-          const imgRes = await fetch(`/api/manager/products/${product.id}/image`, {
-            method: 'POST',
-            body: formData,
-          });
+          formData.append("image", imageFile);
+          const imgRes = await fetch(
+            `/api/manager/products/${product.id}/image`,
+            { method: "POST", body: formData },
+          );
           if (!imgRes.ok) {
             const imgErr = await imgRes.json();
-            toast.error(imgErr.error || 'Image upload failed');
+            toast.error(imgErr.error || "Image upload failed");
           }
         }
 
-        toast.success('Product updated');
+        toast.success("Product updated");
         onSuccess();
         onOpenChange(false);
       } else {
-        const createRes = await fetch('/api/manager/products', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const createRes = await fetch("/api/manager/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: data.name,
             category_id: data.category_id,
@@ -192,43 +195,47 @@ export function ProductModal({
             tax: data.tax,
             unit_of_measure: data.unit_of_measure,
             description: data.description || null,
-            image_url: 'pending-upload',
+            image_url: "pending-upload",
             is_available: data.is_available,
           }),
         });
 
         const created = await createRes.json();
         if (!createRes.ok) {
-          toast.error(created.error || 'Failed to create product');
+          toast.error(created.error || "Failed to create product");
           return;
         }
 
         const formData = new FormData();
-        formData.append('image', imageFile!);
-        const imgRes = await fetch(`/api/manager/products/${created.id}/image`, {
-          method: 'POST',
-          body: formData,
-        });
+        formData.append("image", imageFile!);
+        const imgRes = await fetch(
+          `/api/manager/products/${created.id}/image`,
+          { method: "POST", body: formData },
+        );
 
         if (!imgRes.ok) {
-          await fetch(`/api/manager/products/${created.id}`, { method: 'DELETE' });
+          await fetch(`/api/manager/products/${created.id}`, {
+            method: "DELETE",
+          });
           const imgErr = await imgRes.json();
-          toast.error(imgErr.error || 'Image upload failed. Product was not created.');
+          toast.error(
+            imgErr.error || "Image upload failed. Product was not created.",
+          );
           return;
         }
 
-        toast.success('Product created');
+        toast.success("Product created");
         onSuccess();
         onOpenChange(false);
       }
     } catch {
-      toast.error('Network error. Please try again.');
+      toast.error("Network error. Please try again.");
     }
   };
 
   const handleCategoryCreated = (newCategory: Category) => {
     onCategoriesChanged();
-    setValue('category_id', newCategory.id);
+    setValue("category_id", newCategory.id);
   };
 
   return (
@@ -237,7 +244,7 @@ export function ProductModal({
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {isEditing ? 'Edit Product' : 'Create Product'}
+              {isEditing ? "Edit Product" : "Create Product"}
             </DialogTitle>
           </DialogHeader>
 
@@ -247,10 +254,12 @@ export function ProductModal({
               <Input
                 id="product-name"
                 placeholder="e.g. Cappuccino"
-                {...register('name', productValidation.name)}
+                {...register("name", productValidation.name)}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
               )}
             </div>
 
@@ -258,7 +267,9 @@ export function ProductModal({
               <Label>Category</Label>
               <Select
                 value={watchedCategoryId}
-                onValueChange={(val) => { if (val) setValue('category_id', val); }}
+                onValueChange={(val) => {
+                  if (val) setValue("category_id", val);
+                }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select category" />
@@ -285,9 +296,14 @@ export function ProductModal({
                   </button>
                 </SelectContent>
               </Select>
-              <input type="hidden" {...register('category_id', productValidation.category_id)} />
+              <input
+                type="hidden"
+                {...register("category_id", productValidation.category_id)}
+              />
               {errors.category_id && (
-                <p className="text-sm text-destructive">{errors.category_id.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.category_id.message}
+                </p>
               )}
             </div>
 
@@ -299,10 +315,12 @@ export function ProductModal({
                   type="number"
                   step="0.01"
                   placeholder="0.00"
-                  {...register('price', productValidation.price)}
+                  {...register("price", productValidation.price)}
                 />
                 {errors.price && (
-                  <p className="text-sm text-destructive">{errors.price.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.price.message}
+                  </p>
                 )}
               </div>
 
@@ -311,10 +329,12 @@ export function ProductModal({
                 <Input
                   id="product-tax"
                   placeholder="5"
-                  {...register('tax', productValidation.tax)}
+                  {...register("tax", productValidation.tax)}
                 />
                 {errors.tax && (
-                  <p className="text-sm text-destructive">{errors.tax.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.tax.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -324,10 +344,15 @@ export function ProductModal({
               <Input
                 id="product-unit"
                 placeholder="piece, kg, ml, plate"
-                {...register('unit_of_measure', productValidation.unit_of_measure)}
+                {...register(
+                  "unit_of_measure",
+                  productValidation.unit_of_measure,
+                )}
               />
               {errors.unit_of_measure && (
-                <p className="text-sm text-destructive">{errors.unit_of_measure.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.unit_of_measure.message}
+                </p>
               )}
             </div>
 
@@ -337,7 +362,7 @@ export function ProductModal({
                 id="product-desc"
                 placeholder="Brief product description..."
                 rows={3}
-                {...register('description')}
+                {...register("description")}
               />
             </div>
 
@@ -376,7 +401,9 @@ export function ProductModal({
                 </label>
               )}
               {!isEditing && !imageFile && !imagePreview && (
-                <p className="text-xs text-muted-foreground">Image is required</p>
+                <p className="text-xs text-muted-foreground">
+                  Image is required
+                </p>
               )}
             </div>
 
@@ -385,13 +412,13 @@ export function ProductModal({
                 <Label className="text-sm font-medium">Availability</Label>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {watchedAvailable
-                    ? 'Visible in POS terminal'
-                    : 'Hidden from POS terminal'}
+                    ? "Visible in POS terminal"
+                    : "Hidden from POS terminal"}
                 </p>
               </div>
               <Switch
                 checked={watchedAvailable}
-                onCheckedChange={(checked) => setValue('is_available', checked)}
+                onCheckedChange={(checked) => setValue("is_available", checked)}
               />
             </div>
 
@@ -408,12 +435,12 @@ export function ProductModal({
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {isEditing ? 'Saving...' : 'Creating...'}
+                    {isEditing ? "Saving..." : "Creating..."}
                   </>
                 ) : isEditing ? (
-                  'Save Changes'
+                  "Save Changes"
                 ) : (
-                  'Create Product'
+                  "Create Product"
                 )}
               </Button>
             </div>

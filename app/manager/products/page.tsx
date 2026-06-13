@@ -1,16 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { toast } from 'sonner';
-import { formatCurrency, formatDate } from '@/lib/utils';
-import { Product, Category } from '@/lib/types';
-import { ProductModal } from '@/components/manager/product-modal';
-import { DeleteDialog } from '@/components/manager/delete-dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { toast } from "sonner";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { Product, Category } from "@/lib/types";
+import { ProductModal } from "@/components/manager/product-modal";
+import { DeleteDialog } from "@/components/manager/delete-dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -18,31 +19,36 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { MoreHorizontal, Plus, Search, Package, ImageOff } from 'lucide-react';
+} from "@/components/ui/select";
+import { useDebouncer } from "@/hooks/debounce";
+import { MoreHorizontal, Plus, Search, Package, ImageOff } from "lucide-react";
 
-type AvailabilityFilter = 'all' | 'available' | 'unavailable';
+type AvailabilityFilter = "all" | "available" | "unavailable";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [availabilityFilter, setAvailabilityFilter] = useState<AvailabilityFilter>('all');
+  const [search, setSearch, debouncedSearch] = useDebouncer("", 300);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [availabilityFilter, setAvailabilityFilter] =
+    useState<AvailabilityFilter>("all");
+  const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const pageSize = 10;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -55,33 +61,64 @@ export default function ProductsPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
 
-  const fetchProducts = useCallback(async () => {
-    try {
-      const res = await fetch('/api/manager/products');
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setProducts(data);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to load products');
-    }
-  }, []);
+  // Reset page to 1 when search term changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const fetchProducts = useCallback(
+    async (p: number, s: string, catF: string, availF: string) => {
+      setLoading(true);
+      try {
+        const queryParams = new URLSearchParams({
+          page: String(p),
+          limit: String(pageSize),
+          search: s,
+          category_id: catF,
+          availability: availF,
+        });
+        const res = await fetch(
+          `/api/manager/products?${queryParams.toString()}`,
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        setProducts(data.data || []);
+        setTotalItems(data.total || 0);
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch('/api/manager/categories');
+      const res = await fetch("/api/manager/categories");
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setCategories(data);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to load categories');
+      toast.error(err.message || "Failed to load categories");
     }
   }, []);
 
+  // Fetch initial categories once
   useEffect(() => {
-    Promise.all([fetchProducts(), fetchCategories()]).finally(() =>
-      setLoading(false)
-    );
-  }, [fetchProducts, fetchCategories]);
+    fetchCategories();
+  }, [fetchCategories]);
+
+  // Fetch products when page, search, or filters change
+  useEffect(() => {
+    fetchProducts(page, debouncedSearch, categoryFilter, availabilityFilter);
+  }, [
+    page,
+    debouncedSearch,
+    categoryFilter,
+    availabilityFilter,
+    fetchProducts,
+  ]);
 
   const categoryMap = useMemo(() => {
     const map: Record<string, Category> = {};
@@ -89,40 +126,16 @@ export default function ProductsPage() {
     return map;
   }, [categories]);
 
-  const filtered = useMemo(() => {
-    let result = products;
-
-    if (search.trim()) {
-      const query = search.toLowerCase();
-      result = result.filter((p) => {
-        const matchesName = p.name.toLowerCase().includes(query);
-        const categoryName = categoryMap[p.category_id]?.name || '';
-        const matchesCategory = categoryName.toLowerCase().includes(query);
-        return matchesName || matchesCategory;
-      });
-    }
-
-    if (categoryFilter !== 'all') {
-      result = result.filter((p) => p.category_id === categoryFilter);
-    }
-
-    if (availabilityFilter !== 'all') {
-      result = result.filter((p) =>
-        availabilityFilter === 'available' ? p.is_available : !p.is_available
-      );
-    }
-
-    return result;
-  }, [products, search, categoryFilter, availabilityFilter, categoryMap]);
-
-  // Keep selectedIds in sync with filtered items
+  // Keep selectedIds in sync with visible products
   useEffect(() => {
-    setSelectedIds((prev) => prev.filter((id) => filtered.some((p) => p.id === id)));
-  }, [filtered]);
+    setSelectedIds((prev) =>
+      prev.filter((id) => products.some((p) => p.id === id)),
+    );
+  }, [products]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedIds(filtered.map((p) => p.id));
+      setSelectedIds(products.map((p) => p.id));
     } else {
       setSelectedIds([]);
     }
@@ -138,7 +151,9 @@ export default function ProductsPage() {
 
   const handleBulkDelete = async () => {
     if (selectedIds.length < 2) return;
-    const confirmDelete = window.confirm(`Are you sure you want to delete ${selectedIds.length} products?`);
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${selectedIds.length} products?`,
+    );
     if (!confirmDelete) return;
 
     setBulkLoading(true);
@@ -148,7 +163,7 @@ export default function ProductsPage() {
     try {
       for (const id of selectedIds) {
         const res = await fetch(`/api/manager/products/${id}`, {
-          method: 'DELETE',
+          method: "DELETE",
         });
         if (res.ok) {
           successCount++;
@@ -163,11 +178,22 @@ export default function ProductsPage() {
       if (failCount > 0) {
         toast.error(`Failed to delete ${failCount} products.`);
       }
-      
-      await fetchProducts();
+
       setSelectedIds([]);
+      const remainingTotal = totalItems - successCount;
+      const maxPages = Math.max(Math.ceil(remainingTotal / pageSize), 1);
+      if (page > maxPages) {
+        setPage(maxPages);
+      } else {
+        fetchProducts(
+          page,
+          debouncedSearch,
+          categoryFilter,
+          availabilityFilter,
+        );
+      }
     } catch {
-      toast.error('An error occurred during bulk delete.');
+      toast.error("An error occurred during bulk delete.");
     } finally {
       setBulkLoading(false);
     }
@@ -175,7 +201,9 @@ export default function ProductsPage() {
 
   const handleBulkArchive = async () => {
     if (selectedIds.length < 2) return;
-    const confirmArchive = window.confirm(`Are you sure you want to archive ${selectedIds.length} products?`);
+    const confirmArchive = window.confirm(
+      `Are you sure you want to archive ${selectedIds.length} products?`,
+    );
     if (!confirmArchive) return;
 
     setBulkLoading(true);
@@ -188,15 +216,15 @@ export default function ProductsPage() {
         if (!product) continue;
 
         const res = await fetch(`/api/manager/products/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             name: product.name,
             category_id: product.category_id,
             price: Number(product.price),
             tax: String(product.tax),
             unit_of_measure: product.unit_of_measure,
-            is_available: false 
+            is_available: false,
           }),
         });
 
@@ -214,10 +242,10 @@ export default function ProductsPage() {
         toast.error(`Failed to archive ${failCount} products.`);
       }
 
-      await fetchProducts();
       setSelectedIds([]);
+      fetchProducts(page, debouncedSearch, categoryFilter, availabilityFilter);
     } catch {
-      toast.error('An error occurred during bulk archive.');
+      toast.error("An error occurred during bulk archive.");
     } finally {
       setBulkLoading(false);
     }
@@ -234,7 +262,7 @@ export default function ProductsPage() {
   };
 
   const handleProductSuccess = () => {
-    fetchProducts();
+    fetchProducts(page, debouncedSearch, categoryFilter, availabilityFilter);
   };
 
   const handleDeleteClick = (product: Product) => {
@@ -247,20 +275,30 @@ export default function ProductsPage() {
     setDeleteLoading(true);
     try {
       const res = await fetch(`/api/manager/products/${deletingProduct.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || 'Failed to delete product');
+        toast.error(data.error || "Failed to delete product");
         return;
       }
 
-      setProducts((prev) => prev.filter((p) => p.id !== deletingProduct.id));
-      toast.success('Product deleted');
+      toast.success("Product deleted");
       setDeleteOpen(false);
+
+      if (products.length === 1 && page > 1) {
+        setPage((prev) => prev - 1);
+      } else {
+        fetchProducts(
+          page,
+          debouncedSearch,
+          categoryFilter,
+          availabilityFilter,
+        );
+      }
     } catch {
-      toast.error('Network error. Please try again.');
+      toast.error("Network error. Please try again.");
     } finally {
       setDeleteLoading(false);
     }
@@ -270,43 +308,61 @@ export default function ProductsPage() {
     const newValue = !product.is_available;
     setProducts((prev) =>
       prev.map((p) =>
-        p.id === product.id ? { ...p, is_available: newValue } : p
-      )
+        p.id === product.id ? { ...p, is_available: newValue } : p,
+      ),
     );
 
     try {
       const res = await fetch(`/api/manager/products/${product.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           name: product.name,
           category_id: product.category_id,
           price: product.price,
           tax: product.tax,
           unit_of_measure: product.unit_of_measure,
-          is_available: newValue 
+          is_available: newValue,
         }),
       });
 
       if (!res.ok) {
         setProducts((prev) =>
           prev.map((p) =>
-            p.id === product.id ? { ...p, is_available: !newValue } : p
-          )
+            p.id === product.id ? { ...p, is_available: !newValue } : p,
+          ),
         );
         const data = await res.json();
-        toast.error(data.error || 'Failed to update availability');
+        toast.error(data.error || "Failed to update availability");
       } else {
-        toast.success(newValue ? 'Product is now available' : 'Product is now unavailable');
+        toast.success(
+          newValue ? "Product is now available" : "Product is now unavailable",
+        );
+        fetchProducts(
+          page,
+          debouncedSearch,
+          categoryFilter,
+          availabilityFilter,
+        );
       }
     } catch {
       setProducts((prev) =>
         prev.map((p) =>
-          p.id === product.id ? { ...p, is_available: !newValue } : p
-        )
+          p.id === product.id ? { ...p, is_available: !newValue } : p,
+        ),
       );
-      toast.error('Network error');
+      toast.error("Network error");
     }
+  };
+
+  const handleCategoryChange = (val: string | null) => {
+    setCategoryFilter(val ?? "all");
+    setPage(1);
+  };
+
+  const handleAvailabilityChange = (val: string | null) => {
+    setAvailabilityFilter((val ?? "all") as AvailabilityFilter);
+    setPage(1);
   };
 
   return (
@@ -359,7 +415,7 @@ export default function ProductsPage() {
           />
         </div>
 
-        <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? 'all')}>
+        <Select value={categoryFilter} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
@@ -381,7 +437,7 @@ export default function ProductsPage() {
 
         <Select
           value={availabilityFilter}
-          onValueChange={(v) => setAvailabilityFilter((v ?? 'all') as AvailabilityFilter)}
+          onValueChange={handleAvailabilityChange}
         >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="All" />
@@ -400,35 +456,40 @@ export default function ProductsPage() {
             <Skeleton key={i} className="h-16 w-full rounded-lg" />
           ))}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : products.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Package className="w-12 h-12 text-muted-foreground/40 mb-3" />
           <p className="text-muted-foreground font-medium">
-            {search || categoryFilter !== 'all' || availabilityFilter !== 'all'
-              ? 'No products match your filters'
-              : 'No products found'}
+            {search || categoryFilter !== "all" || availabilityFilter !== "all"
+              ? "No products match your filters"
+              : "No products found"}
           </p>
           <p className="text-sm text-muted-foreground/60 mt-1">
-            {search || categoryFilter !== 'all' || availabilityFilter !== 'all'
-              ? 'Try adjusting your search or filters'
-              : 'Create your first menu item to get started'}
+            {search || categoryFilter !== "all" || availabilityFilter !== "all"
+              ? "Try adjusting your search or filters"
+              : "Create your first menu item to get started"}
           </p>
-          {!search && categoryFilter === 'all' && availabilityFilter === 'all' && (
-            <Button onClick={handleCreate} className="mt-4" size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Product
-            </Button>
-          )}
+          {!search &&
+            categoryFilter === "all" &&
+            availabilityFilter === "all" && (
+              <Button onClick={handleCreate} className="mt-4" size="sm">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Product
+              </Button>
+            )}
         </div>
       ) : (
-        <div className="rounded-lg border">
+        <div className="rounded-lg border bg-zinc-950/20">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
                   <input
                     type="checkbox"
-                    checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                    checked={
+                      products.length > 0 &&
+                      selectedIds.length === products.length
+                    }
                     onChange={(e) => handleSelectAll(e.target.checked)}
                     className="rounded border-zinc-800 bg-zinc-950 text-[#F9F5F2] focus:ring-[#F9F5F2] focus:ring-offset-zinc-900 cursor-pointer h-4 w-4"
                   />
@@ -445,21 +506,27 @@ export default function ProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((product) => {
+              {products.map((product) => {
                 const cat = categoryMap[product.category_id];
                 const isSelected = selectedIds.includes(product.id);
                 return (
-                  <TableRow key={product.id} className={isSelected ? 'bg-zinc-900/50' : undefined}>
+                  <TableRow
+                    key={product.id}
+                    className={isSelected ? "bg-zinc-900/50" : undefined}
+                  >
                     <TableCell>
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={(e) => handleSelectOne(product.id, e.target.checked)}
+                        onChange={(e) =>
+                          handleSelectOne(product.id, e.target.checked)
+                        }
                         className="rounded border-zinc-800 bg-zinc-950 text-[#F9F5F2] focus:ring-[#F9F5F2] focus:ring-offset-zinc-900 cursor-pointer h-4 w-4"
                       />
                     </TableCell>
                     <TableCell>
-                      {product.image_url && product.image_url !== 'pending-upload' ? (
+                      {product.image_url &&
+                      product.image_url !== "pending-upload" ? (
                         <img
                           src={product.image_url}
                           alt={product.name}
@@ -471,13 +538,12 @@ export default function ProductsPage() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {product.name}
+                    </TableCell>
                     <TableCell>
                       {cat ? (
-                        <Badge
-                          variant="outline"
-                          className="gap-1.5"
-                        >
+                        <Badge variant="outline" className="gap-1.5">
                           <span
                             className="w-2 h-2 rounded-full"
                             style={{ backgroundColor: cat.color }}
@@ -489,7 +555,7 @@ export default function ProductsPage() {
                       )}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {formatCurrency(Number(product.price), 'INR', 'en-IN')}
+                      {formatCurrency(Number(product.price), "INR", "en-IN")}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {product.tax}%
@@ -501,10 +567,12 @@ export default function ProductsPage() {
                       <div className="flex items-center gap-2">
                         <Switch
                           checked={product.is_available}
-                          onCheckedChange={() => handleAvailabilityToggle(product)}
+                          onCheckedChange={() =>
+                            handleAvailabilityToggle(product)
+                          }
                         />
                         <span className="text-xs text-muted-foreground">
-                          {product.is_available ? 'Available' : 'Unavailable'}
+                          {product.is_available ? "Available" : "Unavailable"}
                         </span>
                       </div>
                     </TableCell>
@@ -514,7 +582,11 @@ export default function ProductsPage() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -536,6 +608,13 @@ export default function ProductsPage() {
               })}
             </TableBody>
           </Table>
+
+          <Pagination
+            currentPage={page}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setPage}
+          />
         </div>
       )}
 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { createUserAction } from './actions';
 import { Loader2, Plus, User, Mail, Shield, Building2, Eye, EyeOff } from 'lucide-react';
 
 export default function CreateUserPage() {
@@ -90,17 +89,37 @@ export default function CreateUserPage() {
     setMessage(null);
 
     const formData = new FormData(e.currentTarget);
-    const result = await createUserAction(formData, sessionToken);
+    const payload = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+      role: formData.get('role'),
+      manager_id: formData.get('manager_id'),
+    };
 
-    if (result.error) {
-      setMessage({ type: 'error', text: result.error });
-    } else if (result.success) {
-      setMessage({ type: 'success', text: result.message || 'User created successfully!' });
-      (e.target as HTMLFormElement).reset();
-      setSelectedRole('');
+    try {
+      const res = await fetch('/api/staff', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        setMessage({ type: 'error', text: result.error || 'Failed to create user' });
+      } else {
+        setMessage({ type: 'success', text: result.message || 'User created successfully!' });
+        (e.target as HTMLFormElement).reset();
+        setSelectedRole('');
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   }
 
   return (

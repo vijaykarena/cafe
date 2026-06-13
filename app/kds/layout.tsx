@@ -13,10 +13,7 @@ export default function KdsLayout({ children }: { children: React.ReactNode }) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+      if (!user) return router.push("/login");
 
       const { data: profile, error } = await supabase
         .from("profiles")
@@ -26,13 +23,12 @@ export default function KdsLayout({ children }: { children: React.ReactNode }) {
 
       if (error || !profile || profile.is_archived) {
         await supabase.auth.signOut();
-        router.push("/login");
-        return;
+        return router.push("/login");
       }
 
       if (
-        profile.role !== "admin" &&
         profile.role !== "manager" &&
+        profile.role !== "admin" &&
         profile.role !== "cook"
       ) {
         if (profile.role === "waiter") router.push("/waiter");

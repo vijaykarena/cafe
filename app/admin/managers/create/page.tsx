@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { createUserAction } from '@/app/manager/staff/create/actions';
 import { Loader2, Plus, User, Mail, Shield, Eye, EyeOff } from 'lucide-react';
 
 export default function CreateManagerPage() {
@@ -47,18 +46,36 @@ export default function CreateManagerPage() {
     setMessage(null);
 
     const formData = new FormData(e.currentTarget);
-    // Explicitly set the role as 'manager'
-    formData.set('role', 'manager');
-    const result = await createUserAction(formData, sessionToken);
+    const payload = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+      role: 'manager',
+      manager_id: null,
+    };
 
-    if (result.error) {
-      setMessage({ type: 'error', text: result.error });
-    } else if (result.success) {
-      setMessage({ type: 'success', text: result.message || 'Manager created successfully!' });
-      (e.target as HTMLFormElement).reset();
+    try {
+      const res = await fetch('/api/staff', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        setMessage({ type: 'error', text: result.error || 'Failed to create manager' });
+      } else {
+        setMessage({ type: 'success', text: result.message || 'Manager created successfully!' });
+        (e.target as HTMLFormElement).reset();
+      }
+    } catch {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   }
 
   return (

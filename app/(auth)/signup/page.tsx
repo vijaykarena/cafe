@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,21 +26,16 @@ export default function SignupPage() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            name,
-            role: 'admin', // Default signups are Admin (Cashiers are created by admins in the backend)
-          },
-        },
+        options: { data: { name, role: "admin" } },
       });
 
       if (error) throw error;
       setSuccess(true);
       setTimeout(() => {
-        router.push('/login');
+        router.push("/login");
       }, 2000);
     } catch (err: any) {
-      setError(err.message || 'An error occurred during signup');
+      setError(err.message || "An error occurred during signup");
     } finally {
       setLoading(false);
     }
@@ -50,8 +45,12 @@ export default function SignupPage() {
     <div className="flex flex-col flex-1 items-center justify-center min-h-screen px-4 bg-zinc-950 text-zinc-50 font-sans">
       <div className="w-full max-w-md p-8 space-y-6 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Cafe POS Admin Signup</h1>
-          <p className="text-zinc-400 text-sm">Register a new administrator account</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">
+            Cafe POS Admin Signup
+          </h1>
+          <p className="text-zinc-400 text-sm">
+            Register a new administrator account
+          </p>
         </div>
 
         {error && (
@@ -68,7 +67,10 @@ export default function SignupPage() {
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div className="space-y-1">
-            <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <label
+              htmlFor="name"
+              className="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+            >
               Full Name
             </label>
             <input
@@ -83,7 +85,10 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <label
+              htmlFor="email"
+              className="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+            >
               Email Address
             </label>
             <input
@@ -98,7 +103,10 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <label
+              htmlFor="password"
+              className="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+            >
               Password
             </label>
             <div className="relative">
@@ -117,7 +125,11 @@ export default function SignupPage() {
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-300 transition-colors"
                 aria-label="Toggle password visibility"
               >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
@@ -127,13 +139,13 @@ export default function SignupPage() {
             disabled={loading}
             className="w-full py-3 text-sm font-bold rounded-lg bg-[#F9F5F2] hover:bg-[#e5e1de] text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
 
         <div className="text-center pt-2">
           <p className="text-zinc-500 text-xs">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link href="/login" className="text-[#F9F5F2] hover:underline">
               Sign In
             </Link>

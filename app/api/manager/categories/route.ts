@@ -6,16 +6,40 @@ import { validateCategoryInput } from '@/lib/validations/category';
 export async function GET(request: Request) {
   try {
     const { userId } = requireManager(request);
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search') || '';
+    const pageStr = searchParams.get('page');
+    const limitStr = searchParams.get('limit');
 
-    const { data, error } = await supabaseAdmin
+    const isPaginated = !!(pageStr && limitStr);
+    const page = parseInt(pageStr || '1', 10);
+    const limit = parseInt(limitStr || '10', 10);
+
+    let query = supabaseAdmin
       .from('categories')
-      .select('*')
+      .select('*', { count: 'exact' })
       .eq('manager_id', userId)
-      .is('deleted_at', null)
-      .order('name');
+      .is('deleted_at', null);
 
-    if (error) throw error;
-    return NextResponse.json(data);
+    if (search.trim()) {
+      query = query.ilike('name', `%${search.trim()}%`);
+    }
+
+    query = query.order('name');
+
+    if (isPaginated) {
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      return NextResponse.json({ data, total: count || 0 });
+    } else {
+      const { data, error } = await query;
+      if (error) throw error;
+      return NextResponse.json(data);
+    }
   } catch (err: any) {
     if (err instanceof NextResponse) return err;
     return NextResponse.json({ error: err.message }, { status: 500 });

@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { toast } from 'sonner';
-import { formatDate } from '@/lib/utils';
-import { Category } from '@/lib/types';
-import { CategoryModal } from '@/components/manager/category-modal';
-import { DeleteDialog } from '@/components/manager/delete-dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { formatDate } from "@/lib/utils";
+import { Category } from "@/lib/types";
+import { CategoryModal } from "@/components/manager/category-modal";
+import { DeleteDialog } from "@/components/manager/delete-dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -17,50 +17,60 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Plus, Search, FolderOpen } from 'lucide-react';
+} from "@/components/ui/dropdown-menu";
+import { useDebouncer } from "@/hooks/debounce";
+import { MoreHorizontal, Plus, Search, FolderOpen } from "lucide-react";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch, debouncedSearch] = useDebouncer("", 300);
+  const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const pageSize = 10;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(
+    null,
+  );
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const fetchCategories = async () => {
+  // Reset page to 1 when search term changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const fetchCategories = async (p: number, s: string) => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/manager/categories');
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setCategories(data);
+      const res = await fetch(
+        `/api/manager/categories?page=${p}&limit=${pageSize}&search=${encodeURIComponent(
+          s,
+        )}`,
+      );
+      const resData = await res.json();
+      if (!res.ok) throw new Error(resData.error);
+      setCategories(resData.data || []);
+      setTotalItems(resData.total || 0);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to load categories');
+      toast.error(err.message || "Failed to load categories");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return categories;
-    return categories.filter((c) =>
-      c.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [categories, search]);
+    fetchCategories(page, debouncedSearch);
+  }, [page, debouncedSearch]);
 
   const handleCreate = () => {
     setEditingCategory(null);
@@ -72,14 +82,8 @@ export default function CategoriesPage() {
     setModalOpen(true);
   };
 
-  const handleCategorySuccess = (updated: Category) => {
-    if (editingCategory) {
-      setCategories((prev) =>
-        prev.map((c) => (c.id === updated.id ? updated : c))
-      );
-    } else {
-      setCategories((prev) => [...prev, updated]);
-    }
+  const handleCategorySuccess = () => {
+    fetchCategories(page, debouncedSearch);
   };
 
   const handleDeleteClick = (category: Category) => {
@@ -91,21 +95,27 @@ export default function CategoriesPage() {
     if (!deletingCategory) return;
     setDeleteLoading(true);
     try {
-      const res = await fetch(`/api/manager/categories/${deletingCategory.id}`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(
+        `/api/manager/categories/${deletingCategory.id}`,
+        { method: "DELETE" },
+      );
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || 'Failed to delete category');
+        toast.error(data.error || "Failed to delete category");
         return;
       }
 
-      setCategories((prev) => prev.filter((c) => c.id !== deletingCategory.id));
-      toast.success('Category deleted');
+      toast.success("Category deleted");
       setDeleteOpen(false);
+
+      if (categories.length === 1 && page > 1) {
+        setPage((prev) => prev - 1);
+      } else {
+        fetchCategories(page, debouncedSearch);
+      }
     } catch {
-      toast.error('Network error. Please try again.');
+      toast.error("Network error. Please try again.");
     } finally {
       setDeleteLoading(false);
     }
@@ -142,16 +152,16 @@ export default function CategoriesPage() {
             <Skeleton key={i} className="h-14 w-full rounded-lg" />
           ))}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : categories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <FolderOpen className="w-12 h-12 text-muted-foreground/40 mb-3" />
           <p className="text-muted-foreground font-medium">
-            {search ? 'No categories match your search' : 'No categories found'}
+            {search ? "No categories match your search" : "No categories found"}
           </p>
           <p className="text-sm text-muted-foreground/60 mt-1">
             {search
-              ? 'Try a different search term'
-              : 'Create your first category to get started'}
+              ? "Try a different search term"
+              : "Create your first category to get started"}
           </p>
           {!search && (
             <Button onClick={handleCreate} className="mt-4" size="sm">
@@ -161,7 +171,7 @@ export default function CategoriesPage() {
           )}
         </div>
       ) : (
-        <div className="rounded-lg border">
+        <div className="rounded-lg border bg-zinc-950/20">
           <Table>
             <TableHeader>
               <TableRow>
@@ -172,7 +182,7 @@ export default function CategoriesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((category) => (
+              {categories.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell>
                     <div
@@ -208,6 +218,13 @@ export default function CategoriesPage() {
               ))}
             </TableBody>
           </Table>
+
+          <Pagination
+            currentPage={page}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setPage}
+          />
         </div>
       )}
 

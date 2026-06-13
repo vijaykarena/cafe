@@ -1,21 +1,59 @@
-import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-server';
-import { requireManager } from '@/lib/permissions';
-import { validateProductInput } from '@/lib/validations/product';
+import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase-server";
+import { requireManager } from "@/lib/permissions";
+import { validateProductInput } from "@/lib/validations/product";
 
 export async function GET(request: Request) {
   try {
     const { userId } = requireManager(request);
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search") || "";
+    const pageStr = searchParams.get("page");
+    const limitStr = searchParams.get("limit");
 
-    const { data, error } = await supabaseAdmin
-      .from('products')
-      .select('*, categories(id, name, color)')
-      .eq('manager_id', userId)
-      .is('deleted_at', null)
-      .order('name');
+    const isPaginated = !!(pageStr && limitStr);
+    const page = parseInt(pageStr || "1", 10);
+    const limit = parseInt(limitStr || "10", 10);
 
-    if (error) throw error;
-    return NextResponse.json(data);
+    const categoryFilter = searchParams.get("category_id");
+    const availabilityFilter = searchParams.get("availability");
+
+    const selectStr = search.trim()
+      ? "*, categories!inner(id, name, color)"
+      : "*, categories(id, name, color)";
+
+    let query = supabaseAdmin
+      .from("products")
+      .select(selectStr, { count: "exact" })
+      .eq("manager_id", userId)
+      .is("deleted_at", null);
+
+    if (search.trim())
+      query = query.or(
+        `name.ilike.%${search.trim()}%,categories.name.ilike.%${search.trim()}%`,
+      );
+
+    if (categoryFilter && categoryFilter !== "all")
+      query = query.eq("category_id", categoryFilter);
+
+    if (availabilityFilter && availabilityFilter !== "all")
+      query = query.eq("is_available", availabilityFilter === "available");
+
+    query = query.order("name");
+
+    if (isPaginated) {
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      return NextResponse.json({ data, total: count || 0 });
+    } else {
+      const { data, error } = await query;
+      if (error) throw error;
+      return NextResponse.json(data);
+    }
   } catch (err: any) {
     if (err instanceof NextResponse) return err;
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -29,23 +67,29 @@ export async function POST(request: Request) {
 
     const validation = validateProductInput(body);
     if (!validation.valid) {
-      return NextResponse.json({ error: validation.errors.join(', ') }, { status: 400 });
+      return NextResponse.json(
+        { error: validation.errors.join(", ") },
+        { status: 400 },
+      );
     }
 
     const { data: category, error: catError } = await supabaseAdmin
-      .from('categories')
-      .select('id')
-      .eq('id', body.category_id)
-      .eq('manager_id', userId)
-      .is('deleted_at', null)
+      .from("categories")
+      .select("id")
+      .eq("id", body.category_id)
+      .eq("manager_id", userId)
+      .is("deleted_at", null)
       .single();
 
     if (catError || !category) {
-      return NextResponse.json({ error: 'Category not found or does not belong to you' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Category not found or does not belong to you" },
+        { status: 400 },
+      );
     }
 
     const { data, error } = await supabaseAdmin
-      .from('products')
+      .from("products")
       .insert({
         manager_id: userId,
         category_id: body.category_id,
@@ -55,9 +99,10 @@ export async function POST(request: Request) {
         unit_of_measure: body.unit_of_measure,
         description: body.description || null,
         image_url: body.image_url,
-        is_available: body.is_available !== undefined ? body.is_available : true,
+        is_available:
+          body.is_available !== undefined ? body.is_available : true,
       })
-      .select('*, categories(id, name, color)')
+      .select("*, categories(id, name, color)")
       .single();
 
     if (error) throw error;
