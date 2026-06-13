@@ -416,7 +416,23 @@ export default function ProductsPage() {
 
         <Select value={categoryFilter} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder="All Categories">
+              {(val: string) => {
+                if (val === "all" || !val) return "All Categories";
+                const cat = categories.find((c) => c.id === val);
+                return cat ? (
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                    {cat.name}
+                  </div>
+                ) : (
+                  "All Categories"
+                );
+              }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>

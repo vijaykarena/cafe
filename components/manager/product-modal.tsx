@@ -96,7 +96,7 @@ export function ProductModal({
       } else {
         reset({
           name: "",
-          category_id: categories.length > 0 ? categories[0].name : "",
+          category_id: categories.length > 0 ? categories[0].id : "",
           price: "",
           tax: "5",
           description: "",
@@ -267,7 +267,23 @@ export function ProductModal({
                 }}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder="Select category">
+                    {(val: string) => {
+                      if (!val) return "Select category";
+                      const cat = categories.find((c) => c.id === val);
+                      return cat ? (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-3 h-3 rounded-full shrink-0"
+                            style={{ backgroundColor: cat.color }}
+                          />
+                          {cat.name}
+                        </div>
+                      ) : (
+                        val
+                      );
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
