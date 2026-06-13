@@ -61,17 +61,23 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
+  // Set request headers to forward user info to API routes
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-user-id', user.id);
+  requestHeaders.set('x-user-role', role);
+
+  const nextResponse = () => NextResponse.next({ request: { headers: requestHeaders } });
+
   // 6. RBAC Rules Enforcement
 
   // --- API Routes Access Control ---
   if (path.startsWith('/api/')) {
     // Admin gets full access
-    if (role === 'admin') return NextResponse.next();
+    if (role === 'admin') return nextResponse();
 
     // Manager gets full access to configs and terminal operations
     if (role === 'manager') {
-      // Block manager from creating admins or managers in staff CRUD (handled in Route handler or proxy)
-      return NextResponse.next();
+      return nextResponse();
     }
 
     // Cashier constraints
@@ -85,7 +91,7 @@ export async function proxy(request: NextRequest) {
       if (isWrite && (path.startsWith('/api/products') || path.startsWith('/api/categories') || path.startsWith('/api/tables') || path.startsWith('/api/settings'))) {
         return NextResponse.json({ error: 'Forbidden: Cashiers are restricted from modifying catalog properties' }, { status: 403 });
       }
-      return NextResponse.next();
+      return nextResponse();
     }
 
     // Waiter constraints
@@ -99,7 +105,7 @@ export async function proxy(request: NextRequest) {
       if (isWrite && !path.startsWith('/api/orders')) {
         return NextResponse.json({ error: 'Forbidden: Waiters are restricted from modifying catalog properties' }, { status: 403 });
       }
-      return NextResponse.next();
+      return nextResponse();
     }
 
     // Cook constraints
@@ -107,7 +113,7 @@ export async function proxy(request: NextRequest) {
       if (!path.startsWith('/api/kds')) {
         return NextResponse.json({ error: 'Forbidden: Cooks are restricted to KDS operations only' }, { status: 403 });
       }
-      return NextResponse.next();
+      return nextResponse();
     }
 
     return NextResponse.json({ error: 'Forbidden: Role unrecognized' }, { status: 403 });
@@ -148,16 +154,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Set request headers to forward user info to API routes
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-user-id', user.id);
-  requestHeaders.set('x-user-role', role);
-
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  return nextResponse();
 }
 
 export const config = {

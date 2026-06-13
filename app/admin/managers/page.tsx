@@ -52,19 +52,24 @@ export default function AdminManagersPage() {
     }
   };
 
-  const handleDeleteManager = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this manager profile? This will delete their credentials and account access.')) return;
+  const handleToggleBan = async (id: string, currentBanStatus: boolean) => {
+    const action = currentBanStatus ? 'unban' : 'ban';
+    if (!confirm(`Are you sure you want to ${action} this manager profile? Banned users cannot access the system.`)) return;
     try {
-      const res = await fetch(`/api/staff?id=${id}`, {
-        method: 'DELETE',
+      const res = await fetch(`/api/staff`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, is_banned: !currentBanStatus }),
       });
 
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      setManagers(managers.filter(p => p.id !== id));
+      setManagers(managers.map(p => p.id === id ? { ...p, is_banned: !currentBanStatus } : p));
     } catch (err) {
-      setManagers(managers.filter(p => p.id !== id));
+      console.error(err);
+      // Fallback state on error
+      setManagers(managers.map(p => p.id === id ? { ...p, is_banned: currentBanStatus } : p));
     }
   };
 
@@ -111,13 +116,20 @@ export default function AdminManagersPage() {
                   <td className="py-3 font-semibold text-white">{mgr.name}</td>
                   <td className="py-3 font-mono">{mgr.email}</td>
                   <td className="py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
-                      mgr.is_archived
-                        ? 'bg-red-500/10 border border-red-500/25 text-red-400'
-                        : 'bg-green-500/10 border border-green-500/25 text-green-400'
-                    }`}>
-                      {mgr.is_archived ? 'Archived' : 'Active'}
-                    </span>
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
+                        mgr.is_archived
+                          ? 'bg-zinc-500/10 border border-zinc-500/25 text-zinc-400'
+                          : 'bg-blue-500/10 border border-blue-500/25 text-blue-400'
+                      }`}>
+                        {mgr.is_archived ? 'Archived' : 'Active'}
+                      </span>
+                      {mgr.is_banned && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-red-500/10 border border-red-500/25 text-red-400">
+                          Banned
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 text-right space-x-2">
                     <button
@@ -128,11 +140,15 @@ export default function AdminManagersPage() {
                       {mgr.is_archived ? 'Unarchive' : 'Archive'}
                     </button>
                     <button
-                      onClick={() => handleDeleteManager(mgr.id)}
+                      onClick={() => handleToggleBan(mgr.id, !!mgr.is_banned)}
                       disabled={currentUser?.id === mgr.id}
-                      className="px-2.5 py-1 rounded bg-red-950/20 hover:bg-red-950/40 border border-red-900/30 text-red-400 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`px-2.5 py-1 rounded border cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        mgr.is_banned 
+                          ? 'bg-orange-950/20 hover:bg-orange-950/40 border-orange-900/30 text-orange-400'
+                          : 'bg-red-950/20 hover:bg-red-950/40 border-red-900/30 text-red-400'
+                      }`}
                     >
-                      Delete
+                      {mgr.is_banned ? 'Unban' : 'Ban'}
                     </button>
                   </td>
                 </tr>

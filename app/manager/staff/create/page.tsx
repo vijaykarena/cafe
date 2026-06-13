@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { createUserAction } from './actions';
-import { Loader2, Plus, User, Mail, Shield, Building2 } from 'lucide-react';
+import { Loader2, Plus, User, Mail, Shield, Building2, Eye, EyeOff } from 'lucide-react';
 
 export default function CreateUserPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [sessionToken, setSessionToken] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const [selectedRole, setSelectedRole] = useState('');
   const [managers, setManagers] = useState<any[]>([]);
@@ -160,11 +161,19 @@ export default function CreateUserPage() {
                 <Shield className="absolute left-3 top-3 h-4 w-4 text-zinc-500" />
                 <input 
                   name="password" 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   required 
                   placeholder="••••••••"
-                  className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 pl-10 text-sm ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 focus-visible:ring-offset-2 transition-all"
+                  className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 pl-10 pr-10 text-sm ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300 focus-visible:ring-offset-2 transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-300 transition-colors"
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 

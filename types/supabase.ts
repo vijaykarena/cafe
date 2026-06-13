@@ -328,6 +328,7 @@ export type Database = {
           email: string
           id: string
           is_archived: boolean | null
+          is_banned: boolean
           manager_id: string | null
           name: string
           role: string
@@ -337,6 +338,7 @@ export type Database = {
           email: string
           id: string
           is_archived?: boolean | null
+          is_banned?: boolean
           manager_id?: string | null
           name: string
           role: string
@@ -346,6 +348,7 @@ export type Database = {
           email?: string
           id?: string
           is_archived?: boolean | null
+          is_banned?: boolean
           manager_id?: string | null
           name?: string
           role?: string

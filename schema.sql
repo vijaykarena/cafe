@@ -9,6 +9,7 @@ create table public.profiles (
   email text not null unique,
   role text not null check (role in ('admin', 'manager', 'cashier', 'cook', 'waiter')),
   is_archived boolean default false,
+  is_banned boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
