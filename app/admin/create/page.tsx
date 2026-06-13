@@ -75,10 +75,10 @@ export default function CreateManagerPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-4 font-sans text-zinc-50 relative">
       <button
-        onClick={() => (window.location.href = "/admin/managers")}
+        onClick={() => (window.location.href = "/admin")}
         className="absolute top-8 left-8 px-4 py-2 text-sm font-semibold text-zinc-400 hover:text-white transition-colors"
       >
-        &larr; Back to Managers Directory
+        &larr; Back to Admin
       </button>
       <div className="w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl">
         <div className="flex flex-col space-y-1.5 p-6 pb-4">

@@ -84,10 +84,10 @@ export default function AdminStaffPage() {
   };
 
   const handleToggleBan = async (id: string, currentBanStatus: boolean) => {
-    const action = currentBanStatus ? "unban" : "ban";
+    const action = currentBanStatus ? "Unblock" : "Block";
     if (
       !confirm(
-        `Are you sure you want to ${action} this staff record? Banned users cannot access the system.`,
+        `Are you sure you want to ${action} this staff record? Blocked users cannot access the system.`,
       )
     )
       return;
@@ -190,11 +190,10 @@ export default function AdminStaffPage() {
                   </TableCell>
                   <TableCell className="capitalize">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        profile.role === "admin"
-                          ? "bg-purple-500/10 border border-purple-500/25 text-purple-400"
-                          : "bg-blue-500/10 border border-blue-500/25 text-blue-400"
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${profile.role === "admin"
+                        ? "bg-purple-500/10 border border-purple-500/25 text-purple-400"
+                        : "bg-blue-500/10 border border-blue-500/25 text-blue-400"
+                        }`}
                     >
                       {profile.role}
                     </span>
@@ -202,11 +201,10 @@ export default function AdminStaffPage() {
                   <TableCell>
                     <div className="flex flex-col gap-1 items-start">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          profile.is_archived
-                            ? "bg-zinc-500/10 border border-zinc-500/25 text-zinc-400"
-                            : "bg-blue-500/10 border border-blue-500/25 text-blue-400"
-                        }`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${profile.is_archived
+                          ? "bg-zinc-500/10 border border-zinc-500/25 text-zinc-400"
+                          : "bg-blue-500/10 border border-blue-500/25 text-blue-400"
+                          }`}
                       >
                         {profile.is_archived ? "Archived" : "Active"}
                       </span>
@@ -232,13 +230,12 @@ export default function AdminStaffPage() {
                         handleToggleBan(profile.id, !!profile.is_banned)
                       }
                       disabled={currentUser?.id === profile.id}
-                      className={`px-2.5 py-1 rounded border text-xs cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                        profile.is_banned
-                          ? "bg-orange-950/20 hover:bg-orange-950/40 border-orange-900/30 text-orange-400"
-                          : "bg-red-950/20 hover:bg-red-950/40 border-red-900/30 text-red-400"
-                      }`}
+                      className={`px-2.5 py-1 rounded border text-xs cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${profile.is_banned
+                        ? "bg-orange-950/20 hover:bg-orange-950/40 border-orange-900/30 text-orange-400"
+                        : "bg-red-950/20 hover:bg-red-950/40 border-red-900/30 text-red-400"
+                        }`}
                     >
-                      {profile.is_banned ? "Unban" : "Ban"}
+                      {profile.is_banned ? "Unblock" : "Block"}
                     </button>
                   </TableCell>
                 </TableRow>
