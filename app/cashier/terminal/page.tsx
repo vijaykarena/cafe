@@ -347,10 +347,10 @@ export default function PosTerminalPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#F9F5F2] overflow-hidden font-sans select-none text-zinc-800">
+    <div className="flex flex-col h-screen bg-zinc-950 overflow-hidden font-sans select-none text-zinc-200">
       {/* ── TOP BAR ── */}
-      <header className="flex items-center gap-3 px-6 py-3 bg-white border-b border-gray-100 shrink-0">
-        <div className="flex items-center justify-center rounded-xl bg-[#F87060] text-white font-bold text-xs px-4 py-2 shrink-0 select-none tracking-tight">
+      <header className="flex items-center gap-3 px-6 py-3 bg-zinc-900 border-b border-zinc-800 shrink-0 text-white">
+        <div className="flex items-center justify-center rounded-xl bg-[#F9F5F2] text-black font-bold text-xs px-4 py-2 shrink-0 select-none tracking-tight">
           CAFE POS
         </div>
 
@@ -359,8 +359,8 @@ export default function PosTerminalPage() {
           className={cn(
             "px-4 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer",
             selectedTable
-              ? "bg-[#FFF5F0] border-[#F87060]/30 text-[#F87060]"
-              : "bg-white border-gray-200 text-gray-500 hover:border-[#F87060]/50",
+              ? "bg-[#F9F5F2]/10 border-[#F9F5F2]/30 text-[#F9F5F2]"
+              : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#F9F5F2]/50",
           )}
         >
           {selectedTable
@@ -373,7 +373,7 @@ export default function PosTerminalPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search items…"
-            className="w-full rounded-xl border border-gray-200 pl-4 pr-9 py-2 text-sm outline-none focus:border-[#F87060] transition-colors bg-white text-zinc-700"
+            className="w-full rounded-xl border border-gray-200 pl-4 pr-9 py-2 text-sm outline-none focus:border-[#F9F5F2] transition-colors bg-zinc-950 text-zinc-100"
           />
           <Search
             size={14}
@@ -384,14 +384,14 @@ export default function PosTerminalPage() {
         <div className="flex items-center gap-2 ml-4">
           <button
             onClick={clearCart}
-            className="flex items-center justify-center rounded-xl border border-gray-200 p-2.5 text-gray-500 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer"
+            className="flex items-center justify-center rounded-xl border border-gray-200 p-2.5 text-gray-500 bg-zinc-900 hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-all cursor-pointer"
             title="Clear Cart"
           >
             <RotateCcw size={15} />
           </button>
 
-          <div className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-xs text-gray-600 bg-white">
-            <Wifi size={13} className="text-[#F87060]" />{" "}
+          <div className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-xs text-zinc-350 bg-zinc-900">
+            <Wifi size={13} className="text-[#F9F5F2]" />{" "}
             <span className="font-semibold">Terminal Connected</span>
           </div>
         </div>
@@ -399,7 +399,7 @@ export default function PosTerminalPage() {
         <div className="ml-auto flex gap-2">
           <button
             onClick={() => router.push("/cashier")}
-            className="flex items-center justify-center rounded-xl border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer"
+            className="flex items-center justify-center rounded-xl border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 bg-zinc-900 hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-all cursor-pointer"
           >
             Leave Terminal
           </button>
@@ -409,7 +409,7 @@ export default function PosTerminalPage() {
       {/* ── BODY ── */}
       <div className="flex flex-1 overflow-hidden">
         {/* ── PRODUCT PANEL ── */}
-        <section className="flex gap-3 flex-1 p-4 overflow-hidden border-r border-gray-100">
+        <section className="flex gap-3 flex-1 p-4 overflow-hidden border-r border-zinc-800">
           {/* Category sidebar */}
           <aside className="flex flex-col gap-2 w-36 shrink-0 overflow-y-auto pr-1">
             {categories.map((cat) => (
@@ -422,8 +422,8 @@ export default function PosTerminalPage() {
                 className={cn(
                   "rounded-xl px-4 py-3 text-xs font-bold text-left transition-all border cursor-pointer",
                   selectedCategory === cat.id && !search
-                    ? "bg-[#F87060] text-white border-[#F87060] shadow-sm"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#F87060] hover:text-[#F87060]",
+                    ? "bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-sm"
+                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-[#F9F5F2] hover:text-[#F9F5F2]",
                 )}
               >
                 {cat.name}
@@ -437,13 +437,13 @@ export default function PosTerminalPage() {
               <button
                 key={product.id}
                 onClick={() => addToCart(product)}
-                className="relative flex flex-col items-center justify-center rounded-2xl border px-3 py-5 text-center transition-all bg-white border-gray-200 hover:border-[#F87060] hover:shadow-md cursor-pointer group"
+                className="relative flex flex-col items-center justify-center rounded-2xl border px-3 py-5 text-center transition-all bg-zinc-900 border-zinc-800 hover:border-[#F9F5F2] hover:shadow-md cursor-pointer group"
               >
                 <span className="absolute top-2.5 left-2.5 h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="mt-1 text-xs font-bold text-zinc-700 leading-tight group-hover:text-[#F87060] transition-colors">
+                <span className="mt-1 text-xs font-bold text-zinc-350 leading-tight group-hover:text-[#F9F5F2] transition-colors">
                   {product.name}
                 </span>
-                <span className="mt-2 text-xs font-extrabold text-[#F87060]">
+                <span className="mt-2 text-xs font-extrabold text-[#F9F5F2]">
                   {formatCurrency(Number(product.price), "INR", "en-IN")}
                 </span>
               </button>
@@ -457,8 +457,8 @@ export default function PosTerminalPage() {
         </section>
 
         {/* ── CART PANEL ── */}
-        <section className="w-80 shrink-0 flex flex-col p-4 overflow-hidden border-r border-gray-100 bg-white">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#F87060] mb-3">
+        <section className="w-80 shrink-0 flex flex-col p-4 overflow-hidden border-r border-zinc-800 bg-zinc-900">
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#F9F5F2] mb-3">
             Current Order
           </h2>
 
@@ -489,12 +489,12 @@ export default function PosTerminalPage() {
                   className={cn(
                     "flex items-center gap-2 rounded-xl px-3 py-2.5 transition-all cursor-pointer border",
                     isActive
-                      ? "bg-[#FFF5F0] border-[#F87060]/30 shadow-sm"
-                      : "bg-gray-50/50 border-gray-100 hover:bg-gray-50",
+                      ? "bg-[#F9F5F2]/10 border-[#F9F5F2]/30 shadow-sm"
+                      : "bg-zinc-950/50 border-zinc-850 hover:bg-zinc-800",
                   )}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-gray-800 truncate">
+                    <p className="text-xs font-bold text-zinc-200 truncate">
                       {item.product.name}
                     </p>
                     <p className="text-[10px] text-gray-400 mt-0.5">
@@ -509,7 +509,7 @@ export default function PosTerminalPage() {
                         e.stopPropagation();
                         changeQty(item.product.id, -1);
                       }}
-                      className="h-5 w-5 rounded-full bg-white border border-gray-250 flex items-center justify-center hover:border-[#F87060] hover:text-[#F87060] transition-colors cursor-pointer"
+                      className="h-5 w-5 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-colors cursor-pointer"
                     >
                       <Minus size={10} />
                     </button>
@@ -521,7 +521,7 @@ export default function PosTerminalPage() {
                         e.stopPropagation();
                         changeQty(item.product.id, 1);
                       }}
-                      className="h-5 w-5 rounded-full bg-white border border-gray-250 flex items-center justify-center hover:border-[#F87060] hover:text-[#F87060] transition-colors cursor-pointer"
+                      className="h-5 w-5 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-colors cursor-pointer"
                     >
                       <Plus size={10} />
                     </button>
@@ -543,8 +543,8 @@ export default function PosTerminalPage() {
               className={cn(
                 "w-full flex items-center justify-between rounded-xl px-4 py-2.5 font-semibold text-xs transition-all cursor-pointer",
                 cartItems.length
-                  ? "bg-[#FFE4DC] text-[#F87060] hover:bg-[#F87060] hover:text-white"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed",
+                  ? "bg-[#F9F5F2] text-black hover:bg-[#e5e1de]"
+                  : "bg-zinc-800 text-zinc-500 cursor-not-allowed",
               )}
             >
               <span>
@@ -556,7 +556,7 @@ export default function PosTerminalPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowCustomerModal(true)}
-                className="flex-1 flex items-center justify-center gap-1 rounded-xl border border-gray-200 py-2 text-[10px] font-bold text-gray-600 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-colors cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1 rounded-xl border border-gray-200 py-2 text-[10px] font-bold text-zinc-350 bg-zinc-900 hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-colors cursor-pointer"
               >
                 <User size={11} />
                 <span className="truncate max-w-[70px]">
@@ -572,8 +572,8 @@ export default function PosTerminalPage() {
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1 rounded-xl border py-2 text-[10px] font-bold transition-all cursor-pointer",
                   numpadMode === "disc"
-                    ? "border-[#F87060] text-[#F87060] bg-[#FFF5F0]"
-                    : "border-gray-200 text-gray-600 hover:border-[#F87060] hover:text-[#F87060]",
+                    ? "border-[#F9F5F2] text-[#F9F5F2] bg-[#F9F5F2]/10"
+                    : "border-gray-200 text-gray-600 hover:border-[#F9F5F2] hover:text-[#F9F5F2]",
                 )}
               >
                 <Tag size={11} /> Discount {discount > 0 && `(${discount}%)`}
@@ -581,8 +581,8 @@ export default function PosTerminalPage() {
             </div>
 
             {/* Totals */}
-            <div className="rounded-xl bg-gray-50 px-4 py-3 space-y-1.5 text-xs">
-              <div className="flex justify-between text-gray-500 font-semibold">
+            <div className="rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3 space-y-1.5 text-xs">
+              <div className="flex justify-between text-zinc-400 font-semibold">
                 <span>Subtotal</span>
                 <span>{formatCurrency(subtotal, "INR", "en-IN")}</span>
               </div>
@@ -592,13 +592,13 @@ export default function PosTerminalPage() {
                   <span>− {formatCurrency(discountTotal, "INR", "en-IN")}</span>
                 </div>
               )}
-              <div className="flex justify-between text-gray-500 font-semibold">
+              <div className="flex justify-between text-zinc-400 font-semibold">
                 <span>Tax (GST)</span>
                 <span>{formatCurrency(taxTotal, "INR", "en-IN")}</span>
               </div>
-              <div className="flex justify-between font-extrabold text-gray-900 border-t border-gray-200 pt-1.5 text-sm">
+              <div className="flex justify-between font-extrabold text-zinc-100 border-t border-zinc-800 pt-1.5 text-sm">
                 <span>Total</span>
-                <span className="text-[#F87060]">
+                <span className="text-[#F9F5F2]">
                   {formatCurrency(total, "INR", "en-IN")}
                 </span>
               </div>
@@ -607,8 +607,8 @@ export default function PosTerminalPage() {
         </section>
 
         {/* ── PAYMENT PANEL ── */}
-        <section className="w-64 shrink-0 flex flex-col p-4 overflow-hidden bg-white border-r border-gray-100">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#F87060] mb-3">
+        <section className="w-64 shrink-0 flex flex-col p-4 overflow-hidden bg-white border-r border-zinc-800">
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#F9F5F2] mb-3">
             Payment Method
           </h2>
 
@@ -632,8 +632,8 @@ export default function PosTerminalPage() {
                 className={cn(
                   "w-full flex items-center gap-3 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all cursor-pointer",
                   paymentMethod === id
-                    ? "bg-[#F87060] text-white border-[#F87060] shadow-sm"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#F87060]",
+                    ? "bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-sm"
+                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-[#F9F5F2]",
                 )}
               >
                 <Icon size={14} />
@@ -644,11 +644,11 @@ export default function PosTerminalPage() {
           </div>
 
           {/* Amount Display */}
-          <div className="my-4 rounded-xl bg-gray-50 px-4 py-4 text-center">
+          <div className="my-4 rounded-xl bg-zinc-950 border border-zinc-850 px-4 py-4 text-center">
             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">
               Payment Due
             </p>
-            <p className="text-2xl font-extrabold text-[#F87060]">
+            <p className="text-2xl font-extrabold text-[#F9F5F2]">
               {formatCurrency(total, "INR", "en-IN")}
             </p>
             <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase">
@@ -662,13 +662,13 @@ export default function PosTerminalPage() {
               <span className="text-gray-400 font-semibold uppercase text-[9px] block">
                 Cash Received
               </span>
-              <div className="text-sm font-extrabold px-3 py-1.5 bg-gray-50 border rounded-lg border-gray-200 font-mono">
+              <div className="text-sm font-extrabold px-3 py-1.5 bg-zinc-950 border rounded-lg border-zinc-800 font-mono text-white">
                 {cashReceived
                   ? formatCurrency(Number(cashReceived), "INR", "en-IN")
                   : "₹0.00"}
               </div>
               {Number(cashReceived) >= total && (
-                <div className="text-[10px] text-emerald-600 font-bold">
+                <div className="text-[10px] text-emerald-400 font-bold">
                   Change:{" "}
                   {formatCurrency(Number(cashReceived) - total, "INR", "en-IN")}
                 </div>
@@ -678,9 +678,9 @@ export default function PosTerminalPage() {
 
           {/* UPI QR Code helper */}
           {paymentMethod === "upi" && (
-            <div className="mb-3 p-2 border border-dashed border-gray-200 rounded-xl flex flex-col items-center gap-1.5 bg-gray-50">
-              <div className="w-24 h-24 bg-white border border-gray-200 rounded flex flex-col items-center justify-center p-1 text-black font-mono font-bold text-[8px] leading-tight select-none">
-                <span className="text-[#F87060] font-sans font-bold text-[9px] mb-1">
+            <div className="mb-3 p-2 border border-dashed border-zinc-800 rounded-xl flex flex-col items-center gap-1.5 bg-zinc-950">
+              <div className="w-24 h-24 bg-zinc-900 border border-zinc-800 rounded flex flex-col items-center justify-center p-1 text-white font-mono font-bold text-[8px] leading-tight select-none">
+                <span className="text-[#F9F5F2] font-sans font-bold text-[9px] mb-1">
                   UPI QR
                 </span>
                 <span>{formatCurrency(total, "INR", "en-IN")}</span>
@@ -705,7 +705,7 @@ export default function PosTerminalPage() {
                     handleNumpadKey(k);
                   }
                 }}
-                className="rounded-xl border border-gray-200 bg-white py-2 text-xs font-bold text-gray-700 hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer flex items-center justify-center"
+                className="rounded-xl border border-zinc-800 bg-zinc-900 py-2 text-xs font-bold text-zinc-300 hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-all cursor-pointer flex items-center justify-center"
               >
                 {k}
               </button>
@@ -720,7 +720,7 @@ export default function PosTerminalPage() {
                   applyNumpadValue("");
                 }
               }}
-              className="rounded-xl border border-blue-100 bg-blue-50 py-2 text-xs font-bold text-blue-500 hover:bg-blue-100 transition-all cursor-pointer flex items-center justify-center"
+              className="rounded-xl border border-zinc-800 bg-zinc-800 py-2 text-xs font-bold text-zinc-300 hover:bg-zinc-700 transition-all cursor-pointer flex items-center justify-center"
             >
               C
             </button>
@@ -734,7 +734,7 @@ export default function PosTerminalPage() {
                   handleNumpadKey("backspace");
                 }
               }}
-              className="rounded-xl border border-red-100 bg-red-50 py-2 text-xs font-bold text-red-400 hover:bg-red-100 transition-all flex items-center justify-center cursor-pointer"
+              className="rounded-xl border border-zinc-800 bg-zinc-800 py-2 text-xs font-bold text-red-400 hover:bg-red-950/30 transition-all flex items-center justify-center cursor-pointer"
             >
               <Delete size={12} />
             </button>
@@ -749,8 +749,8 @@ export default function PosTerminalPage() {
                 className={cn(
                   "rounded-xl border py-2 text-[10px] font-bold transition-all cursor-pointer uppercase",
                   numpadMode === mode
-                    ? "bg-[#F87060] text-white border-[#F87060]"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#F87060]",
+                    ? "bg-[#F9F5F2] text-black border-[#F9F5F2]"
+                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-[#F9F5F2]",
                 )}
               >
                 {mode}
@@ -768,8 +768,8 @@ export default function PosTerminalPage() {
                 "col-span-2 rounded-xl py-2 text-xs font-bold transition-all cursor-pointer uppercase flex items-center justify-center",
                 cartItems.length &&
                   !(paymentMethod === "cash" && Number(cashReceived) < total)
-                  ? "bg-[#F87060] text-white hover:bg-[#e5614f]"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed",
+                  ? "bg-[#F9F5F2] text-black hover:bg-[#e5e1de]"
+                  : "bg-zinc-800 text-zinc-500 cursor-not-allowed",
               )}
             >
               {actionLoading ? "Pay..." : "Pay"}
@@ -783,16 +783,16 @@ export default function PosTerminalPage() {
       {/* 1. Floor Tables Plan Modal */}
       {showTableModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-white border border-gray-100 rounded-2xl p-6 shadow-2xl max-h-[85vh] flex flex-col justify-between">
+          <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl max-h-[85vh] flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
-                <h2 className="text-lg font-bold text-zinc-800">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-4">
+                <h2 className="text-lg font-bold text-zinc-100">
                   Select Floor Table Section
                 </h2>
                 {selectedTable && (
                   <button
                     onClick={() => setShowTableModal(false)}
-                    className="text-gray-400 hover:text-gray-600 font-bold text-sm cursor-pointer"
+                    className="text-zinc-400 hover:text-zinc-200 font-bold text-sm cursor-pointer"
                   >
                     Close [✕]
                   </button>
@@ -818,8 +818,8 @@ export default function PosTerminalPage() {
                             className={cn(
                               "p-4 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer",
                               selectedTable?.id === table.id
-                                ? "bg-[#F87060] border-[#F87060] text-white font-bold"
-                                : "bg-gray-50 border-gray-200 hover:border-[#F87060] text-zinc-700 hover:bg-white",
+                                ? "bg-[#F9F5F2] border-[#F9F5F2] text-black font-bold"
+                                : "bg-zinc-950 border-zinc-800 hover:border-[#F9F5F2] text-zinc-300 hover:bg-zinc-900",
                             )}
                           >
                             <span className="text-sm font-bold">
@@ -859,7 +859,7 @@ export default function PosTerminalPage() {
                         });
                         setShowTableModal(false);
                       }}
-                      className="mt-4 px-4 py-2 bg-[#F87060] text-white font-bold rounded-xl text-xs cursor-pointer"
+                      className="mt-4 px-4 py-2 bg-[#F9F5F2] text-black font-bold rounded-xl text-xs cursor-pointer"
                     >
                       Use Demo Table 1
                     </button>
@@ -874,14 +874,14 @@ export default function PosTerminalPage() {
       {/* 2. Customer Selector Modal */}
       {showCustomerModal && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white border border-gray-100 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[80vh]">
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-zinc-800">
+          <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[80vh]">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-zinc-800">
+              <h2 className="text-lg font-bold text-zinc-100">
                 Select Customer Profile
               </h2>
               <button
                 onClick={() => setShowCustomerModal(false)}
-                className="text-gray-400 hover:text-gray-600 font-bold text-sm cursor-pointer"
+                className="text-zinc-400 hover:text-zinc-200 font-bold text-sm cursor-pointer"
               >
                 ✕
               </button>
@@ -898,8 +898,8 @@ export default function PosTerminalPage() {
                   className={cn(
                     "w-full text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col",
                     selectedCustomer?.id === cust.id
-                      ? "bg-[#FFF5F0] border-[#F87060] text-zinc-800"
-                      : "bg-gray-50 border-gray-200 hover:border-[#F87060] text-zinc-700 hover:bg-white",
+                      ? "bg-[#F9F5F2]/10 border-[#F9F5F2] text-zinc-100"
+                      : "bg-zinc-950 border-zinc-800 hover:border-[#F9F5F2] text-zinc-300 hover:bg-zinc-900",
                   )}
                 >
                   <p className="text-xs font-bold">{cust.name}</p>
@@ -910,7 +910,7 @@ export default function PosTerminalPage() {
               ))}
 
               {customers.length === 0 && (
-                <div className="py-6 text-center text-gray-500 text-xs">
+                <div className="py-6 text-center text-zinc-400 text-xs">
                   No customer profiles registered.
                   <button
                     onClick={() => {
@@ -923,7 +923,7 @@ export default function PosTerminalPage() {
                       });
                       setShowCustomerModal(false);
                     }}
-                    className="block mt-4 mx-auto px-4 py-2 bg-[#F87060] text-white text-xs font-bold rounded-xl cursor-pointer"
+                    className="block mt-4 mx-auto px-4 py-2 bg-[#F9F5F2] text-black text-xs font-bold rounded-xl cursor-pointer"
                   >
                     Select Guest
                   </button>
@@ -937,32 +937,32 @@ export default function PosTerminalPage() {
       {/* 3. Receipt Success Modal */}
       {showReceiptModal && lastOrderDetails && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-250">
-          <div className="w-full max-w-sm bg-white border border-gray-150 rounded-2xl p-6 shadow-2xl space-y-5">
-            <h2 className="text-base font-extrabold text-center text-zinc-800 flex items-center justify-center gap-1.5">
+          <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-5">
+            <h2 className="text-base font-extrabold text-center text-zinc-100 flex items-center justify-center gap-1.5">
               <CheckCircle2 className="text-emerald-500 w-5 h-5" /> Order
               Completed!
             </h2>
 
             {/* Paper Receipt Box */}
-            <div className="bg-gray-50 border border-gray-200 text-zinc-800 p-6 rounded-xl font-mono text-[10px] space-y-4 shadow-sm select-text">
+            <div className="bg-gray-50 border border-gray-200 text-zinc-100 p-6 rounded-xl font-mono text-[10px] space-y-4 shadow-sm select-text">
               <div className="text-center space-y-0.5">
                 <h3 className="font-bold text-xs uppercase tracking-tight">
                   CAFE POS SYSTEM
                 </h3>
-                <p className="text-gray-500 text-[9px]">
+                <p className="text-zinc-400 text-[9px]">
                   123 Gourmet Lane, Food City
                 </p>
-                <p className="text-gray-500 text-[9px]">Tel: 1800-CAFE-POS</p>
+                <p className="text-zinc-400 text-[9px]">Tel: 1800-CAFE-POS</p>
               </div>
 
-              <div className="border-t border-dashed border-gray-300 pt-2 space-y-1">
+              <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1">
                 <p>Order Ref: {lastOrderDetails.order_number}</p>
                 <p>Date: {formatDate(lastOrderDetails.date)}</p>
                 <p>Table: {lastOrderDetails.table}</p>
                 <p>Customer: {lastOrderDetails.customer}</p>
               </div>
 
-              <div className="border-t border-dashed border-gray-300 pt-2 space-y-1.5">
+              <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1.5">
                 {lastOrderDetails.items.map((item: any) => {
                   const price =
                     item.customPrice !== undefined
@@ -981,7 +981,7 @@ export default function PosTerminalPage() {
                 })}
               </div>
 
-              <div className="border-t border-dashed border-gray-300 pt-2 space-y-1 text-right">
+              <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1 text-right">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
                   <span>
@@ -1007,7 +1007,7 @@ export default function PosTerminalPage() {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold border-t border-gray-300 pt-1 text-xs text-zinc-900">
+                <div className="flex justify-between font-bold border-t border-zinc-800 pt-1 text-xs text-zinc-900">
                   <span>TOTAL PAID:</span>
                   <span>
                     {formatCurrency(lastOrderDetails.total, "INR", "en-IN")}
@@ -1015,7 +1015,7 @@ export default function PosTerminalPage() {
                 </div>
               </div>
 
-              <div className="text-center border-t border-dashed border-gray-300 pt-3 text-[9px] text-gray-500 uppercase tracking-wider">
+              <div className="text-center border-t border-dashed border-zinc-800 pt-3 text-[9px] text-gray-500 uppercase tracking-wider">
                 Thank you! Scan QR to review.
               </div>
             </div>
@@ -1027,13 +1027,13 @@ export default function PosTerminalPage() {
                   placeholder="Enter email address"
                   value={receiptEmail}
                   onChange={(e) => setReceiptEmail(e.target.value)}
-                  className="flex-1 px-3 py-2 text-xs rounded-xl bg-gray-50 border border-gray-200 text-zinc-800 focus:outline-none focus:border-[#F87060]"
+                  className="flex-1 px-3 py-2 text-xs rounded-xl bg-gray-50 border border-gray-200 text-zinc-100 focus:outline-none focus:border-[#F9F5F2]"
                 />
                 <button
                   onClick={() =>
                     alert(`Receipt has been emailed to ${receiptEmail}`)
                   }
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-250 rounded-xl text-xs font-bold text-gray-600 cursor-pointer"
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-xs font-bold text-zinc-300 cursor-pointer"
                 >
                   Email
                 </button>
@@ -1041,14 +1041,14 @@ export default function PosTerminalPage() {
 
               <button
                 onClick={() => window.print()}
-                className="w-full py-2 bg-gray-100 hover:bg-gray-200 border border-gray-250 rounded-xl text-xs font-bold text-gray-600 cursor-pointer"
+                className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-xs font-bold text-zinc-300 cursor-pointer"
               >
                 Print Receipt Invoice
               </button>
 
               <button
                 onClick={() => setShowReceiptModal(false)}
-                className="w-full py-2.5 bg-[#F87060] hover:bg-[#e5614f] text-white text-xs font-bold rounded-xl cursor-pointer transition-colors"
+                className="w-full py-2.5 bg-[#F9F5F2] hover:bg-[#e5e1de] text-black text-xs font-bold rounded-xl cursor-pointer transition-colors"
               >
                 Start New Order
               </button>

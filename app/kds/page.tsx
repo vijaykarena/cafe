@@ -167,14 +167,14 @@ function DraggableTicketCard({
       style={style}
       className={`p-4 bg-[#E9ECEF] rounded-xl flex flex-col justify-between min-h-[160px] shadow-sm transition-all border ${
         isDragging
-          ? "opacity-40 border-[#F87060] bg-[#FFF5F0]"
+          ? "opacity-40 border-[#F9F5F2] bg-[#F9F5F2]/10"
           : "border-transparent hover:border-gray-300"
       }`}
     >
       {/* Header Info - Serves as specific drag handle */}
       <div className="flex justify-between items-start select-none pb-2 border-b border-gray-300/40">
         <div>
-          <h4 className="font-extrabold text-gray-800 text-lg leading-tight tracking-tight">
+          <h4 className="font-extrabold text-zinc-200 text-lg leading-tight tracking-tight">
             {ticket.orderNumber}
           </h4>
           <p className="text-[10px] text-gray-500 font-bold mt-0.5 uppercase tracking-wide">
@@ -259,7 +259,7 @@ function DroppableColumn({
       ref={setNodeRef}
       className={`w-72 flex-shrink-0 flex flex-col bg-white rounded-2xl border p-4 transition-colors min-h-[500px] ${
         isOver
-          ? "bg-[#FFF5F0]/60 border-[#F87060]/30"
+          ? "bg-[#F9F5F2]/10 border-[#F9F5F2]/30"
           : "bg-white border-gray-150"
       }`}
     >
@@ -463,33 +463,33 @@ export default function KdsPage() {
   ).length;
 
   return (
-    <div className="flex flex-col h-screen bg-[#F9F5F2] overflow-hidden text-zinc-800 font-sans select-none">
+    <div className="flex flex-col h-screen bg-zinc-950 overflow-hidden text-zinc-200 font-sans select-none">
       {/* ── TOP BAR (KDS) ── */}
-      <header className="flex items-center gap-3 px-6 py-2.5 bg-white border-b border-gray-100 shrink-0">
-        <div className="flex items-center justify-center rounded-xl bg-[#F87060] text-white font-extrabold text-sm px-4 py-2 shrink-0 select-none">
+      <header className="flex items-center gap-3 px-6 py-2.5 bg-zinc-900 border-b border-zinc-800 shrink-0 text-white">
+        <div className="flex items-center justify-center rounded-xl bg-[#F9F5F2] text-black font-extrabold text-sm px-4 py-2 shrink-0 select-none">
           Logo
         </div>
-        <span className="text-base font-bold text-gray-800 pl-1">KDS</span>
+        <span className="text-base font-bold text-white pl-1">KDS</span>
 
         {/* Quick Nav Buttons */}
         <div className="flex items-center gap-2 ml-6">
           <button
             onClick={() => router.push("/cashier")}
-            className="flex items-center justify-center rounded-xl border border-gray-200 p-2 text-gray-500 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer"
+            className="flex items-center justify-center rounded-xl border border-zinc-850 p-2 text-zinc-400 bg-zinc-900 hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-all cursor-pointer"
             title="Launch Cashier"
           >
             <Grid size={15} />
           </button>
           <button
             onClick={() => router.push("/manager")}
-            className="flex items-center justify-center rounded-xl border border-gray-200 p-2 text-gray-500 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer"
+            className="flex items-center justify-center rounded-xl border border-zinc-850 p-2 text-zinc-400 bg-zinc-900 hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-all cursor-pointer"
             title="Manager Portal"
           >
             <Pencil size={15} />
           </button>
           <button
             onClick={handleLogout}
-            className="flex items-center justify-center rounded-xl border border-gray-200 p-2 text-red-500 bg-white hover:border-red-500/50 hover:bg-red-50/20 transition-all cursor-pointer"
+            className="flex items-center justify-center rounded-xl border border-zinc-850 p-2 text-red-400 bg-zinc-900 hover:border-red-500/50 hover:bg-red-950/20 transition-all cursor-pointer"
             title="Sign Out"
           >
             <LogOut size={15} />
@@ -497,27 +497,27 @@ export default function KdsPage() {
         </div>
 
         {/* Live Network Status Indicator */}
-        <div className="ml-auto flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-[10px] text-gray-500 bg-white font-bold uppercase tracking-wider select-none">
+        <div className="ml-auto flex items-center gap-1.5 rounded-xl border border-zinc-850 px-3 py-2 text-[10px] text-zinc-400 bg-zinc-900 font-bold uppercase tracking-wider select-none">
           <Wifi size={12} className="text-emerald-500 animate-pulse" /> Live
           Connected
         </div>
       </header>
 
       {/* ── FILTER & SEARCH BAR ── */}
-      <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-100 shrink-0 flex-wrap gap-4">
+      <div className="flex items-center justify-between px-6 py-3 bg-zinc-900 border-b border-zinc-800 shrink-0 text-white flex-wrap gap-4">
         {/* Stages chips filters */}
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">
             Stages
           </span>
           <div className="flex gap-1">
-            <span className="px-2.5 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold flex items-center gap-1.5">
+            <span className="px-2.5 py-1.5 bg-zinc-950 text-zinc-300 rounded-lg text-xs font-bold flex items-center gap-1.5 border border-zinc-800">
               All{" "}
-              <span className="bg-gray-200 text-gray-800 px-1.5 py-0.5 rounded text-[10px]">
+              <span className="bg-zinc-800 text-zinc-200 px-1.5 py-0.5 rounded text-[10px]">
                 {filteredTickets.length}
               </span>
             </span>
-            <span className="px-2.5 py-1.5 bg-red-50 text-red-500 border border-red-200/50 rounded-lg text-xs font-bold flex items-center gap-1.5">
+            <span className="px-2.5 py-1.5 bg-red-950/20 text-red-400 border border-red-900/30 rounded-lg text-xs font-bold flex items-center gap-1.5">
               To Cook{" "}
               <span className="bg-red-500 text-white px-1.5 py-0.5 rounded text-[10px]">
                 {toCookCount}
@@ -545,7 +545,7 @@ export default function KdsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
-              className="w-56 rounded-xl border border-gray-200 pl-4 pr-9 py-1.5 text-xs outline-none focus:border-[#F87060] transition-colors bg-white text-zinc-700 font-semibold"
+              className="w-56 rounded-xl border border-gray-200 pl-4 pr-9 py-1.5 text-xs outline-none focus:border-[#F9F5F2] transition-colors bg-zinc-950 text-zinc-200 border-zinc-800 font-semibold"
             />
             <Search
               size={12}
@@ -559,10 +559,10 @@ export default function KdsPage() {
               1-{filteredTickets.length}
             </span>
             <div className="flex gap-0.5 border-l pl-2 border-gray-150">
-              <button className="p-0.5 hover:text-[#F87060] text-gray-400 cursor-pointer">
+              <button className="p-0.5 hover:text-[#F9F5F2] text-zinc-400 cursor-pointer">
                 <ChevronLeft size={14} />
               </button>
-              <button className="p-0.5 hover:text-[#F87060] text-gray-400 cursor-pointer">
+              <button className="p-0.5 hover:text-[#F9F5F2] text-zinc-400 cursor-pointer">
                 <ChevronRight size={14} />
               </button>
             </div>
@@ -579,7 +579,7 @@ export default function KdsPage() {
             <div className="flex items-center justify-between pb-2 border-b border-gray-100">
               <button
                 onClick={clearFilters}
-                className="text-xs font-extrabold text-[#F87060] hover:text-[#e5614f] flex items-center gap-1 cursor-pointer"
+                className="text-xs font-extrabold text-[#F9F5F2] hover:text-[#e5e1de] flex items-center gap-1 cursor-pointer"
               >
                 Clear Filter <X size={12} />
               </button>
@@ -602,7 +602,7 @@ export default function KdsPage() {
                     className={cn(
                       "text-left text-xs font-bold py-1.5 px-2.5 rounded-lg border transition-all cursor-pointer truncate",
                       p === selectedProductFilter
-                        ? "bg-[#FFF5F0] border-[#F87060]/30 text-[#F87060]"
+                        ? "bg-[#F9F5F2]/10 border-[#F9F5F2]/30 text-[#F9F5F2]"
                         : "bg-transparent border-transparent text-gray-600 hover:bg-gray-50",
                     )}
                   >
@@ -629,7 +629,7 @@ export default function KdsPage() {
                     className={cn(
                       "text-left text-xs font-bold py-1.5 px-2.5 rounded-lg border transition-all cursor-pointer truncate",
                       c === selectedCategoryFilter
-                        ? "bg-[#FFF5F0] border-[#F87060]/30 text-[#F87060]"
+                        ? "bg-[#F9F5F2]/10 border-[#F9F5F2]/30 text-[#F9F5F2]"
                         : "bg-transparent border-transparent text-gray-600 hover:bg-gray-50",
                     )}
                   >

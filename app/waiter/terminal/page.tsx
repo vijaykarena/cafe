@@ -156,12 +156,12 @@ export default function WaiterTerminalPage() {
       <nav className="flex items-center justify-between px-6 py-4 bg-zinc-900 border-b border-zinc-800">
         <div className="flex items-center gap-6">
           <span className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span className="w-2.5 h-2.5 bg-blue-500 rounded-full"></span> Waiter Terminal
+            <span className="w-2.5 h-2.5 bg-[#F9F5F2] rounded-full"></span> Waiter Terminal
           </span>
           <button
             onClick={() => setShowTableModal(true)}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer border ${selectedTable
-                ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                ? 'bg-[#F9F5F2]/10 border-[#F9F5F2]/30 text-[#F9F5F2]'
                 : 'bg-zinc-950 border-zinc-800 text-zinc-400'
               }`}
           >
@@ -176,7 +176,7 @@ export default function WaiterTerminalPage() {
             placeholder="Search products by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+            className="w-full px-4 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-[#F9F5F2] text-sm"
           />
         </div>
 
@@ -202,7 +202,7 @@ export default function WaiterTerminalPage() {
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-5 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${activeCategory === cat.id
-                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                    ? 'bg-[#F9F5F2] text-black shadow-lg shadow-[#F9F5F2]/20'
                     : 'bg-zinc-900 text-zinc-400 border border-zinc-800/80 hover:bg-zinc-850'
                   }`}
               >
@@ -217,15 +217,15 @@ export default function WaiterTerminalPage() {
               <div
                 key={prod.id}
                 onClick={() => addToCart(prod)}
-                className="flex flex-col justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-850 hover:border-blue-500/50 hover:bg-zinc-850/30 transition-all cursor-pointer group"
+                className="flex flex-col justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-850 hover:border-[#F9F5F2]/50 hover:bg-zinc-850/30 transition-all cursor-pointer group"
               >
                 <div>
-                  <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">{prod.name}</h3>
+                  <h3 className="font-semibold text-white group-hover:text-[#F9F5F2] transition-colors">{prod.name}</h3>
                   <p className="text-zinc-500 text-xs mt-1 line-clamp-2">{prod.description || 'No description available.'}</p>
                 </div>
                 <div className="flex items-end justify-between mt-4">
                   <span className="text-xs text-zinc-400 font-medium">{prod.unit_of_measure}</span>
-                  <span className="font-bold text-blue-400">{formatCurrency(Number(prod.price))}</span>
+                  <span className="font-bold text-[#F9F5F2]">{formatCurrency(Number(prod.price))}</span>
                 </div>
               </div>
             ))}
@@ -300,7 +300,7 @@ export default function WaiterTerminalPage() {
               <button
                 onClick={handleSendToKitchen}
                 disabled={cart.length === 0 || actionLoading}
-                className="w-full py-4 text-center text-sm font-bold rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-blue-500/20"
+                className="w-full py-4 text-center text-sm font-bold rounded-lg bg-[#F9F5F2] hover:bg-[#e5e1de] text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-[#F9F5F2]/20"
               >
                 {actionLoading ? 'Sending...' : 'Send Order to Kitchen'}
               </button>
@@ -329,7 +329,7 @@ export default function WaiterTerminalPage() {
                           setShowTableModal(false);
                         }}
                         className={`p-4 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${selectedTable?.id === table.id
-                            ? 'bg-blue-500 border-blue-500 text-white font-bold'
+                            ? 'bg-[#F9F5F2] border-[#F9F5F2] text-black font-bold'
                             : 'bg-zinc-950 border-zinc-850 text-zinc-300 hover:border-zinc-750'
                           }`}
                       >
@@ -360,7 +360,7 @@ export default function WaiterTerminalPage() {
                       });
                       setShowTableModal(false);
                     }}
-                    className="mt-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded text-xs"
+                    className="mt-4 px-4 py-2 bg-[#F9F5F2] text-black font-semibold rounded text-xs"
                   >
                     Use Demo Table
                   </button>

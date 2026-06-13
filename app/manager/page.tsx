@@ -165,7 +165,7 @@ export default function ManagerDashboardPage() {
 
         <div className="p-6 rounded-xl bg-zinc-900 border border-zinc-855 space-y-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-505">Store Revenue</span>
-          <p className="text-3xl font-extrabold text-amber-500">{formatCurrency(metrics.revenue)}</p>
+          <p className="text-3xl font-extrabold text-[#F9F5F2]">{formatCurrency(metrics.revenue)}</p>
           <p className="text-[10px] text-zinc-500">Includes all local taxes and fees</p>
         </div>
 
@@ -185,7 +185,7 @@ export default function ManagerDashboardPage() {
             {[10, 25, 45, 30, 60, 90, 85, 60, 35, 20].map((val, idx) => (
               <div key={idx} className="flex flex-col items-center gap-2 flex-1">
                 <div
-                  className="w-full bg-amber-500/85 hover:bg-amber-500 rounded-t transition-all"
+                  className="w-full bg-[#F9F5F2]/80 hover:bg-[#F9F5F2] rounded-t transition-all"
                   style={{ height: `${val * 1.5}px` }}
                 ></div>
                 <span className="text-[9px] text-zinc-605 font-mono">{9 + idx}h</span>
@@ -208,10 +208,10 @@ export default function ManagerDashboardPage() {
               </thead>
               <tbody>
                 {topProducts.map((p, idx) => (
-                  <tr key={idx} className="border-b border-zinc-850/50 text-zinc-350 hover:bg-zinc-850/10 transition-all">
+                  <tr key={idx} className="border-b border-zinc-850/50 text-zinc-350 hover:bg-zinc-855/10 transition-all">
                     <td className="py-3 font-medium text-white">{p.name}</td>
                     <td className="py-3 text-right">{p.sold}</td>
-                    <td className="py-3 text-right text-amber-500 font-semibold">{formatCurrency(p.revenue)}</td>
+                    <td className="py-3 text-right text-[#F9F5F2] font-semibold">{formatCurrency(p.revenue)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -229,7 +229,7 @@ export default function ManagerDashboardPage() {
                   <p className="text-xs font-semibold text-zinc-400">{cat.name}</p>
                   <p className="text-lg font-extrabold text-white mt-1">{formatCurrency(cat.revenue)}</p>
                 </div>
-                <span className="text-xs px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded font-bold text-amber-400">
+                <span className="text-xs px-2 py-1 bg-[#F9F5F2]/10 border border-[#F9F5F2]/20 rounded font-bold text-[#F9F5F2]">
                   {cat.share}
                 </span>
               </div>

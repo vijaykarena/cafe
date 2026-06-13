@@ -51,6 +51,10 @@ export default function ProductsPage() {
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Bulk actions states
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
+
   const fetchProducts = useCallback(async () => {
     try {
       const res = await fetch('/api/manager/products');
@@ -89,9 +93,13 @@ export default function ProductsPage() {
     let result = products;
 
     if (search.trim()) {
-      result = result.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase())
-      );
+      const query = search.toLowerCase();
+      result = result.filter((p) => {
+        const matchesName = p.name.toLowerCase().includes(query);
+        const categoryName = categoryMap[p.category_id]?.name || '';
+        const matchesCategory = categoryName.toLowerCase().includes(query);
+        return matchesName || matchesCategory;
+      });
     }
 
     if (categoryFilter !== 'all') {
@@ -105,7 +113,115 @@ export default function ProductsPage() {
     }
 
     return result;
-  }, [products, search, categoryFilter, availabilityFilter]);
+  }, [products, search, categoryFilter, availabilityFilter, categoryMap]);
+
+  // Keep selectedIds in sync with filtered items
+  useEffect(() => {
+    setSelectedIds((prev) => prev.filter((id) => filtered.some((p) => p.id === id)));
+  }, [filtered]);
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(filtered.map((p) => p.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedIds((prev) => [...prev, id]);
+    } else {
+      setSelectedIds((prev) => prev.filter((x) => x !== id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length < 2) return;
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${selectedIds.length} products?`);
+    if (!confirmDelete) return;
+
+    setBulkLoading(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    try {
+      for (const id of selectedIds) {
+        const res = await fetch(`/api/manager/products/${id}`, {
+          method: 'DELETE',
+        });
+        if (res.ok) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Successfully deleted ${successCount} products.`);
+      }
+      if (failCount > 0) {
+        toast.error(`Failed to delete ${failCount} products.`);
+      }
+      
+      await fetchProducts();
+      setSelectedIds([]);
+    } catch {
+      toast.error('An error occurred during bulk delete.');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (selectedIds.length < 2) return;
+    const confirmArchive = window.confirm(`Are you sure you want to archive ${selectedIds.length} products?`);
+    if (!confirmArchive) return;
+
+    setBulkLoading(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    try {
+      for (const id of selectedIds) {
+        const product = products.find((p) => p.id === id);
+        if (!product) continue;
+
+        const res = await fetch(`/api/manager/products/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            name: product.name,
+            category_id: product.category_id,
+            price: Number(product.price),
+            tax: String(product.tax),
+            unit_of_measure: product.unit_of_measure,
+            is_available: false 
+          }),
+        });
+
+        if (res.ok) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Successfully archived ${successCount} products.`);
+      }
+      if (failCount > 0) {
+        toast.error(`Failed to archive ${failCount} products.`);
+      }
+
+      await fetchProducts();
+      setSelectedIds([]);
+    } catch {
+      toast.error('An error occurred during bulk archive.');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
 
   const handleCreate = () => {
     setEditingProduct(null);
@@ -202,10 +318,34 @@ export default function ProductsPage() {
             Manage your menu items, pricing, images, and availability
           </p>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Product
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.length >= 2 && (
+            <div className="flex items-center gap-2 mr-2 animate-in fade-in slide-in-from-top-1 duration-200">
+              <Button
+                variant="destructive"
+                onClick={handleBulkDelete}
+                disabled={bulkLoading}
+                size="sm"
+                className="cursor-pointer"
+              >
+                Delete Selected ({selectedIds.length})
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleBulkArchive}
+                disabled={bulkLoading}
+                size="sm"
+                className="cursor-pointer border-zinc-800 hover:bg-zinc-800 hover:text-white"
+              >
+                Archive Selected ({selectedIds.length})
+              </Button>
+            </div>
+          )}
+          <Button onClick={handleCreate} disabled={bulkLoading}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Product
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -285,6 +425,14 @@ export default function ProductsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <input
+                    type="checkbox"
+                    checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    className="rounded border-zinc-800 bg-zinc-950 text-[#F9F5F2] focus:ring-[#F9F5F2] focus:ring-offset-zinc-900 cursor-pointer h-4 w-4"
+                  />
+                </TableHead>
                 <TableHead className="w-16">Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Category</TableHead>
@@ -299,8 +447,17 @@ export default function ProductsPage() {
             <TableBody>
               {filtered.map((product) => {
                 const cat = categoryMap[product.category_id];
+                const isSelected = selectedIds.includes(product.id);
                 return (
-                  <TableRow key={product.id}>
+                  <TableRow key={product.id} className={isSelected ? 'bg-zinc-900/50' : undefined}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => handleSelectOne(product.id, e.target.checked)}
+                        className="rounded border-zinc-800 bg-zinc-950 text-[#F9F5F2] focus:ring-[#F9F5F2] focus:ring-offset-zinc-900 cursor-pointer h-4 w-4"
+                      />
+                    </TableCell>
                     <TableCell>
                       {product.image_url && product.image_url !== 'pending-upload' ? (
                         <img

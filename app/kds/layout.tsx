@@ -50,7 +50,7 @@ export default function KdsLayout({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-50">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[#F9F5F2] border-t-transparent rounded-full animate-spin"></div>
           <p className="text-sm text-zinc-400 font-medium font-sans">
             Verifying KDS privileges...
           </p>
@@ -60,7 +60,7 @@ export default function KdsLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F9F5F2] text-zinc-800 font-sans">
+    <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100 font-sans">
       {children}
     </div>
   );

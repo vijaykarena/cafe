@@ -57,7 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-50">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[#F9F5F2] border-t-transparent rounded-full animate-spin"></div>
           <p className="text-sm text-zinc-400 font-medium font-sans">Verifying Administrator privileges...</p>
         </div>
       </div>
@@ -75,7 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-64 border-r border-zinc-900 bg-zinc-900/50 flex flex-col justify-between">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-8">
-            <span className="w-2.5 h-2.5 bg-amber-500 rounded-full"></span>
+            <span className="w-2.5 h-2.5 bg-[#F9F5F2] rounded-full"></span>
             <span className="text-lg font-bold tracking-tight text-white">Cafe POS Admin</span>
           </div>
 
@@ -88,7 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   href={item.path}
                   className={`block px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-amber-500 text-black'
+                      ? 'bg-[#F9F5F2] text-black'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                   }`}
                 >
@@ -101,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="p-6 border-t border-zinc-900 flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-amber-500 text-xs">
+            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-[#F9F5F2] text-xs">
               AD
             </div>
             <div className="min-w-0 flex-1">

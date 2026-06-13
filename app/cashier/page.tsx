@@ -122,7 +122,7 @@ export default function PosDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950">
-        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-[#F9F5F2] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -155,8 +155,8 @@ export default function PosDashboardPage() {
         {session ? (
           // ACTIVE SESSION VIEW
           <div className="space-y-6">
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 animate-pulse mb-2">
+            <div className="p-4 rounded-xl bg-[#F9F5F2]/10 border border-[#F9F5F2]/20 text-center">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#F9F5F2]/20 text-[#F9F5F2] animate-pulse mb-2">
                 Active Session
               </span>
               <p className="text-sm text-zinc-300">
@@ -173,7 +173,7 @@ export default function PosDashboardPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => router.push('/cashier/terminal')}
-                className="flex-1 py-3 text-center text-sm font-semibold rounded-lg bg-amber-500 hover:bg-amber-600 text-black transition-colors cursor-pointer"
+                className="flex-1 py-3 text-center text-sm font-bold rounded-lg bg-[#F9F5F2] hover:bg-[#e5e1de] text-black transition-colors cursor-pointer"
               >
                 Resume Session
               </button>
@@ -215,14 +215,14 @@ export default function PosDashboardPage() {
                   required
                   value={openingBalance}
                   onChange={(e) => setOpeningBalance(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#F9F5F2] focus:border-transparent transition-all"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={actionLoading}
-                className="w-full py-3 text-sm font-semibold rounded-lg bg-amber-500 hover:bg-amber-600 text-black transition-colors disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 text-sm font-bold rounded-lg bg-[#F9F5F2] hover:bg-[#e5e1de] text-black transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {actionLoading ? 'Opening Register...' : 'Open Session / Start Shift'}
               </button>
