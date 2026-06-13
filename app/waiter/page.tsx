@@ -1,12 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/utils";
 import {
   ShoppingBag,
   Coffee,
-  Pizza,
-  Wine,
   Sparkles,
   CheckCircle2,
   Plus,
@@ -14,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 interface Product {
   id: string;
@@ -121,17 +120,7 @@ export default function WaiterDashboard() {
 
       // Fetch active session orders to check table occupancy
       if (sessionId) {
-        const ordersRes = await fetch(`/api/orders?session_id=${sessionId}`);
-        const orders = await ordersRes.json();
-        if (Array.isArray(orders)) {
-          setActiveOrders(orders);
-        } else {
-          console.error("Failed to load active orders:", orders);
-          setActiveOrders([]);
-          if (orders?.error) {
-            toast.error(`Failed to load active orders: ${orders.error}`);
-          }
-        }
+        await fetchActiveOrders(sessionId);
       }
     } catch (err) {
       console.error("Error loading waiter data:", err);
@@ -140,6 +129,58 @@ export default function WaiterDashboard() {
       setLoading(false);
     }
   };
+
+  const fetchActiveOrders = async (sessionId: string) => {
+    try {
+      const ordersRes = await fetch(`/api/orders?session_id=${sessionId}`);
+      const orders = await ordersRes.json();
+      if (Array.isArray(orders)) {
+        setActiveOrders(orders);
+      } else {
+        console.error("Failed to load active orders:", orders);
+        setActiveOrders([]);
+        if (orders?.error) {
+          toast.error(`Failed to load active orders: ${orders.error}`);
+        }
+      }
+    } catch (err) {
+      console.error("Error refreshing active orders:", err);
+    }
+  };
+
+  // Setup Supabase Realtime Listener for live updates
+  useEffect(() => {
+    if (!activeSessionId) return;
+
+    const channel = supabase
+      .channel("waiter_dashboard_live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        () => {
+          fetchActiveOrders(activeSessionId);
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "kds_tickets" },
+        () => {
+          fetchActiveOrders(activeSessionId);
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "order_items" },
+        () => {
+          fetchActiveOrders(activeSessionId);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeSessionId]);
 
   // Helper: Find DB Table mapping for selected table ID
   const dbTableForSelectedId = useMemo(() => {
@@ -236,6 +277,27 @@ export default function WaiterDashboard() {
         .map((item) => {
           if (item.product.id === productId) {
             const nextQty = item.quantity + delta;
+
+            // Prevent reducing served item qty
+            const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
+            const isServedItem =
+              !kdsTicket &&
+              activeOrderForTable?.order_items?.some(
+                (oi: any) => oi.product_id === productId,
+              );
+            if (isServedItem) {
+              const dbItem = activeOrderForTable?.order_items?.find(
+                (oi: any) => oi.product_id === productId,
+              );
+              const dbQty = dbItem ? dbItem.quantity : 0;
+              if (nextQty < dbQty) {
+                toast.warning(
+                  "Cannot reduce quantity of already served items.",
+                );
+                return item;
+              }
+            }
+
             return nextQty > 0 ? { ...item, quantity: nextQty } : null;
           }
           return item;
@@ -245,11 +307,30 @@ export default function WaiterDashboard() {
   };
 
   const removeFromCart = (productId: string) => {
+    const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
+    const isServedItem =
+      !kdsTicket &&
+      activeOrderForTable?.order_items?.some(
+        (oi: any) => oi.product_id === productId,
+      );
+    if (isServedItem) {
+      toast.error("Cannot remove already served items.");
+      return;
+    }
     setCart(cart.filter((item) => item.product.id !== productId));
   };
 
   const clearCart = () => {
-    setCart([]);
+    const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
+    const dbItemIds = new Set(
+      (activeOrderForTable?.order_items || []).map((oi: any) => oi.product_id),
+    );
+
+    if (!kdsTicket && dbItemIds.size > 0) {
+      setCart(cart.filter((item) => !dbItemIds.has(item.product.id)));
+    } else {
+      setCart([]);
+    }
   };
 
   // Calculations
@@ -414,6 +495,15 @@ export default function WaiterDashboard() {
       return p.category_id === activeCategory;
     });
   }, [products, activeCategory]);
+
+  const hasServedItems = useMemo(() => {
+    const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
+    if (kdsTicket) return false;
+    const dbItemIds = new Set(
+      (activeOrderForTable?.order_items || []).map((oi: any) => oi.product_id),
+    );
+    return cart.some((item) => dbItemIds.has(item.product.id));
+  }, [cart, activeOrderForTable]);
 
   if (loading) {
     return (
@@ -612,7 +702,7 @@ export default function WaiterDashboard() {
                 : "No Table Selected"}{" "}
               Order
             </h3>
-            {cart.length > 0 && (
+            {cart.length > 0 && !hasServedItems && (
               <button
                 onClick={clearCart}
                 className="text-[10px] text-zinc-500 hover:text-zinc-300 font-bold cursor-pointer transition-colors"
@@ -624,47 +714,65 @@ export default function WaiterDashboard() {
 
           {/* Cart Items List */}
           <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
-            {cart.map((item) => (
-              <div
-                key={item.product.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-850"
-              >
-                <div className="min-w-0 flex-1 pr-2">
-                  <p className="text-xs font-bold text-white truncate">
-                    {item.product.name}
-                  </p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">
-                    {formatCurrency(item.product.price)} each
-                  </p>
-                </div>
+            {cart.map((item) => {
+              const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
+              const dbItem = activeOrderForTable?.order_items?.find(
+                (oi: any) => oi.product_id === item.product.id,
+              );
+              const isItemServed = !kdsTicket && !!dbItem;
 
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => updateQty(item.product.id, -1)}
-                      className="w-5 h-5 flex items-center justify-center rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 text-xs cursor-pointer"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="text-xs font-bold text-white w-4 text-center">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => updateQty(item.product.id, 1)}
-                      className="w-5 h-5 flex items-center justify-center rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 text-xs cursor-pointer"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
+              return (
+                <div
+                  key={item.product.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-850"
+                >
+                  <div className="min-w-0 flex-1 pr-2">
+                    <p className="text-xs font-bold text-white truncate">
+                      {item.product.name}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">
+                      {formatCurrency(item.product.price)} each
+                    </p>
                   </div>
-                  <button
-                    onClick={() => removeFromCart(item.product.id)}
-                    className="text-[10px] font-bold text-red-500 hover:text-red-400 cursor-pointer transition-colors ml-1"
-                  >
-                    Remove
-                  </button>
+
+                  <div className="flex items-center gap-3">
+                    {!isItemServed ? (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => updateQty(item.product.id, -1)}
+                          className="w-5 h-5 flex items-center justify-center rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 text-xs cursor-pointer"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-xs font-bold text-white w-4 text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQty(item.product.id, 1)}
+                          className="w-5 h-5 flex items-center justify-center rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 text-xs cursor-pointer"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs font-bold text-zinc-400 bg-zinc-900/60 border border-zinc-850/80 px-2.5 py-1 rounded-lg select-none flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 animate-pulse"></span>
+                        {item.quantity} Served
+                      </span>
+                    )}
+
+                    {!isItemServed && (
+                      <button
+                        onClick={() => removeFromCart(item.product.id)}
+                        className="text-[10px] font-bold text-red-500 hover:text-red-400 cursor-pointer transition-colors ml-1"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {cart.length === 0 && (
               <div className="py-12 text-center text-zinc-500 flex flex-col items-center justify-center gap-2">

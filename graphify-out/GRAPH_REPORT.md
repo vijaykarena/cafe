@@ -1,16 +1,16 @@
 # Graph Report - cafe  (2026-06-14)
 
 ## Corpus Check
-- 91 files · ~40,526 words
+- 91 files · ~40,555 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 422 nodes · 897 edges · 21 communities (16 shown, 5 thin omitted)
+- 422 nodes · 901 edges · 21 communities (16 shown, 5 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `56fc374b`
+- Built from commit: `66580af9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -38,8 +38,8 @@
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 86 edges
 2. `formatCurrency()` - 21 edges
-3. `useAuth()` - 20 edges
-4. `supabase` - 20 edges
+3. `supabase` - 21 edges
+4. `useAuth()` - 20 edges
 5. `compilerOptions` - 16 edges
 6. `requireManager()` - 15 edges
 7. `supabaseAdmin` - 14 edges

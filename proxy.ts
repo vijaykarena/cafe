@@ -125,6 +125,7 @@ export async function proxy(request: NextRequest) {
         "/api/products",
         "/api/tables",
         "/api/customers",
+        "/api/kds",
       ];
       if (!allowedPaths.some((p) => path.startsWith(p))) {
         return NextResponse.json(
@@ -133,8 +134,8 @@ export async function proxy(request: NextRequest) {
         );
       }
       const isWrite = ["POST", "PUT", "DELETE"].includes(request.method);
-      // Waiters can only POST/write orders
-      if (isWrite && !path.startsWith("/api/orders")) {
+      // Waiters can only POST/write orders and DELETE KDS tickets
+      if (isWrite && !path.startsWith("/api/orders") && !(request.method === "DELETE" && path.startsWith("/api/kds"))) {
         return NextResponse.json(
           {
             error:

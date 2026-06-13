@@ -493,7 +493,7 @@
       "label": "config",
       "file_type": "code",
       "source_file": "proxy.ts",
-      "source_location": "L218",
+      "source_location": "L219",
       "id": "cafe_proxy_config",
       "community": 9,
       "norm_label": "config"
@@ -1501,7 +1501,7 @@
       "label": "Product",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L18",
+      "source_location": "L17",
       "id": "waiter_page_product",
       "community": 5,
       "norm_label": "product"
@@ -1510,7 +1510,7 @@
       "label": "Category",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L27",
+      "source_location": "L26",
       "id": "waiter_page_category",
       "community": 5,
       "norm_label": "category"
@@ -1519,7 +1519,7 @@
       "label": "Table",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L32",
+      "source_location": "L31",
       "id": "waiter_page_table",
       "community": 5,
       "norm_label": "table"
@@ -1528,7 +1528,7 @@
       "label": "Floor",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L40",
+      "source_location": "L39",
       "id": "waiter_page_floor",
       "community": 5,
       "norm_label": "floor"
@@ -1537,7 +1537,7 @@
       "label": "OrderItem",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L45",
+      "source_location": "L44",
       "id": "waiter_page_orderitem",
       "community": 5,
       "norm_label": "orderitem"
@@ -1546,7 +1546,7 @@
       "label": "WaiterDashboard()",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L50",
+      "source_location": "L49",
       "id": "waiter_page_waiterdashboard",
       "community": 5,
       "norm_label": "waiterdashboard()"
@@ -5546,17 +5546,6 @@
       "target": "lib_utils_formatdate"
     },
     {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/kds/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_kds_page_tsx",
-      "target": "lib_utils_cn"
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -5627,6 +5616,17 @@
       "confidence_score": 1.0,
       "source": "app_kds_page_tsx",
       "target": "kds_page_kdspage"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/kds/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_kds_page_tsx",
+      "target": "lib_utils_cn"
     },
     {
       "relation": "contains",
@@ -6407,6 +6407,17 @@
       "confidence_score": 1.0,
       "source": "app_manager_products_page_tsx",
       "target": "ui_button_button"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/manager/products/page.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_manager_products_page_tsx",
+      "target": "ui_button_buttonvariants"
     },
     {
       "relation": "imports_from",
@@ -7326,6 +7337,17 @@
       "target": "ui_button_button"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/manager/categories/page.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_manager_categories_page_tsx",
+      "target": "ui_button_buttonvariants"
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -7685,6 +7707,28 @@
       "confidence_score": 1.0,
       "source": "app_waiter_page_tsx",
       "target": "lib_utils_formatcurrency"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/waiter/page.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "app_waiter_page_tsx",
+      "target": "lib_supabase_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/waiter/page.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "app_waiter_page_tsx",
+      "target": "lib_supabase_supabase",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -13329,5 +13373,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "56fc374ba8275141a4e5357b1f53afa274a88a6d"
+  "built_at_commit": "66580af9d7dfff692928feed829992529074af3b"
 }
