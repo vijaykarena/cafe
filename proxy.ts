@@ -1,29 +1,26 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { updateSession } from "@/lib/supabase/proxy";
 
 export async function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
   const path = url.pathname;
 
-  // Exclude auth API endpoints, login, signup, and static assets
+  // 1. Update session and retrieve current user
+  const { supabaseResponse, user } = await updateSession(request);
+
+  // 2. Exclude public auth pages, signup, login, and assets from RBAC redirects
   if (
     path.startsWith("/api/auth") ||
     path === "/signup" ||
     path === "/login" ||
     path.includes(".")
   ) {
-    return NextResponse.next();
+    return supabaseResponse;
   }
 
-  // 1. Extract Access Token (Cookie or Authorization Header)
-  let token = request.headers.get("Authorization")?.split(" ")[1];
-  if (!token) {
-    token = request.cookies.get("sb-access-token")?.value;
-  }
-
-  // 2. Redirect or block if no token found
-  if (!token) {
+  // 3. Redirect or block if no user session is active
+  if (!user) {
     if (path.startsWith("/api/")) {
       return NextResponse.json(
         { error: "Unauthorized: Missing session token" },
@@ -33,29 +30,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 3. Initialize Supabase client (Edge compatible config)
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { persistSession: false } },
-  );
-
-  // 4. Verify user token
-  const {
-    data: { user },
-    error: authErr,
-  } = await supabase.auth.getUser(token);
-  if (authErr || !user) {
-    if (path.startsWith("/api/")) {
-      return NextResponse.json(
-        { error: "Unauthorized: Session invalid or expired" },
-        { status: 401 },
-      );
-    }
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // 5. Extract role and status from JWT user metadata (bypasses DB select query for performance)
+  // 4. Extract role and status from JWT user metadata
   const role = user.user_metadata?.role || "cashier";
   const isArchived = user.user_metadata?.is_archived === true;
 
@@ -74,19 +49,33 @@ export async function proxy(request: NextRequest) {
   requestHeaders.set("x-user-id", user.id);
   requestHeaders.set("x-user-role", role);
 
-  const nextResponse = () =>
-    NextResponse.next({ request: { headers: requestHeaders } });
+  // Construct response carrying updated request headers
+  const finalResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
-  // 6. RBAC Rules Enforcement
+  // Copy updated cookies from Supabase SSR response to the final response
+  supabaseResponse.cookies.getAll().forEach((cookie) => {
+    finalResponse.cookies.set(cookie.name, cookie.value, {
+      path: cookie.path,
+      domain: cookie.domain,
+      expires: cookie.expires,
+      httpOnly: cookie.httpOnly,
+      secure: cookie.secure,
+      sameSite: cookie.sameSite,
+    });
+  });
+
+  // 5. RBAC Rules Enforcement
 
   // --- API Routes Access Control ---
   if (path.startsWith("/api/")) {
     // Admin gets full access
-    if (role === "admin") return nextResponse();
+    if (role === "admin") return finalResponse;
 
     // Manager gets full access to configs and terminal operations
     if (role === "manager") {
-      return nextResponse();
+      return finalResponse;
     }
 
     // Cashier constraints
@@ -124,7 +113,7 @@ export async function proxy(request: NextRequest) {
           { status: 403 },
         );
       }
-      return nextResponse();
+      return finalResponse;
     }
 
     // Waiter constraints
@@ -153,7 +142,7 @@ export async function proxy(request: NextRequest) {
           { status: 403 },
         );
       }
-      return nextResponse();
+      return finalResponse;
     }
 
     // Cook constraints
@@ -164,7 +153,7 @@ export async function proxy(request: NextRequest) {
           { status: 403 },
         );
       }
-      return nextResponse();
+      return finalResponse;
     }
 
     return NextResponse.json(
@@ -208,17 +197,18 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return nextResponse();
+  return finalResponse;
 }
 
 export const config = {
   matcher: [
-    "/api/:path*",
-    "/admin/:path*",
-    "/manager/:path*",
-    "/pos/:path*",
-    "/cashier/:path*",
-    "/waiter/:path*",
-    "/kds/:path*",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

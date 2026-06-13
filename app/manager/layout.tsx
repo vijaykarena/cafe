@@ -1,60 +1,39 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
-import { Profile } from '@/lib/types';
+import { useAuth } from '@/providers/auth-provider';
 import { Toaster } from '@/components/ui/sonner';
 
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { profile, loading, signOut } = useAuth();
 
   useEffect(() => {
-    const checkManagerAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login');
-        return;
-      }
+    if (loading) return;
 
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+    if (!profile || profile.is_archived) {
+      signOut();
+      router.push('/login');
+      return;
+    }
 
-      if (error || !profile || profile.is_archived) {
-        await supabase.auth.signOut();
-        router.push('/login');
-        return;
-      }
-
-      if (profile.role !== 'admin' && profile.role !== 'manager') {
-        // Redirect non-managers to cashier or appropriate default
-        if (profile.role === 'cook') router.push('/kds');
-        else if (profile.role === 'waiter') router.push('/waiter');
-        else router.push('/cashier');
-        return;
-      }
-
-      setProfile(profile);
-      setLoading(false);
-    };
-
-    checkManagerAuth();
-  }, [router]);
+    if (profile.role !== 'admin' && profile.role !== 'manager') {
+      // Redirect non-managers to cashier or appropriate default
+      if (profile.role === 'cook') router.push('/kds');
+      else if (profile.role === 'waiter') router.push('/waiter');
+      else router.push('/cashier');
+    }
+  }, [profile, loading, router, signOut]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    document.cookie = 'sb-access-token=; path=/; max-age=0; SameSite=Lax';
+    await signOut();
     router.push('/login');
   };
 
-  if (loading) {
+  if (loading || !profile || (profile.role !== 'admin' && profile.role !== 'manager')) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-50">
         <div className="flex flex-col items-center gap-3">

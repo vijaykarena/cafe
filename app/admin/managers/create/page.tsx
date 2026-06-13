@@ -1,28 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Loader2, Plus, User, Mail, Shield, Eye, EyeOff } from 'lucide-react';
+import React, { useState } from "react";
+import { useAuth } from "@/providers/auth-provider";
+import { Loader2, Plus, User, Mail, Shield, Eye, EyeOff } from "lucide-react";
 
 export default function CreateManagerPage() {
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [sessionToken, setSessionToken] = useState<string>('');
-  const [loading, setLoading] = useState(true);
+  const { user: currentUser, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setCurrentUser(session.user);
-        setSessionToken(session.access_token);
-      }
-      setLoading(false);
-    };
-    fetchSession();
-  }, []);
+  const [message, setMessage] = useState<{
+    type: "error" | "success";
+    text: string;
+  } | null>(null);
 
   if (loading) {
     return (
@@ -35,7 +24,9 @@ export default function CreateManagerPage() {
   if (!currentUser) {
     return (
       <div className="flex h-screen items-center justify-center bg-zinc-950 text-white">
-        <p className="text-xl font-medium text-zinc-400">Please log in to access this page.</p>
+        <p className="text-xl font-medium text-zinc-400">
+          Please log in to access this page.
+        </p>
       </div>
     );
   }
@@ -47,32 +38,35 @@ export default function CreateManagerPage() {
 
     const formData = new FormData(e.currentTarget);
     const payload = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      password: formData.get('password'),
-      role: 'manager',
+      name: formData.get("name"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      role: "manager",
       manager_id: null,
     };
 
     try {
-      const res = await fetch('/api/staff', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionToken}`,
-        },
+      const res = await fetch("/api/staff", {
+        method: "POST",
         body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
       });
 
       const result = await res.json();
       if (!res.ok || result.error) {
-        setMessage({ type: 'error', text: result.error || 'Failed to create manager' });
+        setMessage({
+          type: "error",
+          text: result.error || "Failed to create manager",
+        });
       } else {
-        setMessage({ type: 'success', text: result.message || 'Manager created successfully!' });
+        setMessage({
+          type: "success",
+          text: result.message || "Manager created successfully!",
+        });
         (e.target as HTMLFormElement).reset();
       }
     } catch {
-      setMessage({ type: 'error', text: 'Network error. Please try again.' });
+      setMessage({ type: "error", text: "Network error. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -80,36 +74,43 @@ export default function CreateManagerPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-4 font-sans text-zinc-50 relative">
-      <button 
-        onClick={() => window.location.href = '/admin/managers'}
+      <button
+        onClick={() => (window.location.href = "/admin/managers")}
         className="absolute top-8 left-8 px-4 py-2 text-sm font-semibold text-zinc-400 hover:text-white transition-colors"
       >
         &larr; Back to Managers Directory
       </button>
       <div className="w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl">
         <div className="flex flex-col space-y-1.5 p-6 pb-4">
-          <h3 className="font-semibold leading-none tracking-tight text-2xl">Register Restaurant Manager</h3>
+          <h3 className="font-semibold leading-none tracking-tight text-2xl">
+            Register Restaurant Manager
+          </h3>
           <p className="text-sm text-zinc-400 mt-1.5">
-            Add a new manager to the system. Managers can configure products, tables, staff, and discounts for their stores.
+            Add a new manager to the system. Managers can configure products,
+            tables, staff, and discounts for their stores.
           </p>
         </div>
 
         <div className="p-6 pt-0">
           {message && (
-            <div className={`mb-6 flex items-center gap-2 rounded-md p-4 text-sm font-medium border ${message.type === 'error' ? 'border-red-900/50 bg-red-950/50 text-red-400' : 'border-emerald-900/50 bg-emerald-950/50 text-emerald-400'}`}>
+            <div
+              className={`mb-6 flex items-center gap-2 rounded-md p-4 text-sm font-medium border ${message.type === "error" ? "border-red-900/50 bg-red-950/50 text-red-400" : "border-emerald-900/50 bg-emerald-950/50 text-emerald-400"}`}
+            >
               {message.text}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none text-zinc-300">Manager Name</label>
+              <label className="text-sm font-medium leading-none text-zinc-300">
+                Manager Name
+              </label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-zinc-500" />
-                <input 
-                  name="name" 
-                  type="text" 
-                  required 
+                <input
+                  name="name"
+                  type="text"
+                  required
                   placeholder="e.g. David Miller"
                   className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 pl-10 text-sm ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 transition-all"
                 />
@@ -117,13 +118,15 @@ export default function CreateManagerPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none text-zinc-300">Email Address</label>
+              <label className="text-sm font-medium leading-none text-zinc-300">
+                Email Address
+              </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-zinc-500" />
-                <input 
-                  name="email" 
-                  type="email" 
-                  required 
+                <input
+                  name="email"
+                  type="email"
+                  required
                   placeholder="e.g. david@cafe.local"
                   className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 pl-10 text-sm ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 transition-all"
                 />
@@ -131,13 +134,15 @@ export default function CreateManagerPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none text-zinc-300">Temporary Password</label>
+              <label className="text-sm font-medium leading-none text-zinc-300">
+                Temporary Password
+              </label>
               <div className="relative">
                 <Shield className="absolute left-3 top-3 h-4 w-4 text-zinc-500" />
-                <input 
-                  name="password" 
-                  type={showPassword ? "text" : "password"} 
-                  required 
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
                   placeholder="••••••••"
                   className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 pl-10 pr-10 text-sm ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 transition-all"
                 />
@@ -147,13 +152,17 @@ export default function CreateManagerPage() {
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-300 transition-colors"
                   aria-label="Toggle password visibility"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isSubmitting}
               className="inline-flex h-10 w-full items-center justify-center whitespace-nowrap rounded-md bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-900 ring-offset-zinc-950 transition-colors hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 mt-2"
             >

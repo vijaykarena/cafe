@@ -52,48 +52,18 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    const creatorToken = authHeader?.startsWith("Bearer ")
-      ? authHeader.substring(7)
-      : "";
-    if (!creatorToken) {
+    const creatorId = request.headers.get("x-user-id");
+    const creatorRole = request.headers.get("x-user-role");
+
+    if (!creatorId || !creatorRole) {
       return NextResponse.json(
-        { error: "Unauthorized: Missing token." },
+        { error: "Unauthorized: Missing credentials." },
         { status: 401 },
       );
     }
 
-    const { supabaseServer, supabaseAdmin } =
-      await import("@/lib/supabase-server");
+    const { supabaseAdmin } = await import("@/lib/supabase-server");
 
-    // 1. Verify the creator's identity and role using their token
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseServer.auth.getUser(creatorToken);
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: "Unauthorized: Invalid token." },
-        { status: 401 },
-      );
-    }
-
-    // Fetch creator's role from profiles using admin client to guarantee access
-    const { data: creatorProfile, error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profileError || !creatorProfile) {
-      return NextResponse.json(
-        { error: "Unauthorized: Could not verify user role." },
-        { status: 403 },
-      );
-    }
-
-    const creatorRole = creatorProfile.role;
     const body = await request.json();
     const targetRole = body.role;
     const name = body.name;
@@ -138,7 +108,7 @@ export async function POST(request: Request) {
         );
       }
       // Manager implicitly sets themselves as the manager
-      manager_id = user.id;
+      manager_id = creatorId;
     } else {
       return NextResponse.json(
         { error: "You do not have permission to create users." },

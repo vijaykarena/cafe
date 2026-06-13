@@ -1,48 +1,39 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function KdsLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const { profile, loading, signOut } = useAuth();
 
   useEffect(() => {
-    const checkKdsAuth = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return router.push("/login");
+    if (loading) return;
 
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+    if (!profile || profile.is_archived) {
+      signOut();
+      router.push("/login");
+      return;
+    }
 
-      if (error || !profile || profile.is_archived) {
-        await supabase.auth.signOut();
-        return router.push("/login");
-      }
+    if (
+      profile.role !== "manager" &&
+      profile.role !== "admin" &&
+      profile.role !== "cook"
+    ) {
+      if (profile.role === "waiter") router.push("/waiter");
+      else router.push("/cashier");
+    }
+  }, [profile, loading, router, signOut]);
 
-      if (
-        profile.role !== "manager" &&
-        profile.role !== "admin" &&
-        profile.role !== "cook"
-      ) {
-        if (profile.role === "waiter") router.push("/waiter");
-        else router.push("/cashier");
-        return;
-      }
-
-      setLoading(false);
-    };
-
-    checkKdsAuth();
-  }, [router]);
-
-  if (loading) {
+  if (
+    loading ||
+    !profile ||
+    (profile.role !== "manager" &&
+      profile.role !== "admin" &&
+      profile.role !== "cook")
+  ) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-50">
         <div className="flex flex-col items-center gap-3">
