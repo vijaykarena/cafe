@@ -15,9 +15,28 @@ export default function PosDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
+  const [userRole, setUserRole] = useState<string | null>(null);
+
   useEffect(() => {
     fetchSessionData();
+    fetchUserRole();
   }, []);
+
+  const fetchUserRole = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        if (profile) setUserRole(profile.role);
+      }
+    } catch (err) {
+      console.error('Error fetching role in cashier page:', err);
+    }
+  };
 
   const fetchSessionData = async () => {
     setLoading(true);
@@ -109,17 +128,19 @@ export default function PosDashboardPage() {
   }
 
   return (
-    <div className="flex flex-col flex-1 items-center justify-center min-h-screen p-6 bg-zinc-950 text-zinc-100 font-sans">
+    <div className="flex flex-col flex-1 items-center justify-center min-h-screen p-6 bg-zinc-950 text-zinc-100 font-sans relative">
       <header className="absolute top-6 right-6 flex items-center gap-4">
-        <button
-          onClick={() => router.push('/admin')}
-          className="px-4 py-2 text-xs font-semibold rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors cursor-pointer"
-        >
-          Backend Dashboard
-        </button>
+        {(userRole === 'admin' || userRole === 'manager') && (
+          <button
+            onClick={() => router.push(userRole === 'admin' ? '/admin' : '/manager')}
+            className="px-4 py-2 text-xs font-semibold rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors cursor-pointer"
+          >
+            Backend Dashboard
+          </button>
+        )}
         <button
           onClick={handleLogout}
-          className="px-4 py-2 text-xs font-semibold rounded-lg bg-red-950/40 border border-red-900/50 hover:bg-red-900/40 text-red-400 transition-colors cursor-pointer"
+          className="px-4 py-2 text-xs font-semibold rounded-lg bg-red-955/20 border border-red-900/30 hover:bg-red-900/30 text-red-400 transition-colors cursor-pointer"
         >
           Logout
         </button>

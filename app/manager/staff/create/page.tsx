@@ -81,7 +81,7 @@ export default function CreateUserPage() {
     ? ['manager', 'cook', 'cashier', 'waiter'] 
     : ['cook', 'cashier', 'waiter'];
 
-  const needsManagerSelection = role === 'admin' && selectedRole && selectedRole !== 'manager';
+  const needsManagerSelection = role === 'admin' && !!selectedRole && selectedRole !== 'manager';
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -105,7 +105,7 @@ export default function CreateUserPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-4 font-sans text-zinc-50 relative">
       <button 
-        onClick={() => window.location.href = '/admin/staff'}
+        onClick={() => window.location.href = '/manager/staff'}
         className="absolute top-8 left-8 px-4 py-2 text-sm font-semibold text-zinc-400 hover:text-white transition-colors"
       >
         &larr; Back to Staff List

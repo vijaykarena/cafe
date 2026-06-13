@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase-server';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const { data, error } = await supabaseServer
+    const userId = request.headers.get('x-user-id');
+    const userRole = request.headers.get('x-user-role');
+
+    let query = supabaseServer
       .from('profiles')
       .select('*')
       .order('name');
 
+    if (userRole === 'manager' && userId) {
+      query = query.eq('manager_id', userId);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return NextResponse.json(data);
   } catch (err: any) {

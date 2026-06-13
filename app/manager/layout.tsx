@@ -6,14 +6,14 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Profile } from '@/lib/types';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    const checkAdminAuth = async () => {
+    const checkManagerAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push('/login');
@@ -32,9 +32,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return;
       }
 
-      if (profile.role !== 'admin') {
-        if (profile.role === 'manager') router.push('/manager');
-        else if (profile.role === 'cook') router.push('/kds');
+      if (profile.role !== 'admin' && profile.role !== 'manager') {
+        // Redirect non-managers to cashier or appropriate default
+        if (profile.role === 'cook') router.push('/kds');
         else if (profile.role === 'waiter') router.push('/waiter');
         else router.push('/cashier');
         return;
@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setLoading(false);
     };
 
-    checkAdminAuth();
+    checkManagerAuth();
   }, [router]);
 
   const handleLogout = async () => {
@@ -58,15 +58,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-50">
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm text-zinc-400 font-medium font-sans">Verifying Administrator privileges...</p>
+          <p className="text-sm text-zinc-400 font-medium font-sans">Verifying Manager privileges...</p>
         </div>
       </div>
     );
   }
 
   const navItems = [
-    { name: 'Dashboard', path: '/admin' },
-    { name: 'Managers Management', path: '/admin/managers' },
+    { name: 'Dashboard', path: '/manager' },
+    { name: 'Products & Categories', path: '/manager/products' },
+    { name: 'Floor & Tables', path: '/manager/tables' },
+    { name: 'Promotions & Coupons', path: '/manager/promos' },
+    { name: 'Staff Management', path: '/manager/staff' },
+    { name: 'Payment Settings', path: '/manager/settings' },
   ];
 
   return (
@@ -76,7 +80,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-6">
           <div className="flex items-center gap-2 mb-8">
             <span className="w-2.5 h-2.5 bg-amber-500 rounded-full"></span>
-            <span className="text-lg font-bold tracking-tight text-white">Cafe POS Admin</span>
+            <span className="text-lg font-bold tracking-tight text-white">Cafe POS Manager</span>
           </div>
 
           <nav className="space-y-1.5">
@@ -102,7 +106,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-6 border-t border-zinc-900 flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-amber-500 text-xs">
-              AD
+              MGR
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-white truncate">{profile?.name}</p>
@@ -119,7 +123,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           
           <button
             onClick={handleLogout}
-            className="w-full py-2 bg-red-950/20 border border-red-900/30 hover:bg-red-900/30 text-red-400 rounded-lg text-xs font-semibold cursor-pointer"
+            className="w-full py-2 bg-red-950/20 border border-red-900/30 hover:bg-red-900/30 text-red-400 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
           >
             Sign Out
           </button>

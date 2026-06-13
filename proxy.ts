@@ -114,14 +114,30 @@ export async function proxy(request: NextRequest) {
   }
 
   // --- Frontend Pages Access Control ---
+  if (path.startsWith('/pos')) {
+    return NextResponse.redirect(new URL('/cashier', request.url));
+  }
+
   if (path.startsWith('/admin')) {
-    if (role !== 'admin' && role !== 'manager') {
-      return NextResponse.redirect(new URL('/pos', request.url));
+    if (role !== 'admin') {
+      return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
-  if (path.startsWith('/pos')) {
-    if (role !== 'admin' && role !== 'manager' && role !== 'cashier' && role !== 'waiter') {
+  if (path.startsWith('/manager')) {
+    if (role !== 'admin' && role !== 'manager') {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  if (path.startsWith('/cashier')) {
+    if (role !== 'admin' && role !== 'manager' && role !== 'cashier') {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  if (path.startsWith('/waiter')) {
+    if (role !== 'admin' && role !== 'manager' && role !== 'waiter') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
@@ -132,9 +148,19 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // Set request headers to forward user info to API routes
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-user-id', user.id);
+  requestHeaders.set('x-user-role', role);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
-  matcher: ['/api/:path*', '/admin/:path*', '/pos/:path*', '/kds/:path*'],
+  matcher: ['/api/:path*', '/admin/:path*', '/manager/:path*', '/pos/:path*', '/cashier/:path*', '/waiter/:path*', '/kds/:path*'],
 };
+

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,13 +25,13 @@ export default function LoginPage() {
       if (error) throw error;
 
       // Set cookie for Next.js proxy.ts validation
-      document.cookie = `sb-access-token=${data.session?.access_token || ''}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `sb-access-token=${data.session?.access_token || ""}; path=/; max-age=604800; SameSite=Lax`;
 
       // Fetch profile to check role
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, is_archived')
-        .eq('id', data.user.id)
+        .from("profiles")
+        .select("role, is_archived")
+        .eq("id", data.user.id)
         .single();
 
       if (profileError) throw profileError;
@@ -39,24 +39,28 @@ export default function LoginPage() {
       if (profile.is_archived) {
         await supabase.auth.signOut();
         // Clear cookie
-        document.cookie = 'sb-access-token=; path=/; max-age=0; SameSite=Lax';
-        throw new Error('Your account is archived. Please contact an administrator.');
+        document.cookie = "sb-access-token=; path=/; max-age=0; SameSite=Lax";
+        throw new Error(
+          "Your account is archived. Please contact an administrator.",
+        );
       }
 
       // Redirect based on role
-      if (profile.role === 'admin' || profile.role === 'manager') {
-        router.push('/admin');
-      } else if (profile.role === 'cook') {
-        router.push('/kds');
-      } else if (profile.role === 'cashier') {
-        router.push('/cashier');
-      } else if (profile.role === 'waiter') {
-        router.push('/waiter');
+      if (profile.role === "admin") {
+        router.push("/admin");
+      } else if (profile.role === "manager") {
+        router.push("/manager");
+      } else if (profile.role === "cook") {
+        router.push("/kds");
+      } else if (profile.role === "cashier") {
+        router.push("/cashier");
+      } else if (profile.role === "waiter") {
+        router.push("/waiter");
       } else {
-        router.push('/');
+        router.push("/");
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+      setError(err.message || "An error occurred during login");
     } finally {
       setLoading(false);
     }
@@ -66,10 +70,14 @@ export default function LoginPage() {
     <div className="flex flex-col flex-1 items-center justify-center min-h-screen px-4 bg-zinc-950 text-zinc-50 font-sans">
       <div className="w-full max-w-md p-8 space-y-6 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Cafe POS Login</h1>
-          <p className="text-zinc-400 text-sm">Enter your credentials to access your session</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">
+            Cafe POS Login
+          </h1>
+          <p className="text-zinc-400 text-sm">
+            Enter your credentials to access your session
+          </p>
         </div>
-        
+
         {error && (
           <div className="p-3 text-sm text-red-400 rounded-lg bg-red-950/50 border border-red-800">
             {error}
@@ -78,7 +86,10 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-1">
-            <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <label
+              htmlFor="email"
+              className="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+            >
               Email Address
             </label>
             <input
@@ -93,7 +104,10 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <label
+              htmlFor="password"
+              className="text-xs font-semibold uppercase tracking-wider text-zinc-400"
+            >
               Password
             </label>
             <input
@@ -112,7 +126,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-3 text-sm font-semibold rounded-lg bg-amber-500 hover:bg-amber-600 text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {loading ? 'Logging in...' : 'Sign In'}
+            {loading ? "Logging in..." : "Sign In"}
           </button>
         </form>
       </div>
