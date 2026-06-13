@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Product, Category } from "@/lib/types";
-import { getProductImageUrl } from "@/lib/storage";
+import { getProductImageUrl } from "@/lib/supabase";
 import { ProductModal } from "@/components/manager/product-modal";
 import { DeleteDialog } from "@/components/manager/delete-dialog";
 import { Input } from "@/components/ui/input";
