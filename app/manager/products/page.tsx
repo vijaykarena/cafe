@@ -500,7 +500,6 @@ export default function ProductsPage() {
                 <TableHead>Tax</TableHead>
 
                 <TableHead>Availability</TableHead>
-                <TableHead>Created</TableHead>
                 <TableHead className="w-16 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -573,9 +572,7 @@ export default function ProductsPage() {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {formatDate(product.created_at)}
-                    </TableCell>
+
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger>

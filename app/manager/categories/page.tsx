@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { formatDate } from "@/lib/utils";
+import { formatDateDDMMYYYY } from "@/lib/utils";
 import { Category } from "@/lib/types";
 import { CategoryModal } from "@/components/manager/category-modal";
 import { DeleteDialog } from "@/components/manager/delete-dialog";
@@ -192,7 +192,7 @@ export default function CategoriesPage() {
                   </TableCell>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {formatDate(category.created_at)}
+                    {formatDateDDMMYYYY(category.created_at)}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

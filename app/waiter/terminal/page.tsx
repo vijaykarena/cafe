@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Product, Category, Table, Customer, Floor } from '@/lib/types';
 import { formatCurrency, calculateTaxAmount } from '@/lib/utils';
+import { useDebouncer } from '@/hooks/debounce';
 
 interface CartItem {
   product: Product;
@@ -21,7 +22,7 @@ export default function WaiterTerminalPage() {
 
   // Selection states
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery, debouncedSearchQuery] = useDebouncer('', 300);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -146,7 +147,7 @@ export default function WaiterTerminalPage() {
   // Filter products
   const filteredProducts = products.filter(prod => {
     const matchesCategory = activeCategory ? prod.category_id === activeCategory : true;
-    const matchesSearch = prod.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = prod.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 

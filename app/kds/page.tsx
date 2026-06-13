@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
-import { formatDate, cn } from "@/lib/utils";
+import { formatCurrency, formatDate, cn } from "@/lib/utils";
+import { useDebouncer } from "@/hooks/debounce";
 import { useRouter } from "next/navigation";
 import {
   DndContext,
@@ -290,7 +291,7 @@ export default function KdsPage() {
 
   // State
   const [tickets, setTickets] = useState<KdsTicket[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery, debouncedSearchQuery] = useDebouncer("", 300);
   const [selectedProductFilter, setSelectedProductFilter] = useState<
     string | null
   >(null);
@@ -436,8 +437,8 @@ export default function KdsPage() {
   const filteredTickets = useMemo(() => {
     return tickets.filter((ticket) => {
       const matchesSearch =
-        ticket.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ticket.table.toLowerCase().includes(searchQuery.toLowerCase());
+        ticket.orderNumber.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        ticket.table.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
 
       const matchesProduct =
         !selectedProductFilter ||
@@ -449,7 +450,7 @@ export default function KdsPage() {
 
       return matchesSearch && matchesProduct && matchesCategory;
     });
-  }, [tickets, searchQuery, selectedProductFilter, selectedCategoryFilter]);
+  }, [tickets, debouncedSearchQuery, selectedProductFilter, selectedCategoryFilter]);
 
   // Column specific counts
   const toCookCount = filteredTickets.filter(
