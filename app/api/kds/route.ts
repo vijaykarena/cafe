@@ -63,3 +63,26 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const orderId = searchParams.get('order_id');
+
+    if (!orderId) {
+      return NextResponse.json({ error: 'Missing order_id' }, { status: 400 });
+    }
+
+    const { error } = await supabaseAdmin
+      .from('kds_tickets')
+      .delete()
+      .eq('order_id', orderId);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+

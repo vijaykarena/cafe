@@ -1,9 +1,19 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { formatCurrency } from '@/lib/utils';
-import { ShoppingBag, Coffee, Pizza, Wine, Sparkles, CheckCircle2, Plus, Minus, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useState, useEffect, useMemo } from "react";
+import { formatCurrency } from "@/lib/utils";
+import {
+  ShoppingBag,
+  Coffee,
+  Pizza,
+  Wine,
+  Sparkles,
+  CheckCircle2,
+  Plus,
+  Minus,
+  Loader2,
+} from "lucide-react";
+import { toast } from "sonner";
 
 interface Product {
   id: string;
@@ -51,9 +61,9 @@ export default function WaiterDashboard() {
   // Selection states
   const [selectedFloorId, setSelectedFloorId] = useState<string | null>(null);
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   const [cart, setCart] = useState<OrderItem[]>([]);
-  
+
   // UI States
   const [actionLoading, setActionLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -68,38 +78,42 @@ export default function WaiterDashboard() {
     setLoading(true);
     try {
       // Fetch session
-      const sessRes = await fetch('/api/sessions');
+      const sessRes = await fetch("/api/sessions");
       const sessData = await sessRes.json();
       let sessionId = null;
       if (sessData.active) {
         setActiveSessionId(sessData.session.id);
         sessionId = sessData.session.id;
       } else {
-        toast.warning('No active POS session. Please ask cashier/manager to open a shift.');
+        toast.warning(
+          "No active POS session. Please ask cashier/manager to open a shift.",
+        );
       }
 
       // Fetch categories
-      const catsRes = await fetch('/api/categories');
+      const catsRes = await fetch("/api/categories");
       const cats = await catsRes.json();
       setCategories(cats || []);
 
       // Fetch products
-      const prodsRes = await fetch('/api/products');
+      const prodsRes = await fetch("/api/products");
       const prods = await prodsRes.json();
       setProducts(prods || []);
 
       // Fetch tables & floors
-      const tablesRes = await fetch('/api/tables');
+      const tablesRes = await fetch("/api/tables");
       const tablesData = await tablesRes.json();
       const loadedTables = tablesData.tables || [];
       const loadedFloors = tablesData.floors || [];
-      
+
       setDbTables(loadedTables);
       setFloors(loadedFloors);
 
       if (loadedFloors.length > 0) {
         setSelectedFloorId(loadedFloors[0].id);
-        const firstTable = loadedTables.find((t: any) => t.floor_id === loadedFloors[0].id);
+        const firstTable = loadedTables.find(
+          (t: any) => t.floor_id === loadedFloors[0].id,
+        );
         if (firstTable) {
           setSelectedTableId(firstTable.id);
         }
@@ -109,11 +123,19 @@ export default function WaiterDashboard() {
       if (sessionId) {
         const ordersRes = await fetch(`/api/orders?session_id=${sessionId}`);
         const orders = await ordersRes.json();
-        setActiveOrders(orders || []);
+        if (Array.isArray(orders)) {
+          setActiveOrders(orders);
+        } else {
+          console.error("Failed to load active orders:", orders);
+          setActiveOrders([]);
+          if (orders?.error) {
+            toast.error(`Failed to load active orders: ${orders.error}`);
+          }
+        }
       }
     } catch (err) {
-      console.error('Error loading waiter data:', err);
-      toast.error('Failed to connect to database APIs.');
+      console.error("Error loading waiter data:", err);
+      toast.error("Failed to connect to database APIs.");
     } finally {
       setLoading(false);
     }
@@ -121,13 +143,15 @@ export default function WaiterDashboard() {
 
   // Helper: Find DB Table mapping for selected table ID
   const dbTableForSelectedId = useMemo(() => {
-    return dbTables.find(t => t.id === selectedTableId);
+    return dbTables.find((t) => t.id === selectedTableId);
   }, [dbTables, selectedTableId]);
 
   // Helper: Find active draft order for a given DB Table
   const activeOrderForTable = useMemo(() => {
     if (!selectedTableId) return null;
-    return activeOrders.find(o => o.table_id === selectedTableId && o.status === 'draft');
+    return activeOrders.find(
+      (o) => o.table_id === selectedTableId && o.status === "draft",
+    );
   }, [activeOrders, selectedTableId]);
 
   // Sync cart when table selection changes
@@ -136,17 +160,17 @@ export default function WaiterDashboard() {
       // Map database order_items to cart structure
       const items = (activeOrderForTable.order_items || []).map((oi: any) => {
         // Resolve full product details
-        const prod = products.find(p => p.id === oi.product_id) || {
+        const prod = products.find((p) => p.id === oi.product_id) || {
           id: oi.product_id,
-          name: oi.products?.name || 'Unknown Item',
+          name: oi.products?.name || "Unknown Item",
           price: Number(oi.unit_price),
           tax: Number(oi.tax_rate),
-          category_id: '',
-          is_available: true
+          category_id: "",
+          is_available: true,
         };
         return {
           product: prod,
-          quantity: oi.quantity
+          quantity: oi.quantity,
         };
       });
       setCart(items);
@@ -157,53 +181,71 @@ export default function WaiterDashboard() {
 
   // Check if a specific table ID has an active draft order
   const checkOccupied = (tableId: string) => {
-    return activeOrders.some(o => o.table_id === tableId && o.status === 'draft');
+    return activeOrders.some(
+      (o) => o.table_id === tableId && o.status === "draft",
+    );
   };
 
   // Resolve KDS ticket and preparation status for a table
   const getTableStatus = (tableId: string) => {
-    const order = activeOrders.find(o => o.table_id === tableId && o.status === 'draft');
-    if (!order) return { state: 'empty', label: 'Empty' };
+    const order = activeOrders.find(
+      (o) => o.table_id === tableId && o.status === "draft",
+    );
+    if (!order) return { state: "empty", label: "Empty" };
 
     // Find KDS ticket status (from order.kds_tickets)
     const kdsTicket = order.kds_tickets?.[0];
-    const kdsStatus = kdsTicket?.status || 'to_cook';
-
-    if (kdsStatus === 'to_cook') {
-      return { state: 'pending', label: 'Pending' };
-    }
-    if (kdsStatus === 'preparing') {
-      return { state: 'preparing', label: 'Preparing' };
-    }
-    if (kdsStatus === 'completed') {
-      return { state: 'ready', label: 'Ready' };
+    if (!kdsTicket) {
+      return { state: "served", label: "Served" };
     }
 
-    return { state: 'occupied', label: 'Occupied' };
+    const kdsStatus = kdsTicket.status || "to_cook";
+
+    if (kdsStatus === "to_cook") {
+      return { state: "pending", label: "Pending" };
+    }
+    if (kdsStatus === "preparing") {
+      return { state: "preparing", label: "Preparing" };
+    }
+    if (kdsStatus === "completed") {
+      return { state: "ready", label: "Ready" };
+    }
+
+    return { state: "occupied", label: "Occupied" };
   };
 
   // Cart operations
   const addToCart = (product: Product) => {
-    const existing = cart.find(item => item.product.id === product.id);
+    const existing = cart.find((item) => item.product.id === product.id);
     if (existing) {
-      setCart(cart.map(item => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
+      setCart(
+        cart.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        ),
+      );
     } else {
       setCart([...cart, { product, quantity: 1 }]);
     }
   };
 
   const updateQty = (productId: string, delta: number) => {
-    setCart(cart.map(item => {
-      if (item.product.id === productId) {
-        const nextQty = item.quantity + delta;
-        return nextQty > 0 ? { ...item, quantity: nextQty } : null;
-      }
-      return item;
-    }).filter(Boolean) as OrderItem[]);
+    setCart(
+      cart
+        .map((item) => {
+          if (item.product.id === productId) {
+            const nextQty = item.quantity + delta;
+            return nextQty > 0 ? { ...item, quantity: nextQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean) as OrderItem[],
+    );
   };
 
   const removeFromCart = (productId: string) => {
-    setCart(cart.filter(item => item.product.id !== productId));
+    setCart(cart.filter((item) => item.product.id !== productId));
   };
 
   const clearCart = () => {
@@ -211,8 +253,16 @@ export default function WaiterDashboard() {
   };
 
   // Calculations
-  const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const taxTotal = cart.reduce((sum, item) => sum + ((item.product.price * item.quantity * (item.product.tax || 0)) / 100), 0);
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0,
+  );
+  const taxTotal = cart.reduce(
+    (sum, item) =>
+      sum +
+      (item.product.price * item.quantity * (item.product.tax || 0)) / 100,
+    0,
+  );
   const total = subtotal + taxTotal;
 
   // Book Order (Submit to Kitchen)
@@ -222,14 +272,14 @@ export default function WaiterDashboard() {
 
     try {
       if (!activeSessionId) {
-        throw new Error('No active store shift session open.');
+        throw new Error("No active store shift session open.");
       }
 
       // If DB table is not mapped, we set it as null (takeaway fallback)
       let tableId = selectedTableId;
       if (!tableId) {
         // Fallback or alert
-        toast.info('No table selected. Setting order as takeaway.');
+        toast.info("No table selected. Setting order as takeaway.");
       }
 
       // We determine if we need to POST (create new order) or PUT (append to existing)
@@ -243,26 +293,28 @@ export default function WaiterDashboard() {
         const dbItems = activeOrderForTable.order_items || [];
         const itemsToAppend: OrderItem[] = [];
 
-        cart.forEach(cartItem => {
-          const dbItem = dbItems.find((di: any) => di.product_id === cartItem.product.id);
+        cart.forEach((cartItem) => {
+          const dbItem = dbItems.find(
+            (di: any) => di.product_id === cartItem.product.id,
+          );
           const dbQty = dbItem ? dbItem.quantity : 0;
           if (cartItem.quantity > dbQty) {
             itemsToAppend.push({
               product: cartItem.product,
-              quantity: cartItem.quantity - dbQty
+              quantity: cartItem.quantity - dbQty,
             });
           }
         });
 
         if (itemsToAppend.length === 0) {
-          toast.success('Kitchen order is already up to date!');
+          toast.success("Kitchen order is already up to date!");
           setActionLoading(false);
           return;
         }
 
-        const res = await fetch('/api/orders', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/orders", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             order_id: activeOrderForTable.id,
             items: itemsToAppend,
@@ -271,13 +323,12 @@ export default function WaiterDashboard() {
 
         const data = await res.json();
         if (data.error) throw new Error(data.error);
-
       } else {
         // Create a new draft order
-        const orderNum = 'ORD-' + Math.floor(Math.random() * 90000 + 10000);
-        const res = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const orderNum = "ORD-" + Math.floor(Math.random() * 90000 + 10000);
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             session_id: activeSessionId,
             table_id: tableId,
@@ -287,11 +338,11 @@ export default function WaiterDashboard() {
             tax: taxTotal,
             discount_amount: 0,
             total,
-            status: 'draft',
+            status: "draft",
             payment_method: null,
-            items: cart.map(item => ({
+            items: cart.map((item) => ({
               product: item.product,
-              quantity: item.quantity
+              quantity: item.quantity,
             })),
           }),
         });
@@ -300,18 +351,24 @@ export default function WaiterDashboard() {
         if (data.error) throw new Error(data.error);
       }
 
-      toast.success('Draft order successfully sent to kitchen!');
+      toast.success("Draft order successfully sent to kitchen!");
       setIsSubmitted(true);
-      
+
       // Reload active orders
-      const ordersRes = await fetch(`/api/orders?session_id=${activeSessionId}`);
+      const ordersRes = await fetch(
+        `/api/orders?session_id=${activeSessionId}`,
+      );
       const orders = await ordersRes.json();
-      setActiveOrders(orders || []);
+      if (Array.isArray(orders)) {
+        setActiveOrders(orders);
+      } else {
+        console.error("Failed to reload active orders:", orders);
+        setActiveOrders([]);
+      }
 
       setTimeout(() => {
         setIsSubmitted(false);
       }, 2000);
-
     } catch (err: any) {
       toast.error(`Order Booking failed: ${err.message}`);
     } finally {
@@ -319,10 +376,41 @@ export default function WaiterDashboard() {
     }
   };
 
+  const handleMarkAsServed = async () => {
+    if (!selectedTableId || !activeOrderForTable) return;
+    setActionLoading(true);
+
+    try {
+      const res = await fetch(`/api/kds?order_id=${activeOrderForTable.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      toast.success("Food marked as served successfully!");
+
+      // Reload active orders
+      if (activeSessionId) {
+        const ordersRes = await fetch(
+          `/api/orders?session_id=${activeSessionId}`,
+        );
+        const orders = await ordersRes.json();
+        if (Array.isArray(orders)) {
+          setActiveOrders(orders);
+        }
+      }
+    } catch (err: any) {
+      toast.error(`Failed to mark as served: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Filtered products list
   const filteredProducts = useMemo(() => {
-    return products.filter(p => {
-      if (activeCategory === 'all') return true;
+    return products.filter((p) => {
+      if (activeCategory === "all") return true;
       return p.category_id === activeCategory;
     });
   }, [products, activeCategory]);
@@ -337,13 +425,14 @@ export default function WaiterDashboard() {
 
   return (
     <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 overflow-hidden bg-zinc-950 text-zinc-100 font-sans">
-      
       {/* Middle/Left Column: Floor map & Menu Selector */}
       <div className="lg:col-span-8 flex flex-col gap-6 overflow-y-auto pr-2">
         {/* Table & Floor Selector */}
         <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4 shadow-xl">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white text-sm uppercase tracking-wider">Restaurant Floor Plan</h3>
+            <h3 className="font-bold text-white text-sm uppercase tracking-wider">
+              Restaurant Floor Plan
+            </h3>
             <span className="text-[10px] text-[#F9F5F2] font-semibold px-2.5 py-1 rounded bg-[#F9F5F2]/10 border border-[#F9F5F2]/20">
               Waiter Active Session
             </span>
@@ -358,7 +447,9 @@ export default function WaiterDashboard() {
                   onClick={() => {
                     setSelectedFloorId(floor.id);
                     // Select first table on this floor automatically
-                    const firstTable = dbTables.find(t => t.floor_id === floor.id);
+                    const firstTable = dbTables.find(
+                      (t) => t.floor_id === floor.id,
+                    );
                     if (firstTable) {
                       setSelectedTableId(firstTable.id);
                     } else {
@@ -367,8 +458,8 @@ export default function WaiterDashboard() {
                   }}
                   className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
                     selectedFloorId === floor.id
-                      ? 'bg-[#F9F5F2] text-black border-[#F9F5F2] font-bold shadow-sm'
-                      : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900'
+                      ? "bg-[#F9F5F2] text-black border-[#F9F5F2] font-bold shadow-sm"
+                      : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900"
                   }`}
                 >
                   {floor.name}
@@ -379,29 +470,38 @@ export default function WaiterDashboard() {
 
           <div className="grid grid-cols-4 gap-3 max-w-lg mx-auto sm:max-w-none pt-2">
             {dbTables
-              .filter(t => t.floor_id === selectedFloorId)
+              .filter((t) => t.floor_id === selectedFloorId)
               .map((table) => {
                 const status = getTableStatus(table.id);
                 const isSelected = selectedTableId === table.id;
-                
-                let buttonStyles = '';
-                let statusLabelStyles = '';
-                
+
+                let buttonStyles = "";
+                let statusLabelStyles = "";
+
                 if (isSelected) {
-                  buttonStyles = 'bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-lg shadow-[#F9F5F2]/10 font-bold scale-[1.02]';
-                  statusLabelStyles = 'text-black/70';
-                } else if (status.state === 'pending') {
-                  buttonStyles = 'bg-amber-950/20 border-amber-500/50 text-amber-200 hover:border-amber-400';
-                  statusLabelStyles = 'text-amber-405';
-                } else if (status.state === 'preparing') {
-                  buttonStyles = 'bg-orange-955/20 border-orange-500/50 text-orange-200 hover:border-orange-400';
-                  statusLabelStyles = 'text-orange-400';
-                } else if (status.state === 'ready') {
-                  buttonStyles = 'bg-emerald-955/20 border-emerald-500/50 text-emerald-200 hover:border-emerald-400 animate-pulse';
-                  statusLabelStyles = 'text-emerald-400 font-bold';
+                  buttonStyles =
+                    "bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-lg shadow-[#F9F5F2]/10 font-bold scale-[1.02]";
+                  statusLabelStyles = "text-black/70";
+                } else if (status.state === "pending") {
+                  buttonStyles =
+                    "bg-amber-955/20 border-amber-500/50 text-amber-200 hover:border-amber-400";
+                  statusLabelStyles = "text-amber-405";
+                } else if (status.state === "preparing") {
+                  buttonStyles =
+                    "bg-orange-955/20 border-orange-500/50 text-orange-200 hover:border-orange-400";
+                  statusLabelStyles = "text-orange-400";
+                } else if (status.state === "ready") {
+                  buttonStyles =
+                    "bg-emerald-955/20 border-emerald-500/50 text-emerald-200 hover:border-emerald-400 animate-pulse";
+                  statusLabelStyles = "text-emerald-400 font-bold";
+                } else if (status.state === "served") {
+                  buttonStyles =
+                    "bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-650";
+                  statusLabelStyles = "text-zinc-500 font-semibold";
                 } else {
-                  buttonStyles = 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700';
-                  statusLabelStyles = 'text-zinc-600';
+                  buttonStyles =
+                    "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700";
+                  statusLabelStyles = "text-zinc-600";
                 }
 
                 return (
@@ -410,14 +510,19 @@ export default function WaiterDashboard() {
                     onClick={() => setSelectedTableId(table.id)}
                     className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${buttonStyles}`}
                   >
-                    <span className="text-lg font-extrabold">{table.table_number}</span>
-                    <span className={`text-[9px] uppercase tracking-wider ${statusLabelStyles}`}>
+                    <span className="text-lg font-extrabold">
+                      {table.table_number}
+                    </span>
+                    <span
+                      className={`text-[9px] uppercase tracking-wider ${statusLabelStyles}`}
+                    >
                       {status.label}
                     </span>
                   </button>
                 );
               })}
-            {dbTables.filter(t => t.floor_id === selectedFloorId).length === 0 && (
+            {dbTables.filter((t) => t.floor_id === selectedFloorId).length ===
+              0 && (
               <p className="col-span-full text-center text-zinc-500 py-6 text-sm">
                 No tables registered on this floor.
               </p>
@@ -428,18 +533,22 @@ export default function WaiterDashboard() {
         {/* Menu items Selector */}
         <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl flex-1 space-y-4 shadow-xl">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-white text-sm uppercase tracking-wider">Menu Catalog</h3>
-            <span className="text-[10px] text-zinc-450">Tap to add items to cart</span>
+            <h3 className="font-bold text-white text-sm uppercase tracking-wider">
+              Menu Catalog
+            </h3>
+            <span className="text-[10px] text-zinc-450">
+              Tap to add items to cart
+            </span>
           </div>
 
           {/* Quick Category Chips */}
           <div className="flex gap-2 pb-2 overflow-x-auto select-none no-scrollbar">
             <button
-              onClick={() => setActiveCategory('all')}
+              onClick={() => setActiveCategory("all")}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
-                activeCategory === 'all'
-                  ? 'bg-[#F9F5F2] text-black border-[#F9F5F2] font-bold shadow-sm'
-                  : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900'
+                activeCategory === "all"
+                  ? "bg-[#F9F5F2] text-black border-[#F9F5F2] font-bold shadow-sm"
+                  : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900"
               }`}
             >
               <Coffee className="w-3.5 h-3.5" /> All Items
@@ -450,8 +559,8 @@ export default function WaiterDashboard() {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
                   activeCategory === cat.id
-                    ? 'bg-[#F9F5F2] text-black border-[#F9F5F2] font-bold shadow-sm'
-                    : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900'
+                    ? "bg-[#F9F5F2] text-black border-[#F9F5F2] font-bold shadow-sm"
+                    : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900"
                 }`}
               >
                 {cat.name}
@@ -468,10 +577,14 @@ export default function WaiterDashboard() {
                 className="p-4 bg-zinc-950 border border-zinc-850 hover:border-[#F9F5F2]/50 rounded-xl text-left flex flex-col justify-between h-28 cursor-pointer transition-all hover:bg-zinc-900 group"
               >
                 <div>
-                  <h4 className="font-bold text-white text-sm group-hover:text-[#F9F5F2] transition-colors">{prod.name}</h4>
+                  <h4 className="font-bold text-white text-sm group-hover:text-[#F9F5F2] transition-colors">
+                    {prod.name}
+                  </h4>
                 </div>
                 <div className="flex justify-between items-center w-full border-t border-zinc-900/60 pt-2">
-                  <span className="text-[#F9F5F2] font-bold text-sm">{formatCurrency(prod.price)}</span>
+                  <span className="text-[#F9F5F2] font-bold text-sm">
+                    {formatCurrency(prod.price)}
+                  </span>
                   <span className="text-[9px] text-zinc-300 font-bold px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded-full group-hover:bg-[#F9F5F2] group-hover:text-black transition-colors">
                     + Add
                   </span>
@@ -489,13 +602,15 @@ export default function WaiterDashboard() {
 
       {/* Right Column: Active Cart and Actions */}
       <div className="lg:col-span-4 flex flex-col h-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 overflow-hidden justify-between shadow-2xl">
-        
         {/* Cart Header */}
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
             <h3 className="font-bold text-white text-sm uppercase tracking-wider flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-[#F9F5F2]" />
-              {dbTableForSelectedId ? `Table ${dbTableForSelectedId.table_number}` : 'No Table Selected'} Order
+              {dbTableForSelectedId
+                ? `Table ${dbTableForSelectedId.table_number}`
+                : "No Table Selected"}{" "}
+              Order
             </h3>
             {cart.length > 0 && (
               <button
@@ -515,10 +630,14 @@ export default function WaiterDashboard() {
                 className="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-850"
               >
                 <div className="min-w-0 flex-1 pr-2">
-                  <p className="text-xs font-bold text-white truncate">{item.product.name}</p>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">{formatCurrency(item.product.price)} each</p>
+                  <p className="text-xs font-bold text-white truncate">
+                    {item.product.name}
+                  </p>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">
+                    {formatCurrency(item.product.price)} each
+                  </p>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
                     <button
@@ -549,8 +668,12 @@ export default function WaiterDashboard() {
 
             {cart.length === 0 && (
               <div className="py-12 text-center text-zinc-500 flex flex-col items-center justify-center gap-2">
-                <p className="text-xs">No items added to this table's cart yet.</p>
-                <p className="text-[10px] text-zinc-600 max-w-[200px]">Select a table, click on menu items to begin building order.</p>
+                <p className="text-xs">
+                  No items added to this table's cart yet.
+                </p>
+                <p className="text-[10px] text-zinc-600 max-w-[200px]">
+                  Select a table, click on menu items to begin building order.
+                </p>
               </div>
             )}
           </div>
@@ -560,23 +683,49 @@ export default function WaiterDashboard() {
         <div className="border-t border-zinc-800 pt-4 space-y-2">
           <div className="flex justify-between items-center text-xs">
             <span className="font-semibold text-zinc-450">Subtotal:</span>
-            <span className="font-medium text-zinc-300">{formatCurrency(subtotal)}</span>
+            <span className="font-medium text-zinc-300">
+              {formatCurrency(subtotal)}
+            </span>
           </div>
           <div className="flex justify-between items-center text-xs">
             <span className="font-semibold text-zinc-450">Tax:</span>
-            <span className="font-medium text-zinc-300">{formatCurrency(taxTotal)}</span>
+            <span className="font-medium text-zinc-300">
+              {formatCurrency(taxTotal)}
+            </span>
           </div>
           <div className="flex justify-between items-center text-sm border-t border-zinc-800 pt-2 mt-1">
             <span className="font-semibold text-zinc-400">Total:</span>
-            <span className="font-extrabold text-lg text-white">{formatCurrency(total)}</span>
+            <span className="font-extrabold text-lg text-white">
+              {formatCurrency(total)}
+            </span>
           </div>
 
           <div className="p-3 bg-[#F9F5F2]/5 border border-[#F9F5F2]/15 rounded-xl flex items-start gap-2.5">
             <Sparkles className="w-4 h-4 text-[#F9F5F2] shrink-0 mt-0.5 animate-pulse" />
             <p className="text-[10px] text-zinc-450 leading-normal">
-              <span className="font-semibold text-white">Notice: </span> Waiters can only build carts and send drafts to KDS. Checkout and payments are restricted to Cashiers.
+              <span className="font-semibold text-white">Notice: </span> Waiters
+              can only build carts and send drafts to KDS. Checkout and payments
+              are restricted to Cashiers.
             </p>
           </div>
+
+          {selectedTableId &&
+            getTableStatus(selectedTableId).state === "ready" && (
+              <button
+                onClick={handleMarkAsServed}
+                disabled={actionLoading}
+                className="w-full h-11 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-extrabold text-black flex items-center justify-center gap-2 cursor-pointer transition-all mb-3 shadow-lg shadow-emerald-500/10"
+              >
+                {actionLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-black" />
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-black" /> Mark as
+                    Served
+                  </>
+                )}
+              </button>
+            )}
 
           <div className="flex gap-3">
             <button
@@ -585,13 +734,13 @@ export default function WaiterDashboard() {
               className="flex-1 h-11 bg-[#F9F5F2] hover:bg-[#e5e1de] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold text-black flex items-center justify-center gap-2 cursor-pointer transition-all"
             >
               {actionLoading ? (
-                'Sending...'
+                "Sending..."
               ) : isSubmitted ? (
                 <>
                   <CheckCircle2 className="w-4 h-4" /> Sent!
                 </>
               ) : (
-                'Send to Kitchen'
+                "Send to Kitchen"
               )}
             </button>
 
@@ -604,7 +753,6 @@ export default function WaiterDashboard() {
             </button>
           </div>
         </div>
-
       </div>
 
       {/* Bill Receipt Modal */}
@@ -612,37 +760,54 @@ export default function WaiterDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm p-6 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl space-y-6 text-zinc-150">
             {/* Printable Receipt Container */}
-            <div id="printable-bill" className="space-y-4 p-4 bg-zinc-950 border border-zinc-850 rounded-xl font-mono text-xs text-zinc-300">
+            <div
+              id="printable-bill"
+              className="space-y-4 p-4 bg-zinc-950 border border-zinc-850 rounded-xl font-mono text-xs text-zinc-300"
+            >
               <div className="text-center space-y-1">
-                <h4 className="text-sm font-bold text-white uppercase tracking-wider">Cafe POS Receipt</h4>
+                <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                  Cafe POS Receipt
+                </h4>
                 <p className="text-[10px] text-zinc-500">Waiter Bill Invoice</p>
               </div>
               <div className="border-t border-zinc-850 pt-2 space-y-1 text-[11px]">
                 <div className="flex justify-between">
                   <span>Order:</span>
-                  <span className="font-semibold text-white">{activeOrderForTable.order_number}</span>
+                  <span className="font-semibold text-white">
+                    {activeOrderForTable.order_number}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Table:</span>
                   <span className="font-semibold text-white">
-                    {dbTableForSelectedId ? dbTableForSelectedId.table_number : 'N/A'}
+                    {dbTableForSelectedId
+                      ? dbTableForSelectedId.table_number
+                      : "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Date:</span>
-                  <span>{new Date(activeOrderForTable.created_at).toLocaleString()}</span>
+                  <span>
+                    {new Date(activeOrderForTable.created_at).toLocaleString()}
+                  </span>
                 </div>
               </div>
 
               {/* Items List */}
               <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
                 {activeOrderForTable.order_items?.map((oi: any) => {
-                  const prod = products.find(p => p.id === oi.product_id);
-                  const name = prod?.name || oi.products?.name || 'Unknown Item';
+                  const prod = products.find((p) => p.id === oi.product_id);
+                  const name =
+                    prod?.name || oi.products?.name || "Unknown Item";
                   const price = Number(oi.unit_price);
                   return (
-                    <div key={oi.id} className="flex justify-between text-[11px]">
-                      <span className="truncate max-w-[180px]">{name} x {oi.quantity}</span>
+                    <div
+                      key={oi.id}
+                      className="flex justify-between text-[11px]"
+                    >
+                      <span className="truncate max-w-[180px]">
+                        {name} x {oi.quantity}
+                      </span>
                       <span>{formatCurrency(price * oi.quantity)}</span>
                     </div>
                   );
@@ -653,7 +818,9 @@ export default function WaiterDashboard() {
               <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1 text-right text-[11px]">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>{formatCurrency(Number(activeOrderForTable.subtotal))}</span>
+                  <span>
+                    {formatCurrency(Number(activeOrderForTable.subtotal))}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax:</span>
@@ -661,7 +828,9 @@ export default function WaiterDashboard() {
                 </div>
                 <div className="flex justify-between font-bold border-t border-zinc-850 pt-1 text-xs text-white">
                   <span>Total Due:</span>
-                  <span>{formatCurrency(Number(activeOrderForTable.total))}</span>
+                  <span>
+                    {formatCurrency(Number(activeOrderForTable.total))}
+                  </span>
                 </div>
               </div>
             </div>
@@ -670,12 +839,12 @@ export default function WaiterDashboard() {
             <div className="space-y-2">
               <button
                 onClick={() => {
-                  const printWindow = window.open('', '_blank');
+                  const printWindow = window.open("", "_blank");
                   if (printWindow) {
                     printWindow.document.write(`
                       <html>
                         <head>
-                          <title>Print Bill - Table ${dbTableForSelectedId?.table_number || ''}</title>
+                          <title>Print Bill - Table ${dbTableForSelectedId?.table_number || ""}</title>
                           <style>
                             body {
                               font-family: monospace;
@@ -697,19 +866,26 @@ export default function WaiterDashboard() {
                         <body>
                           <div style="text-align: center; margin-bottom: 15px;">
                             <h3 style="margin: 0; text-transform: uppercase;">Cafe POS Bill</h3>
-                            <small>Table: ${dbTableForSelectedId?.table_number || ''}</small>
+                            <small>Table: ${dbTableForSelectedId?.table_number || ""}</small>
                           </div>
                           <div style="margin-bottom: 10px;">
                             <div class="flex"><span>Order:</span> <span>${activeOrderForTable.order_number}</span></div>
                             <div class="flex"><span>Date:</span> <span>${new Date(activeOrderForTable.created_at).toLocaleString()}</span></div>
                           </div>
                           <div style="border-top: 1px dashed #000; padding: 10px 0;">
-                            ${activeOrderForTable.order_items?.map((oi: any) => {
-                              const prod = products.find(p => p.id === oi.product_id);
-                              const name = prod?.name || oi.products?.name || 'Unknown Item';
-                              const price = Number(oi.unit_price);
-                              return `<div class="flex"><span>${name} x ${oi.quantity}</span> <span>${formatCurrency(price * oi.quantity)}</span></div>`;
-                            }).join('')}
+                            ${activeOrderForTable.order_items
+                              ?.map((oi: any) => {
+                                const prod = products.find(
+                                  (p) => p.id === oi.product_id,
+                                );
+                                const name =
+                                  prod?.name ||
+                                  oi.products?.name ||
+                                  "Unknown Item";
+                                const price = Number(oi.unit_price);
+                                return `<div class="flex"><span>${name} x ${oi.quantity}</span> <span>${formatCurrency(price * oi.quantity)}</span></div>`;
+                              })
+                              .join("")}
                           </div>
                           <div style="border-top: 1px dashed #000; padding-top: 10px;">
                             <div class="flex"><span>Subtotal:</span> <span>${formatCurrency(Number(activeOrderForTable.subtotal))}</span></div>

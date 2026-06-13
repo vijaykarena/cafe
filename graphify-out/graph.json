@@ -1186,7 +1186,7 @@
       "label": "KdsItem",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L26",
+      "source_location": "L28",
       "id": "kds_page_kdsitem",
       "community": 5,
       "norm_label": "kdsitem"
@@ -1195,25 +1195,16 @@
       "label": "KdsTicket",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L34",
+      "source_location": "L36",
       "id": "kds_page_kdsticket",
       "community": 5,
       "norm_label": "kdsticket"
     },
     {
-      "label": "MOCK_TICKETS",
-      "file_type": "code",
-      "source_file": "app/kds/page.tsx",
-      "source_location": "L43",
-      "id": "kds_page_mock_tickets",
-      "community": 5,
-      "norm_label": "mock_tickets"
-    },
-    {
       "label": "DraggableTicketCard()",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L146",
+      "source_location": "L46",
       "id": "kds_page_draggableticketcard",
       "community": 5,
       "norm_label": "draggableticketcard()"
@@ -1222,7 +1213,7 @@
       "label": "DroppableColumn()",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L237",
+      "source_location": "L151",
       "id": "kds_page_droppablecolumn",
       "community": 5,
       "norm_label": "droppablecolumn()"
@@ -1231,7 +1222,7 @@
       "label": "KdsPage()",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L289",
+      "source_location": "L203",
       "id": "kds_page_kdspage",
       "community": 21,
       "norm_label": "kdspage()"
@@ -1260,17 +1251,17 @@
       "source_file": "app/admin/page.tsx",
       "source_location": "L1",
       "id": "app_admin_page_tsx",
-      "community": 5,
+      "community": 4,
       "norm_label": "page.tsx"
     },
     {
-      "label": "AdminDashboardPage()",
+      "label": "AdminManagersPage()",
       "file_type": "code",
       "source_file": "app/admin/page.tsx",
-      "source_location": "L6",
-      "id": "admin_page_admindashboardpage",
-      "community": 5,
-      "norm_label": "admindashboardpage()"
+      "source_location": "L8",
+      "id": "admin_page_adminmanagerspage",
+      "community": 4,
+      "norm_label": "adminmanagerspage()"
     },
     {
       "label": "page.tsx",
@@ -1293,16 +1284,16 @@
     {
       "label": "page.tsx",
       "file_type": "code",
-      "source_file": "app/admin/managers/create/page.tsx",
+      "source_file": "app/admin/create/page.tsx",
       "source_location": "L1",
-      "id": "app_admin_managers_create_page_tsx",
+      "id": "app_admin_create_page_tsx",
       "community": 4,
       "norm_label": "page.tsx"
     },
     {
       "label": "CreateManagerPage()",
       "file_type": "code",
-      "source_file": "app/admin/managers/create/page.tsx",
+      "source_file": "app/admin/create/page.tsx",
       "source_location": "L7",
       "id": "create_page_createmanagerpage",
       "community": 4,
@@ -1510,7 +1501,7 @@
       "label": "Product",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L8",
+      "source_location": "L18",
       "id": "waiter_page_product",
       "community": 5,
       "norm_label": "product"
@@ -1519,7 +1510,7 @@
       "label": "Category",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L17",
+      "source_location": "L27",
       "id": "waiter_page_category",
       "community": 5,
       "norm_label": "category"
@@ -1528,7 +1519,7 @@
       "label": "Table",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L22",
+      "source_location": "L32",
       "id": "waiter_page_table",
       "community": 5,
       "norm_label": "table"
@@ -1537,7 +1528,7 @@
       "label": "Floor",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L30",
+      "source_location": "L40",
       "id": "waiter_page_floor",
       "community": 5,
       "norm_label": "floor"
@@ -1546,7 +1537,7 @@
       "label": "OrderItem",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L35",
+      "source_location": "L45",
       "id": "waiter_page_orderitem",
       "community": 5,
       "norm_label": "orderitem"
@@ -1555,7 +1546,7 @@
       "label": "WaiterDashboard()",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L40",
+      "source_location": "L50",
       "id": "waiter_page_waiterdashboard",
       "community": 5,
       "norm_label": "waiterdashboard()"
@@ -1649,6 +1640,15 @@
       "id": "kds_route_put",
       "community": 0,
       "norm_label": "put()"
+    },
+    {
+      "label": "DELETE()",
+      "file_type": "code",
+      "source_file": "app/api/kds/route.ts",
+      "source_location": "L67",
+      "id": "kds_route_delete",
+      "community": 0,
+      "norm_label": "delete()"
     },
     {
       "label": "route.ts",
@@ -3492,7 +3492,7 @@
       "source_file": "lib/validations/category.ts",
       "source_location": "L1",
       "id": "validations_category_categoryvalidation",
-      "community": 2,
+      "community": 0,
       "norm_label": "categoryvalidation"
     },
     {
@@ -3519,14 +3519,14 @@
       "source_file": "lib/validations/product.ts",
       "source_location": "L1",
       "id": "validations_product_productvalidation",
-      "community": 2,
+      "community": 0,
       "norm_label": "productvalidation"
     },
     {
       "label": "ProductInput",
       "file_type": "code",
       "source_file": "lib/validations/product.ts",
-      "source_location": "L24",
+      "source_location": "L27",
       "id": "validations_product_productinput",
       "community": 0,
       "norm_label": "productinput"
@@ -3535,7 +3535,7 @@
       "label": "validateProductInput()",
       "file_type": "code",
       "source_file": "lib/validations/product.ts",
-      "source_location": "L34",
+      "source_location": "L37",
       "id": "validations_product_validateproductinput",
       "community": 0,
       "norm_label": "validateproductinput()"
@@ -3638,6 +3638,33 @@
       "id": "rules_graphify_graphify",
       "community": 10,
       "norm_label": "graphify"
+    },
+    {
+      "label": "MOCK_TICKETS",
+      "file_type": "code",
+      "source_file": "app/kds/page.tsx",
+      "source_location": "L45",
+      "community": 5,
+      "norm_label": "mock_tickets",
+      "id": "kds_page_mock_tickets"
+    },
+    {
+      "label": "AdminDashboardPage()",
+      "file_type": "code",
+      "source_file": "app/admin/page.tsx",
+      "source_location": "L6",
+      "community": 4,
+      "norm_label": "admindashboardpage()",
+      "id": "admin_page_admindashboardpage"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "app/admin/managers/create/page.tsx",
+      "source_location": "L1",
+      "community": 4,
+      "norm_label": "page.tsx",
+      "id": "app_admin_managers_create_page_tsx"
     },
     {
       "label": "actions.ts",
@@ -5516,17 +5543,6 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_kds_page_tsx",
-      "target": "lib_utils_formatcurrency"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/kds/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_kds_page_tsx",
       "target": "lib_utils_formatdate"
     },
     {
@@ -5586,16 +5602,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L45",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_kds_page_tsx",
-      "target": "kds_page_mock_tickets"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/kds/page.tsx",
       "source_location": "L94",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -5621,6 +5627,27 @@
       "confidence_score": 1.0,
       "source": "app_kds_page_tsx",
       "target": "kds_page_kdspage"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/kds/page.tsx",
+      "source_location": "L45",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_kds_page_tsx",
+      "target": "kds_page_mock_tickets"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/kds/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_kds_page_tsx",
+      "target": "lib_utils_formatcurrency"
     },
     {
       "relation": "calls",
@@ -5740,6 +5767,60 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_admin_page_tsx",
+      "target": "lib_types_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_page_tsx",
+      "target": "lib_types_profile"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_page_tsx",
+      "target": "providers_auth_provider_tsx"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_page_tsx",
+      "target": "providers_auth_provider_useauth"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_page_tsx",
+      "target": "admin_page_adminmanagerspage"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_page_tsx",
       "target": "lib_utils_ts"
     },
     {
@@ -5769,10 +5850,10 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/admin/page.tsx",
-      "source_location": "L176",
+      "source_location": "L10",
       "weight": 1.0,
-      "source": "admin_page_admindashboardpage",
-      "target": "lib_utils_formatcurrency"
+      "source": "admin_page_adminmanagerspage",
+      "target": "providers_auth_provider_useauth"
     },
     {
       "relation": "imports_from",
@@ -5865,77 +5946,33 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "app/admin/managers/create/page.tsx",
+      "source_file": "app/admin/create/page.tsx",
       "source_location": "L4",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "app_admin_managers_create_page_tsx",
+      "source": "app_admin_create_page_tsx",
       "target": "providers_auth_provider_tsx"
     },
     {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "app/admin/managers/create/page.tsx",
+      "source_file": "app/admin/create/page.tsx",
       "source_location": "L4",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "app_admin_managers_create_page_tsx",
+      "source": "app_admin_create_page_tsx",
       "target": "providers_auth_provider_useauth"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "app/admin/managers/create/page.tsx",
-      "source_location": "L8",
+      "source_file": "app/admin/create/page.tsx",
+      "source_location": "L7",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "app_admin_managers_create_page_tsx",
+      "source": "app_admin_create_page_tsx",
       "target": "create_page_createmanagerpage"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/admin/managers/create/page.tsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_admin_managers_create_page_tsx",
-      "target": "lib_supabase_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/admin/managers/create/page.tsx",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_admin_managers_create_page_tsx",
-      "target": "lib_supabase_supabase"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/admin/managers/create/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_admin_managers_create_page_tsx",
-      "target": "app_manager_staff_create_actions_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/admin/managers/create/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_admin_managers_create_page_tsx",
-      "target": "create_actions_createuseraction"
     },
     {
       "relation": "calls",
@@ -5947,6 +5984,16 @@
       "weight": 1.0,
       "source": "create_page_createmanagerpage",
       "target": "providers_auth_provider_useauth"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/managers/create/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_managers_create_page_tsx",
+      "target": "create_page_createmanagerpage"
     },
     {
       "relation": "imports_from",
@@ -6260,7 +6307,7 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_manager_products_page_tsx",
-      "target": "lib_supabase_ts"
+      "target": "lib_storage_ts"
     },
     {
       "relation": "imports",
@@ -6271,7 +6318,7 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_manager_products_page_tsx",
-      "target": "lib_supabase_getproductimageurl"
+      "target": "lib_storage_getproductimageurl"
     },
     {
       "relation": "imports_from",
@@ -6677,6 +6724,28 @@
       "confidence_score": 1.0,
       "source": "app_manager_products_page_tsx",
       "target": "products_page_productspage"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/manager/products/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_manager_products_page_tsx",
+      "target": "lib_supabase_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/manager/products/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_manager_products_page_tsx",
+      "target": "lib_supabase_getproductimageurl"
     },
     {
       "relation": "contains",
@@ -7980,6 +8049,16 @@
       "target": "kds_route_put"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/api/kds/route.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_api_kds_route_ts",
+      "target": "kds_route_delete"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -7989,6 +8068,17 @@
       "confidence_score": 1.0,
       "source": "app_api_kds_route_ts",
       "target": "lib_supabase_server_supabaseserver"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/api/kds/route.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "kds_route_delete",
+      "target": "kds_route_get"
     },
     {
       "relation": "imports_from",
@@ -9181,6 +9271,28 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "providers_auth_provider_tsx",
+      "target": "providers_auth_provider_useauth"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/managers/create/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_managers_create_page_tsx",
+      "target": "providers_auth_provider_tsx"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/managers/create/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_managers_create_page_tsx",
       "target": "providers_auth_provider_useauth"
     },
     {
@@ -12362,6 +12474,17 @@
       "target": "lib_utils_ts"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/admin/page.tsx",
+      "source_location": "L176",
+      "weight": 1.0,
+      "source": "admin_page_admindashboardpage",
+      "target": "lib_utils_formatcurrency"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -12918,6 +13041,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "app/admin/managers/create/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_managers_create_page_tsx",
+      "target": "lib_supabase_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "app/pos/layout.tsx",
       "source_location": "L5",
       "weight": 1.0,
@@ -12946,6 +13080,17 @@
       "confidence_score": 1.0,
       "source": "app_pos_terminal_page_tsx",
       "target": "lib_supabase_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/managers/create/page.tsx",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_managers_create_page_tsx",
+      "target": "lib_supabase_supabase"
     },
     {
       "relation": "imports",
@@ -13101,6 +13246,28 @@
       "target": "rules_graphify_graphify"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/managers/create/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_managers_create_page_tsx",
+      "target": "app_manager_staff_create_actions_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/managers/create/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_managers_create_page_tsx",
+      "target": "create_actions_createuseraction"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/manager/staff/create/actions.ts",
@@ -13162,5 +13329,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "a07aedbdea9a1cce9fec680b153432b57a667c4e"
+  "built_at_commit": "56fc374ba8275141a4e5357b1f53afa274a88a6d"
 }

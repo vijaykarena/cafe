@@ -1,16 +1,16 @@
 # Graph Report - cafe  (2026-06-14)
 
 ## Corpus Check
-- 91 files · ~40,683 words
+- 91 files · ~40,526 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 419 nodes · 884 edges · 21 communities (16 shown, 5 thin omitted)
+- 422 nodes · 897 edges · 21 communities (16 shown, 5 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a07aedbd`
+- Built from commit: `56fc374b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -38,8 +38,8 @@
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 86 edges
 2. `formatCurrency()` - 21 edges
-3. `supabase` - 20 edges
-4. `useAuth()` - 17 edges
+3. `useAuth()` - 20 edges
+4. `supabase` - 20 edges
 5. `compilerOptions` - 16 edges
 6. `requireManager()` - 15 edges
 7. `supabaseAdmin` - 14 edges
@@ -56,14 +56,14 @@
   components/ui/alert-dialog.tsx → lib/utils.ts
 - `AlertDialogMedia()` --calls--> `cn()`  [EXTRACTED]
   components/ui/alert-dialog.tsx → lib/utils.ts
-- `PosLayout()` --calls--> `useAuth()`  [EXTRACTED]
-  app/cashier/layout.tsx → providers/auth-provider.tsx
+- `AdminDashboardPage()` --calls--> `formatCurrency()`  [EXTRACTED]
+  app/admin/page.tsx → lib/utils.ts
 
 ## Communities (21 total, 5 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.07
-Nodes (22): GET(), POST(), DELETE(), GET(), PUT(), POST(), getAuthUser(), getManagerId() (+14 more)
+Nodes (26): GET(), POST(), DELETE(), GET(), PUT(), POST(), DELETE(), GET() (+18 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.05
@@ -71,19 +71,19 @@ Nodes (38): dependencies, @base-ui/react, class-variance-authority, clsx, cmdk, 
 
 ### Community 2 - "Community 2"
 Cohesion: 0.06
-Nodes (57): getProductImageUrl(), cn(), CategoryFormData, CategoryModal(), CategoryModalProps, PRESET_COLORS, ProductFormData, ProductModal() (+49 more)
+Nodes (55): getProductImageUrl(), cn(), CategoryFormData, CategoryModal(), CategoryModalProps, PRESET_COLORS, ProductFormData, ProductModal() (+47 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.12
-Nodes (19): AdminLayout(), geistMono, geistSans, metadata, PosLayout(), createUserAction(), CreateManagerPage(), CreateUserPage() (+11 more)
+Cohesion: 0.11
+Nodes (21): AdminLayout(), AdminDashboardPage(), AdminManagersPage(), geistMono, geistSans, metadata, PosLayout(), createUserAction() (+13 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.07
-Nodes (39): AdminDashboardPage(), PosDashboardPage(), DraggableTicketCard(), KdsItem, KdsTicket, MOCK_TICKETS, Category, Coupon (+31 more)
+Nodes (38): PosDashboardPage(), DraggableTicketCard(), KdsItem, KdsTicket, MOCK_TICKETS, Category, Coupon, Customer (+30 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.20
@@ -126,16 +126,16 @@ Nodes (27): CategoriesPage(), UseDebouncer, KdsPage(), formatDateDDMMYYYY(), Del
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `cn()` connect `Community 2` to `Community 1`, `Community 5`, `Community 6`, `Community 20`, `Community 21`?**
-  _High betweenness centrality (0.261) - this node is a cross-community bridge._
+  _High betweenness centrality (0.250) - this node is a cross-community bridge._
 - **Why does `clsx` connect `Community 1` to `Community 2`?**
   _High betweenness centrality (0.130) - this node is a cross-community bridge._
 - **What connects `Category`, `Product`, `CartItem` to the rest of the system?**
   _132 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.07231638418079096 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06758832565284179 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.05128205128205128 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.055135135135135134 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05745814307458143 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
