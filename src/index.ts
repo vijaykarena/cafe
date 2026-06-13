@@ -1,62 +1,28 @@
 import { serve } from "bun";
-import index from "./index.html";
-import { query } from "./lib/db";
+import indexHtml from "./index.html";
 
+// Start Express Backend
+import "./backend/server";
+
+// Start Bun Frontend Server (Proxies /api -> Express at :5000)
 const server = serve({
-  routes: {
-    // Serve index.html for all unmatched routes.
-    "/*": index,
-
-    "/api/db-test": async () => {
-      try {
-        const result = await query("SELECT * FROM users ORDER BY id ASC");
-        return Response.json({
-          success: true,
-          message: "Successfully connected to PostgreSQL database!",
-          users: result.rows,
-        });
-      } catch (error: any) {
-        return Response.json(
-          {
-            success: false,
-            message: "Failed to connect to the database or retrieve users.",
-            error: error.message || String(error),
-          },
-          { status: 500 }
-        );
-      }
-    },
-
-    "/api/hello": {
-      async GET(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "GET",
-        });
-      },
-      async PUT(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "PUT",
-        });
-      },
-    },
-
-    "/api/hello/:name": async req => {
-      const name = req.params.name;
-      return Response.json({
-        message: `Hello, ${name}!`,
+  port: 3030,
+  async fetch(req) {
+    const url = new URL(req.url);
+    if (url.pathname.startsWith("/api/")) {
+      const targetUrl = new URL(url.pathname + url.search, "http://localhost:5050");
+      return fetch(targetUrl.toString(), {
+        method: req.method,
+        headers: req.headers,
+        body: req.body,
       });
-    },
+    }
+    return indexHtml;
   },
-
   development: process.env.NODE_ENV !== "production" && {
-    // Enable browser hot reloading in development
     hmr: true,
-
-    // Echo console logs from the browser to the server
     console: true,
   },
 });
 
-console.log(`🚀 Server running at ${server.url}`);
+console.log(`🚀 Frontend Dev Server running at http://localhost:${server.port}`);

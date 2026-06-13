@@ -9,8 +9,6 @@ async function createDatabaseIfNotExists() {
 
   if (connectionString) {
     try {
-      // Parse connection string and replace the database name with 'postgres'
-      // to connect to the default database and create 'cafe_pos'.
       const url = new URL(connectionString);
       url.pathname = "/postgres";
       client = new Client({ connectionString: url.toString() });
@@ -45,7 +43,6 @@ async function createDatabaseIfNotExists() {
     }
   } catch (error) {
     console.warn("⚠️ Note: Could not auto-create database 'cafe_pos' from default 'postgres' database.");
-    console.warn("This is normal if your user lacks database creation permissions or the default db name is different.");
     console.warn("Continuing initialization by trying to connect to 'cafe_pos' directly...");
   } finally {
     try {
@@ -55,7 +52,6 @@ async function createDatabaseIfNotExists() {
 }
 
 async function initializeDatabase() {
-  // First, check and create database if possible
   await createDatabaseIfNotExists();
 
   console.log("⚡ Connecting to 'cafe_pos' database...");
@@ -105,9 +101,7 @@ async function initializeDatabase() {
     console.error("❌ Error running database initialization query:");
     console.error(error);
   } finally {
-    // Release the client back to the pool
     client.release();
-    // End the pool to allow the process to terminate
     await pool.end();
   }
 }

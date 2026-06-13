@@ -23,6 +23,8 @@
     "noImplicitOverride": true,
 
     "paths": {
+      "@/components/*": ["./src/frontend/components/*"],
+      "@/lib/*": ["./src/frontend/lib/*"],
       "@/*": ["./src/*"]
     },
 
