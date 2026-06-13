@@ -944,25 +944,25 @@ export default function PosTerminalPage() {
             </h2>
 
             {/* Paper Receipt Box */}
-            <div className="bg-gray-50 border border-gray-200 text-zinc-100 p-6 rounded-xl font-mono text-[10px] space-y-4 shadow-sm select-text">
+            <div className="bg-gray-50 border border-gray-200 text-zinc-800 p-6 rounded-xl font-mono text-[10px] space-y-4 shadow-sm select-text">
               <div className="text-center space-y-0.5">
-                <h3 className="font-bold text-xs uppercase tracking-tight">
+                <h3 className="font-bold text-xs uppercase tracking-tight text-zinc-900">
                   CAFE POS SYSTEM
                 </h3>
-                <p className="text-zinc-400 text-[9px]">
+                <p className="text-zinc-500 text-[9px]">
                   123 Gourmet Lane, Food City
                 </p>
-                <p className="text-zinc-400 text-[9px]">Tel: 1800-CAFE-POS</p>
+                <p className="text-zinc-500 text-[9px]">Tel: 1800-CAFE-POS</p>
               </div>
 
-              <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1">
+              <div className="border-t border-dashed border-gray-300 pt-2 space-y-1">
                 <p>Order Ref: {lastOrderDetails.order_number}</p>
                 <p>Date: {formatDate(lastOrderDetails.date)}</p>
                 <p>Table: {lastOrderDetails.table}</p>
                 <p>Customer: {lastOrderDetails.customer}</p>
               </div>
 
-              <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1.5">
+              <div className="border-t border-dashed border-gray-300 pt-2 space-y-1.5">
                 {lastOrderDetails.items.map((item: any) => {
                   const price =
                     item.customPrice !== undefined
@@ -981,7 +981,7 @@ export default function PosTerminalPage() {
                 })}
               </div>
 
-              <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1 text-right">
+              <div className="border-t border-dashed border-gray-300 pt-2 space-y-1 text-right">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
                   <span>
@@ -1007,7 +1007,7 @@ export default function PosTerminalPage() {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold border-t border-zinc-800 pt-1 text-xs text-zinc-900">
+                <div className="flex justify-between font-bold border-t border-gray-300 pt-1 text-xs text-zinc-900">
                   <span>TOTAL PAID:</span>
                   <span>
                     {formatCurrency(lastOrderDetails.total, "INR", "en-IN")}
@@ -1015,7 +1015,7 @@ export default function PosTerminalPage() {
                 </div>
               </div>
 
-              <div className="text-center border-t border-dashed border-zinc-800 pt-3 text-[9px] text-gray-500 uppercase tracking-wider">
+              <div className="text-center border-t border-dashed border-gray-300 pt-3 text-[9px] text-gray-500 uppercase tracking-wider">
                 Thank you! Scan QR to review.
               </div>
             </div>
@@ -1027,7 +1027,7 @@ export default function PosTerminalPage() {
                   placeholder="Enter email address"
                   value={receiptEmail}
                   onChange={(e) => setReceiptEmail(e.target.value)}
-                  className="flex-1 px-3 py-2 text-xs rounded-xl bg-gray-50 border border-gray-200 text-zinc-100 focus:outline-none focus:border-[#F9F5F2]"
+                  className="flex-1 px-3 py-2 text-xs rounded-xl bg-gray-50 border border-gray-200 text-zinc-900 focus:outline-none focus:border-zinc-400 placeholder:text-gray-400"
                 />
                 <button
                   onClick={() =>
