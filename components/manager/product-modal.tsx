@@ -96,7 +96,7 @@ export function ProductModal({
       } else {
         reset({
           name: "",
-          category_id: categories.length > 0 ? categories[0].id : "",
+          category_id: categories.length > 0 ? categories[0].name : "",
           price: "",
           tax: "5",
           description: "",
