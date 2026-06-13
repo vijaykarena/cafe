@@ -48,8 +48,12 @@ export default function LoginPage() {
         router.push('/admin');
       } else if (profile.role === 'cook') {
         router.push('/kds');
+      } else if (profile.role === 'cashier') {
+        router.push('/cashier');
+      } else if (profile.role === 'waiter') {
+        router.push('/waiter');
       } else {
-        router.push('/pos');
+        router.push('/');
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during login');

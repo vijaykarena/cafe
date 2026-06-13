@@ -4,6 +4,7 @@
 -- 1. Create Profiles Table (syncs with auth.users)
 create table public.profiles (
   id uuid references auth.users on delete cascade primary key,
+  manager_id uuid references public.profiles(id) on delete set null,
   name text not null,
   email text not null unique,
   role text not null check (role in ('admin', 'manager', 'cashier', 'cook', 'waiter')),
@@ -175,16 +176,17 @@ alter table public.payment_methods enable row level security;
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, name, email, role)
+  insert into public.profiles (id, manager_id, name, email, role)
   values (
     new.id,
+    (new.raw_user_meta_data->>'manager_id')::uuid,
     coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
     new.email,
     coalesce(new.raw_user_meta_data->>'role', 'cashier')
   );
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 create trigger on_auth_user_created
   after insert on auth.users
@@ -197,7 +199,13 @@ create trigger on_auth_user_created
 
 create policy "Allow read access to all profiles" on public.profiles for select using (true);
 create policy "Allow update access to own profile" on public.profiles for update using (auth.uid() = id);
-create policy "Allow all access to admin profiles" on public.profiles for all using (
+create policy "Allow insert access to admin profiles" on public.profiles for insert with check (
+  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+);
+create policy "Allow update access to admin profiles" on public.profiles for update using (
+  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+);
+create policy "Allow delete access to admin profiles" on public.profiles for delete using (
   exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
 );
 
@@ -232,51 +240,4 @@ create policy "Allow all access to promotions" on public.promotions for all usin
 create policy "Allow all access to payment_methods" on public.payment_methods for all using (auth.role() = 'authenticated');
 
 
--- ==================== SEED DATA ====================
 
--- Seed Payment Methods
-insert into public.payment_methods (name, is_enabled, upi_id) values
-('cash', true, null),
-('card', true, null),
-('upi', true, 'cafe@ybl')
-on conflict (name) do nothing;
-
--- Seed Default Categories
-insert into public.categories (id, name, color) values
-('c171e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Hot Coffee', '#8B4513'),
-('c271e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Cold Drinks', '#1E90FF'),
-('c371e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Bakery', '#FFA500'),
-('c471e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Snacks', '#FF4500')
-on conflict (name) do nothing;
-
--- Seed Default Products
-insert into public.products (name, category_id, price, unit_of_measure, tax, description) values
-('Espresso', 'c171e7db-5f4a-4467-9c9c-5e5d1656b27e', 2.50, 'piece', 5.00, 'Rich and bold double shot espresso.'),
-('Cappuccino', 'c171e7db-5f4a-4467-9c9c-5e5d1656b27e', 3.75, 'piece', 5.00, 'Espresso with steamed milk and thick foam layer.'),
-('Iced Latte', 'c271e7db-5f4a-4467-9c9c-5e5d1656b27e', 4.25, 'piece', 5.00, 'Chilled espresso with cold milk over ice.'),
-('Chocolate Muffin', 'c371e7db-5f4a-4467-9c9c-5e5d1656b27e', 3.00, 'piece', 10.00, 'Freshly baked muffin packed with chocolate chips.'),
-('Butter Croissant', 'c371e7db-5f4a-4467-9c9c-5e5d1656b27e', 3.50, 'piece', 10.00, 'Flaky, buttery French pastry.'),
-('Club Sandwich', 'c471e7db-5f4a-4467-9c9c-5e5d1656b27e', 6.50, 'piece', 12.00, 'Toasted double-decker sandwich with chicken, lettuce, and tomato.')
-on conflict do nothing;
-
--- Seed Default Floor
-insert into public.floors (id, name) values
-('f171e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Main Floor'),
-('f271e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Terrace')
-on conflict (name) do nothing;
-
--- Seed Default Tables
-insert into public.tables (floor_id, table_number, seats, is_active) values
-('f171e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Table 1', 2, true),
-('f171e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Table 2', 4, true),
-('f171e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Table 3', 4, true),
-('f171e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Table 4', 6, true),
-('f271e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Table 10', 2, true),
-('f271e7db-5f4a-4467-9c9c-5e5d1656b27e', 'Table 11', 4, true)
-on conflict do nothing;
-
--- Seed Default Coupons
-insert into public.coupons (code, discount_type, value) values
-('WELCOME10', 'percentage', 10.00),
-('SAVE5', 'fixed', 5.00)
-on conflict (code) do nothing;

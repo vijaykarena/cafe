@@ -12,3 +12,14 @@ export const supabaseServer = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: false, // Prevents session sharing server-side
   },
 });
+
+export const supabaseAdmin = createClient(
+  supabaseUrl,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);

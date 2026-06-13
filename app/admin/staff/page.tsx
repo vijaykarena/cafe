@@ -2,21 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { Profile } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminStaffPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [showAddForm, setShowAddForm] = useState(false);
-
-  // Form Inputs
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'admin' | 'cashier'>('cashier');
-  const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     loadData();
+    fetchUser();
   }, []);
+
+  const fetchUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUser(user);
+  };
 
   const loadData = async () => {
     try {
@@ -28,46 +28,7 @@ export default function AdminStaffPage() {
     }
   };
 
-  const handleCreateStaff = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const payload = {
-        name,
-        email,
-        role,
-        password, // passed for auth creation in case server hook exists
-      };
 
-      const res = await fetch('/api/staff', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      setProfiles([...profiles, data]);
-      resetForm();
-    } catch (err: any) {
-      // Mock fallback
-      const mockId = 'mock-user-' + Date.now();
-      const newProfile: Profile = {
-        id: mockId,
-        name,
-        email,
-        role,
-        is_archived: false,
-        created_at: new Date().toISOString(),
-      };
-
-      setProfiles([...profiles, newProfile]);
-      resetForm();
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleToggleArchive = async (id: string, currentStatus: boolean) => {
     try {
@@ -102,13 +63,7 @@ export default function AdminStaffPage() {
     }
   };
 
-  const resetForm = () => {
-    setName('');
-    setEmail('');
-    setPassword('');
-    setRole('cashier');
-    setShowAddForm(false);
-  };
+
 
   return (
     <div className="p-8 space-y-6">
@@ -119,7 +74,7 @@ export default function AdminStaffPage() {
         </div>
 
         <button
-          onClick={() => setShowAddForm(true)}
+          onClick={() => window.location.href = '/admin/users'}
           className="px-4 py-2 bg-amber-500 hover:bg-amber-600 rounded-lg text-xs font-semibold text-black transition-colors cursor-pointer"
         >
           Create Employee
@@ -166,13 +121,15 @@ export default function AdminStaffPage() {
                   <td className="py-3 text-right space-x-2">
                     <button
                       onClick={() => handleToggleArchive(profile.id, profile.is_archived)}
-                      className="px-2.5 py-1 rounded bg-zinc-950 hover:bg-zinc-850 border border-zinc-850 text-zinc-400 cursor-pointer transition-colors"
+                      disabled={currentUser?.id === profile.id}
+                      className="px-2.5 py-1 rounded bg-zinc-950 hover:bg-zinc-850 border border-zinc-850 text-zinc-400 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {profile.is_archived ? 'Unarchive' : 'Archive'}
                     </button>
                     <button
                       onClick={() => handleDeleteStaff(profile.id)}
-                      className="px-2.5 py-1 rounded bg-red-950/20 hover:bg-red-950/40 border border-red-900/30 text-red-400 cursor-pointer transition-colors"
+                      disabled={currentUser?.id === profile.id}
+                      className="px-2.5 py-1 rounded bg-red-950/20 hover:bg-red-950/40 border border-red-900/30 text-red-400 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>
@@ -192,79 +149,6 @@ export default function AdminStaffPage() {
         </div>
       </div>
 
-      {/* ==================== FORM MODAL ==================== */}
-      {showAddForm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <form onSubmit={handleCreateStaff} className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-4">
-            <h2 className="text-lg font-bold text-white">Create Employee Account</h2>
-            
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase text-zinc-400">Full Name</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Jane Smith"
-                className="w-full px-4 py-2 text-sm rounded bg-zinc-950 border border-zinc-800 text-white focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase text-zinc-400">Email Address</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="jane@cafe.com"
-                className="w-full px-4 py-2 text-sm rounded bg-zinc-955 border border-zinc-800 text-white focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase text-zinc-400">Password</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-4 py-2 text-sm rounded bg-zinc-950 border border-zinc-800 text-white focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase text-zinc-400">System Role</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as any)}
-                className="w-full px-3 py-2 text-sm rounded bg-zinc-955 border border-zinc-800 text-zinc-300 focus:outline-none"
-              >
-                <option value="cashier">Cashier / Employee</option>
-                <option value="admin">Administrator</option>
-              </select>
-            </div>
-
-            <div className="flex gap-2 pt-2 text-xs font-semibold">
-              <button
-                type="button"
-                onClick={resetForm}
-                className="flex-1 py-2 bg-zinc-850 border border-zinc-800 text-zinc-400 rounded text-center cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-black rounded text-center cursor-pointer"
-              >
-                {loading ? 'Creating...' : 'Create Account'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
     </div>
   );
 }
