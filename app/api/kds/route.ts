@@ -17,7 +17,7 @@ export async function GET() {
       table: ticket.orders?.table_id || 'Takeaway', // or resolve table name
       time: ticket.created_at,
       status: ticket.status,
-      items: (ticket.orders?.order_items || []).map((oi: any) => ({
+      items: (ticket.orders?.order_items || []).filter((oi: any) => !oi.is_served).map((oi: any) => ({
         id: oi.id,
         name: oi.products?.name || 'Unknown Item',
         quantity: oi.quantity,
@@ -79,6 +79,12 @@ export async function DELETE(request: Request) {
       .eq('order_id', orderId);
 
     if (error) throw error;
+
+    // Mark all current order_items as served
+    await supabaseAdmin
+      .from('order_items')
+      .update({ is_served: true })
+      .eq('order_id', orderId);
 
     // Retrieve order to perform a "touch" update and trigger realtime events on the orders table
     const { data: order } = await supabaseAdmin

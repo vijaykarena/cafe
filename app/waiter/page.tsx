@@ -44,6 +44,7 @@ interface Floor {
 interface OrderItem {
   product: Product;
   quantity: number;
+  isServed?: boolean;
 }
 
 export default function WaiterDashboard() {
@@ -212,6 +213,7 @@ export default function WaiterDashboard() {
         return {
           product: prod,
           quantity: oi.quantity,
+          isServed: oi.is_served || false,
         };
       });
       setCart(items);
@@ -257,17 +259,17 @@ export default function WaiterDashboard() {
 
   // Cart operations
   const addToCart = (product: Product) => {
-    const existing = cart.find((item) => item.product.id === product.id);
+    const existing = cart.find((item) => item.product.id === product.id && !item.isServed);
     if (existing) {
       setCart(
         cart.map((item) =>
-          item.product.id === product.id
+          item.product.id === product.id && !item.isServed
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         ),
       );
     } else {
-      setCart([...cart, { product, quantity: 1 }]);
+      setCart([...cart, { product, quantity: 1, isServed: false }]);
     }
   };
 
@@ -275,29 +277,8 @@ export default function WaiterDashboard() {
     setCart(
       cart
         .map((item) => {
-          if (item.product.id === productId) {
+          if (item.product.id === productId && !item.isServed) {
             const nextQty = item.quantity + delta;
-
-            // Prevent reducing served item qty
-            const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
-            const isServedItem =
-              !kdsTicket &&
-              activeOrderForTable?.order_items?.some(
-                (oi: any) => oi.product_id === productId,
-              );
-            if (isServedItem) {
-              const dbItem = activeOrderForTable?.order_items?.find(
-                (oi: any) => oi.product_id === productId,
-              );
-              const dbQty = dbItem ? dbItem.quantity : 0;
-              if (nextQty < dbQty) {
-                toast.warning(
-                  "Cannot reduce quantity of already served items.",
-                );
-                return item;
-              }
-            }
-
             return nextQty > 0 ? { ...item, quantity: nextQty } : null;
           }
           return item;
@@ -307,30 +288,11 @@ export default function WaiterDashboard() {
   };
 
   const removeFromCart = (productId: string) => {
-    const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
-    const isServedItem =
-      !kdsTicket &&
-      activeOrderForTable?.order_items?.some(
-        (oi: any) => oi.product_id === productId,
-      );
-    if (isServedItem) {
-      toast.error("Cannot remove already served items.");
-      return;
-    }
-    setCart(cart.filter((item) => item.product.id !== productId));
+    setCart(cart.filter((item) => !(item.product.id === productId && !item.isServed)));
   };
 
   const clearCart = () => {
-    const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
-    const dbItemIds = new Set(
-      (activeOrderForTable?.order_items || []).map((oi: any) => oi.product_id),
-    );
-
-    if (!kdsTicket && dbItemIds.size > 0) {
-      setCart(cart.filter((item) => !dbItemIds.has(item.product.id)));
-    } else {
-      setCart([]);
-    }
+    setCart(cart.filter((item) => item.isServed));
   };
 
   // Calculations
@@ -371,21 +333,25 @@ export default function WaiterDashboard() {
         // Let's filter the cart items to find which ones are newly added.
         // If an item was already present in database draft with qty Q, and cart has qty C,
         // then we append (C - Q) if C > Q. If C <= Q, we don't append it to kitchen again.
-        const dbItems = activeOrderForTable.order_items || [];
+        const dbItems = (activeOrderForTable.order_items || []).filter(
+          (oi: any) => !oi.is_served,
+        );
         const itemsToAppend: OrderItem[] = [];
 
-        cart.forEach((cartItem) => {
-          const dbItem = dbItems.find(
-            (di: any) => di.product_id === cartItem.product.id,
-          );
-          const dbQty = dbItem ? dbItem.quantity : 0;
-          if (cartItem.quantity > dbQty) {
-            itemsToAppend.push({
-              product: cartItem.product,
-              quantity: cartItem.quantity - dbQty,
-            });
-          }
-        });
+        cart
+          .filter((item) => !item.isServed)
+          .forEach((cartItem) => {
+            const dbItem = dbItems.find(
+              (di: any) => di.product_id === cartItem.product.id,
+            );
+            const dbQty = dbItem ? dbItem.quantity : 0;
+            if (cartItem.quantity > dbQty) {
+              itemsToAppend.push({
+                product: cartItem.product,
+                quantity: cartItem.quantity - dbQty,
+              });
+            }
+          });
 
         if (itemsToAppend.length === 0) {
           toast.success("Kitchen order is already up to date!");
@@ -497,23 +463,13 @@ export default function WaiterDashboard() {
   }, [products, activeCategory]);
 
   const hasServedItems = useMemo(() => {
-    const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
-    if (kdsTicket) return false;
-    const dbItemIds = new Set(
-      (activeOrderForTable?.order_items || []).map((oi: any) => oi.product_id),
-    );
-    return cart.some((item) => dbItemIds.has(item.product.id));
-  }, [cart, activeOrderForTable]);
+    return cart.some((item) => item.isServed);
+  }, [cart]);
 
   const hasUnservedItems = useMemo(() => {
     if (cart.length === 0) return false;
-    const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
-    if (kdsTicket) return true;
-    const dbItemIds = new Set(
-      (activeOrderForTable?.order_items || []).map((oi: any) => oi.product_id),
-    );
-    return cart.some((item) => !dbItemIds.has(item.product.id));
-  }, [cart, activeOrderForTable]);
+    return cart.some((item) => !item.isServed);
+  }, [cart]);
 
   if (loading) {
     return (
@@ -712,7 +668,7 @@ export default function WaiterDashboard() {
                 : "No Table Selected"}{" "}
               Order
             </h3>
-            {cart.length > 0 && !hasServedItems && (
+            {hasUnservedItems && (
               <button
                 onClick={clearCart}
                 className="text-[10px] text-zinc-500 hover:text-zinc-300 font-bold cursor-pointer transition-colors"
@@ -725,15 +681,11 @@ export default function WaiterDashboard() {
           {/* Cart Items List */}
           <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
             {cart.map((item) => {
-              const kdsTicket = activeOrderForTable?.kds_tickets?.[0];
-              const dbItem = activeOrderForTable?.order_items?.find(
-                (oi: any) => oi.product_id === item.product.id,
-              );
-              const isItemServed = !kdsTicket && !!dbItem;
+              const isItemServed = item.isServed || false;
 
               return (
                 <div
-                  key={item.product.id}
+                  key={`${item.product.id}-${isItemServed ? 'served' : 'new'}`}
                   className="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-850"
                 >
                   <div className="min-w-0 flex-1 pr-2">
