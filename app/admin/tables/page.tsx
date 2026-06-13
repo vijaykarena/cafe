@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Table, Floor } from '@/lib/types';
 
 export default function AdminTablesPage() {
@@ -24,12 +23,14 @@ export default function AdminTablesPage() {
 
   const loadData = async () => {
     try {
-      const { data: flrs } = await supabase.from('floors').select('*').order('name');
-      setFloors(flrs || []);
-      if (flrs && flrs.length > 0) setActiveFloor(flrs[0].id);
-
-      const { data: tbls } = await supabase.from('tables').select('*').order('table_number');
-      setTables(tbls || []);
+      const res = await fetch('/api/tables');
+      const data = await res.json();
+      
+      setFloors(data.floors || []);
+      setTables(data.tables || []);
+      if (data.floors && data.floors.length > 0) {
+        setActiveFloor(data.floors[0].id);
+      }
     } catch (err) {
       console.error('Offline / DB error loading tables', err);
     }
@@ -38,14 +39,17 @@ export default function AdminTablesPage() {
   const handleAddFloor = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { data, error } = await supabase
-        .from('floors')
-        .insert({ name: floorName })
-        .select()
-        .single();
+      const res = await fetch('/api/tables', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: floorName, type: 'floor' }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
       setFloors([...floors, data]);
+      if (!activeFloor) setActiveFloor(data.id);
       setFloorName('');
       setShowFloorForm(false);
     } catch (err) {
@@ -72,13 +76,15 @@ export default function AdminTablesPage() {
         is_active: true,
       };
 
-      const { data, error } = await supabase
-        .from('tables')
-        .insert(payload)
-        .select()
-        .single();
+      const res = await fetch('/api/tables', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
       setTables([...tables, data]);
       resetTableForm();
     } catch (err) {

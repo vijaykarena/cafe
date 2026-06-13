@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Coupon, Promotion, Product } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 
@@ -34,15 +33,15 @@ export default function AdminPromosPage() {
 
   const loadData = async () => {
     try {
-      const { data: c } = await supabase.from('coupons').select('*');
-      setCoupons(c || []);
+      const res = await fetch('/api/promotions');
+      const data = await res.json();
+      setCoupons(data.coupons || []);
+      setPromotions(data.promotions || []);
 
-      const { data: p } = await supabase.from('promotions').select('*');
-      setPromotions(p || []);
-
-      const { data: pr } = await supabase.from('products').select('*');
-      setProducts(pr || []);
-      if (pr && pr.length > 0) setPromoTriggerProduct(pr[0].id);
+      const prodsRes = await fetch('/api/products');
+      const prods = await prodsRes.json();
+      setProducts(prods || []);
+      if (prods && prods.length > 0) setPromoTriggerProduct(prods[0].id);
     } catch (err) {
       console.error('Error loading promotions:', err);
     }
@@ -55,16 +54,18 @@ export default function AdminPromosPage() {
         code: couponCode.toUpperCase(),
         discount_type: couponType,
         value: parseFloat(couponValue),
-        is_active: true,
+        type: 'coupon',
       };
 
-      const { data, error } = await supabase
-        .from('coupons')
-        .insert(payload)
-        .select()
-        .single();
+      const res = await fetch('/api/promotions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
       setCoupons([...coupons, data]);
       resetCouponForm();
     } catch (err) {
@@ -93,22 +94,24 @@ export default function AdminPromosPage() {
     try {
       const payload = {
         name: promoName,
-        type: promoType,
+        promo_type: promoType,
         trigger_product_id: promoType === 'product' ? (promoTriggerProduct || null) : null,
         min_quantity: promoType === 'product' ? (parseInt(promoMinQty) || 1) : null,
         min_order_amount: promoType === 'order' ? (parseFloat(promoMinAmount) || 0) : null,
         discount_type: promoDiscountType,
         value: parseFloat(promoValue),
-        is_active: true,
+        type: 'promo',
       };
 
-      const { data, error } = await supabase
-        .from('promotions')
-        .insert(payload)
-        .select()
-        .single();
+      const res = await fetch('/api/promotions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
       setPromotions([...promotions, data]);
       resetPromoForm();
     } catch (err) {
@@ -169,7 +172,7 @@ export default function AdminPromosPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-zinc-850 text-zinc-500 font-semibold uppercase tracking-wider">
+                <tr className="border-b border-zinc-855 text-zinc-505 font-semibold uppercase tracking-wider">
                   <th className="pb-3">Code</th>
                   <th className="pb-3">Type</th>
                   <th className="pb-3 text-right">Value</th>
@@ -194,7 +197,7 @@ export default function AdminPromosPage() {
 
                 {coupons.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="py-8 text-center text-zinc-500">No coupons active.</td>
+                    <td colSpan={4} className="py-8 text-center text-zinc-550">No coupons active.</td>
                   </tr>
                 )}
               </tbody>
@@ -208,7 +211,7 @@ export default function AdminPromosPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-zinc-850 text-zinc-500 font-semibold uppercase tracking-wider">
+                <tr className="border-b border-zinc-855 text-zinc-505 font-semibold uppercase tracking-wider">
                   <th className="pb-3">Promo Rule</th>
                   <th className="pb-3">Trigger Condition</th>
                   <th className="pb-3 text-right">Discount</th>
@@ -231,7 +234,7 @@ export default function AdminPromosPage() {
 
                 {promotions.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="py-8 text-center text-zinc-500">No automated rules.</td>
+                    <td colSpan={3} className="py-8 text-center text-zinc-550">No automated rules.</td>
                   </tr>
                 )}
               </tbody>
@@ -266,7 +269,7 @@ export default function AdminPromosPage() {
                 <select
                   value={couponType}
                   onChange={(e) => setCouponType(e.target.value as any)}
-                  className="w-full px-3 py-2 text-sm rounded bg-zinc-950 border border-zinc-800 text-zinc-300 focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded bg-zinc-955 border border-zinc-800 text-zinc-300 focus:outline-none"
                 >
                   <option value="percentage">Percentage</option>
                   <option value="fixed">Fixed Amount</option>
@@ -343,7 +346,7 @@ export default function AdminPromosPage() {
                   <select
                     value={promoTriggerProduct}
                     onChange={(e) => setPromoTriggerProduct(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded bg-zinc-950 border border-zinc-800 text-zinc-300 focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded bg-zinc-955 border border-zinc-800 text-zinc-300 focus:outline-none"
                   >
                     {products.map(p => (
                       <option key={p.id} value={p.id}>{p.name}</option>
@@ -358,7 +361,7 @@ export default function AdminPromosPage() {
                     value={promoMinQty}
                     onChange={(e) => setPromoMinQty(e.target.value)}
                     placeholder="3"
-                    className="w-full px-4 py-2 text-sm rounded bg-zinc-950 border border-zinc-800 text-white focus:outline-none"
+                    className="w-full px-4 py-2 text-sm rounded bg-zinc-955 border border-zinc-800 text-white focus:outline-none"
                   />
                 </div>
               </div>
@@ -383,7 +386,7 @@ export default function AdminPromosPage() {
                 <select
                   value={promoDiscountType}
                   onChange={(e) => setPromoDiscountType(e.target.value as any)}
-                  className="w-full px-3 py-2 text-sm rounded bg-zinc-950 border border-zinc-800 text-zinc-300 focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded bg-zinc-955 border border-zinc-800 text-zinc-300 focus:outline-none"
                 >
                   <option value="percentage">Percentage</option>
                   <option value="fixed">Fixed Amount</option>

@@ -26,57 +26,17 @@ export default function KdsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('All');
   
-  // Realtime subscription simulation/setup
   useEffect(() => {
-    // 1. Initial Mock / Seed tickets for demo
-    const mockTickets: KdsTicket[] = [
-      {
-        id: 't-1',
-        orderNumber: 'ORD-10492',
-        table: 'Table 3',
-        time: new Date(Date.now() - 12 * 60000).toISOString(), // 12m ago
-        status: 'to_cook',
-        items: [
-          { id: 'i-1', name: 'Espresso', quantity: 2, isCompleted: false, category: 'Coffee' },
-          { id: 'i-2', name: 'Butter Croissant', quantity: 1, isCompleted: false, category: 'Bakery' },
-        ]
-      },
-      {
-        id: 't-2',
-        orderNumber: 'ORD-10491',
-        table: 'Table 1',
-        time: new Date(Date.now() - 25 * 60000).toISOString(), // 25m ago
-        status: 'preparing',
-        items: [
-          { id: 'i-3', name: 'Cappuccino', quantity: 1, isCompleted: true, category: 'Coffee' },
-          { id: 'i-4', name: 'Chocolate Muffin', quantity: 2, isCompleted: false, category: 'Bakery' },
-          { id: 'i-5', name: 'Club Sandwich', quantity: 1, isCompleted: false, category: 'Snacks' },
-        ]
-      },
-      {
-        id: 't-3',
-        orderNumber: 'ORD-10490',
-        table: 'Table 11',
-        time: new Date(Date.now() - 40 * 60000).toISOString(), // 40m ago
-        status: 'completed',
-        items: [
-          { id: 'i-6', name: 'Iced Latte', quantity: 1, isCompleted: true, category: 'Cold Drinks' },
-          { id: 'i-7', name: 'Butter Croissant', quantity: 2, isCompleted: true, category: 'Bakery' },
-        ]
-      }
-    ];
+    fetchTickets();
 
-    setTickets(mockTickets);
-
-    // Setup Supabase Realtime Listener (if db table is active)
+    // Setup Supabase Realtime Listener to refetch KDS when a ticket is added/updated
     const channel = supabase
-      .channel('kds_orders')
+      .channel('kds_orders_live')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'kds_tickets' },
-        (payload) => {
-          console.log('New kitchen ticket received:', payload);
-          // Real-time integration handles loading new tickets from DB
+        { event: '*', schema: 'public', table: 'kds_tickets' },
+        () => {
+          fetchTickets();
         }
       )
       .subscribe();
@@ -86,34 +46,83 @@ export default function KdsPage() {
     };
   }, []);
 
-  // Update order stage
-  const moveTicketStage = (ticketId: string) => {
-    setTickets(tickets.map(ticket => {
-      if (ticket.id === ticketId) {
-        let nextStatus: KdsTicket['status'] = 'to_cook';
-        if (ticket.status === 'to_cook') nextStatus = 'preparing';
-        else if (ticket.status === 'preparing') nextStatus = 'completed';
-        else return ticket; // keep completed
+  const fetchTickets = async () => {
+    try {
+      const res = await fetch('/api/kds');
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setTickets(data || []);
+    } catch (err) {
+      console.error('Error fetching kitchen queue:', err);
+    }
+  };
 
-        return { ...ticket, status: nextStatus };
-      }
-      return ticket;
-    }));
+  // Update order stage
+  const moveTicketStage = async (ticketId: string) => {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+
+    let nextStatus: KdsTicket['status'] = 'to_cook';
+    if (ticket.status === 'to_cook') nextStatus = 'preparing';
+    else if (ticket.status === 'preparing') nextStatus = 'completed';
+    else return;
+
+    try {
+      const res = await fetch('/api/kds', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticket_id: ticketId,
+          status: nextStatus,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      // Local optimistic update
+      setTickets(tickets.map(t => t.id === ticketId ? { ...t, status: nextStatus } : t));
+    } catch (err) {
+      console.error('Failed to update ticket stage:', err);
+    }
   };
 
   // Toggle item completion (strikethrough)
-  const toggleItemComplete = (ticketId: string, itemId: string) => {
-    setTickets(tickets.map(ticket => {
-      if (ticket.id === ticketId) {
-        const updatedItems = ticket.items.map(item => 
-          item.id === itemId ? { ...item, isCompleted: !item.isCompleted } : item
-        );
-        
-        // If all items completed, check if we should auto-mark whole order
-        return { ...ticket, items: updatedItems };
-      }
-      return ticket;
-    }));
+  const toggleItemComplete = async (ticketId: string, itemId: string) => {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+
+    const item = ticket.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    const nextCompleted = !item.isCompleted;
+
+    try {
+      const res = await fetch('/api/kds', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          item_id: itemId,
+          is_completed: nextCompleted,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      // Local optimistic update
+      setTickets(tickets.map(t => {
+        if (t.id === ticketId) {
+          const updatedItems = t.items.map(i => 
+            i.id === itemId ? { ...i, isCompleted: nextCompleted } : i
+          );
+          return { ...t, items: updatedItems };
+        }
+        return t;
+      }));
+    } catch (err) {
+      console.error('Failed to complete item:', err);
+    }
   };
 
   // Categories list extracted from items
@@ -206,7 +215,7 @@ export default function KdsPage() {
                       key={item.id}
                       onClick={() => toggleItemComplete(ticket.id, item.id)}
                       className={`flex justify-between items-center py-0.5 cursor-pointer hover:bg-zinc-850/50 px-1 rounded transition-colors ${
-                        item.isCompleted ? 'text-zinc-650 line-through' : 'text-zinc-300'
+                        item.isCompleted ? 'text-zinc-655 line-through' : 'text-zinc-300'
                       }`}
                     >
                       <span>{item.name} <span className="text-zinc-550 text-xs font-semibold">({item.category})</span></span>
@@ -255,7 +264,7 @@ export default function KdsPage() {
                       key={item.id}
                       onClick={() => toggleItemComplete(ticket.id, item.id)}
                       className={`flex justify-between items-center py-0.5 cursor-pointer hover:bg-zinc-850/50 px-1 rounded transition-colors ${
-                        item.isCompleted ? 'text-zinc-650 line-through' : 'text-zinc-300'
+                        item.isCompleted ? 'text-zinc-655 line-through' : 'text-zinc-300'
                       }`}
                     >
                       <span>{item.name} <span className="text-zinc-550 text-xs font-semibold">({item.category})</span></span>

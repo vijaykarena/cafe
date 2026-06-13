@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
@@ -25,6 +24,9 @@ export default function LoginPage() {
 
       if (error) throw error;
 
+      // Set cookie for Next.js proxy.ts validation
+      document.cookie = `sb-access-token=${data.session?.access_token || ''}; path=/; max-age=604800; SameSite=Lax`;
+
       // Fetch profile to check role
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -36,12 +38,16 @@ export default function LoginPage() {
 
       if (profile.is_archived) {
         await supabase.auth.signOut();
+        // Clear cookie
+        document.cookie = 'sb-access-token=; path=/; max-age=0; SameSite=Lax';
         throw new Error('Your account is archived. Please contact an administrator.');
       }
 
       // Redirect based on role
-      if (profile.role === 'admin') {
+      if (profile.role === 'admin' || profile.role === 'manager') {
         router.push('/admin');
+      } else if (profile.role === 'cook') {
+        router.push('/kds');
       } else {
         router.push('/pos');
       }
@@ -105,15 +111,6 @@ export default function LoginPage() {
             {loading ? 'Logging in...' : 'Sign In'}
           </button>
         </form>
-
-        <div className="text-center pt-2">
-          <p className="text-zinc-500 text-xs">
-            Don't have an admin account?{' '}
-            <Link href="/signup" className="text-amber-500 hover:underline">
-              Create Admin
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );

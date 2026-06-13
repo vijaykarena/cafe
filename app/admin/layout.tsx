@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return;
       }
 
-      if (profile.role !== 'admin') {
+      if (profile.role !== 'admin' && profile.role !== 'manager') {
         router.push('/pos');
         return;
       }
@@ -46,6 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    document.cookie = 'sb-access-token=; path=/; max-age=0; SameSite=Lax';
     router.push('/login');
   };
 

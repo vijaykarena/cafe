@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Product, Category } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 
@@ -32,30 +31,34 @@ export default function AdminProductsPage() {
 
   const loadData = async () => {
     try {
-      const { data: cats } = await supabase.from('categories').select('*').order('name');
+      const catsRes = await fetch('/api/categories');
+      const cats = await catsRes.json();
       setCategories(cats || []);
       if (cats && cats.length > 0) {
         setProdCat(cats[0].id);
         setActiveCategory(cats[0].id);
       }
 
-      const { data: prods } = await supabase.from('products').select('*').order('name');
+      const prodsRes = await fetch('/api/products');
+      const prods = await prodsRes.json();
       setProducts(prods || []);
     } catch (err) {
-      console.error('Offline / DB error loading data', err);
+      console.error('API loading error in products page', err);
     }
   };
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { data, error } = await supabase
-        .from('categories')
-        .insert({ name: catName, color: catColor })
-        .select()
-        .single();
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: catName, color: catColor }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
       setCategories([...categories, data]);
       setCatName('');
       setShowCategoryForm(false);
@@ -85,13 +88,15 @@ export default function AdminProductsPage() {
         description: prodDesc || null,
       };
 
-      const { data, error } = await supabase
-        .from('products')
-        .insert(payload)
-        .select()
-        .single();
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
       setProducts([...products, data]);
       resetProductForm();
     } catch (err) {
@@ -187,7 +192,7 @@ export default function AdminProductsPage() {
                     <h4 className="font-semibold text-white text-sm">{prod.name}</h4>
                     <span className="font-bold text-amber-500 text-sm">{formatCurrency(prod.price)}</span>
                   </div>
-                  <p className="text-zinc-500 text-xs mt-2 line-clamp-2">{prod.description || 'No description.'}</p>
+                  <p className="text-zinc-505 text-xs mt-2 line-clamp-2">{prod.description || 'No description.'}</p>
                 </div>
 
                 <div className="flex items-center justify-between border-t border-zinc-850 pt-3 mt-4 text-[10px] text-zinc-400">
@@ -198,7 +203,7 @@ export default function AdminProductsPage() {
             ))}
 
             {filteredProducts.length === 0 && (
-              <div className="col-span-full py-16 text-center text-zinc-500 border border-dashed border-zinc-850 rounded-xl">
+              <div className="col-span-full py-16 text-center text-zinc-550 border border-dashed border-zinc-850 rounded-xl">
                 <p className="text-sm">No products found in this category.</p>
               </div>
             )}

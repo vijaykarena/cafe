@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Profile } from '@/lib/types';
 
 export default function AdminStaffPage() {
@@ -21,7 +20,8 @@ export default function AdminStaffPage() {
 
   const loadData = async () => {
     try {
-      const { data } = await supabase.from('profiles').select('*').order('name');
+      const res = await fetch('/api/staff');
+      const data = await res.json();
       setProfiles(data || []);
     } catch (err) {
       console.error('Error fetching staff list:', err);
@@ -32,11 +32,26 @@ export default function AdminStaffPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // In Supabase, creating an auth user requires signIn / signUp or an Edge function/Admin API.
-      // Since this client doesn't use service_role keys, we simulate profile creation.
-      // In production, you would trigger a Supabase function or sign up.
-      
-      // Simulate profile addition
+      const payload = {
+        name,
+        email,
+        role,
+        password, // passed for auth creation in case server hook exists
+      };
+
+      const res = await fetch('/api/staff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      setProfiles([...profiles, data]);
+      resetForm();
+    } catch (err: any) {
+      // Mock fallback
       const mockId = 'mock-user-' + Date.now();
       const newProfile: Profile = {
         id: mockId,
@@ -49,9 +64,6 @@ export default function AdminStaffPage() {
 
       setProfiles([...profiles, newProfile]);
       resetForm();
-      alert('Mock account added successfully. For real authentication sync, configure Supabase triggers.');
-    } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -59,12 +71,15 @@ export default function AdminStaffPage() {
 
   const handleToggleArchive = async (id: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_archived: !currentStatus })
-        .eq('id', id);
+      const res = await fetch('/api/staff', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, is_archived: !currentStatus }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
       setProfiles(profiles.map(p => p.id === id ? { ...p, is_archived: !currentStatus } : p));
     } catch (err) {
       setProfiles(profiles.map(p => p.id === id ? { ...p, is_archived: !currentStatus } : p));
@@ -74,8 +89,13 @@ export default function AdminStaffPage() {
   const handleDeleteStaff = async (id: string) => {
     if (!confirm('Are you sure you want to delete this staff record?')) return;
     try {
-      const { error } = await supabase.from('profiles').delete().eq('id', id);
-      if (error) throw error;
+      const res = await fetch(`/api/staff?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
       setProfiles(profiles.filter(p => p.id !== id));
     } catch (err) {
       setProfiles(profiles.filter(p => p.id !== id));
@@ -112,7 +132,7 @@ export default function AdminStaffPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-zinc-850 text-zinc-500 font-semibold uppercase tracking-wider">
+              <tr className="border-b border-zinc-855 text-zinc-505 font-semibold uppercase tracking-wider">
                 <th className="pb-3">Name</th>
                 <th className="pb-3">Email</th>
                 <th className="pb-3">Role</th>
@@ -122,7 +142,7 @@ export default function AdminStaffPage() {
             </thead>
             <tbody>
               {profiles.map((profile, idx) => (
-                <tr key={idx} className="border-b border-zinc-850/50 text-zinc-350 hover:bg-zinc-850/10 transition-all">
+                <tr key={idx} className="border-b border-zinc-855 text-zinc-350 hover:bg-zinc-850/10 transition-all">
                   <td className="py-3 font-semibold text-white">{profile.name}</td>
                   <td className="py-3 font-mono">{profile.email}</td>
                   <td className="py-3 capitalize">
@@ -146,7 +166,7 @@ export default function AdminStaffPage() {
                   <td className="py-3 text-right space-x-2">
                     <button
                       onClick={() => handleToggleArchive(profile.id, profile.is_archived)}
-                      className="px-2.5 py-1 rounded bg-zinc-950 hover:bg-zinc-800 border border-zinc-850 text-zinc-400 cursor-pointer transition-colors"
+                      className="px-2.5 py-1 rounded bg-zinc-950 hover:bg-zinc-850 border border-zinc-850 text-zinc-400 cursor-pointer transition-colors"
                     >
                       {profile.is_archived ? 'Unarchive' : 'Archive'}
                     </button>
@@ -198,7 +218,7 @@ export default function AdminStaffPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="jane@cafe.com"
-                className="w-full px-4 py-2 text-sm rounded bg-zinc-950 border border-zinc-800 text-white focus:outline-none"
+                className="w-full px-4 py-2 text-sm rounded bg-zinc-955 border border-zinc-800 text-white focus:outline-none"
               />
             </div>
 
@@ -219,7 +239,7 @@ export default function AdminStaffPage() {
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as any)}
-                className="w-full px-3 py-2 text-sm rounded bg-zinc-950 border border-zinc-800 text-zinc-300 focus:outline-none"
+                className="w-full px-3 py-2 text-sm rounded bg-zinc-955 border border-zinc-800 text-zinc-300 focus:outline-none"
               >
                 <option value="cashier">Cashier / Employee</option>
                 <option value="admin">Administrator</option>

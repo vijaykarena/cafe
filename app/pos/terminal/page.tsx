@@ -18,6 +18,7 @@ export default function PosTerminalPage() {
   const [floors, setFloors] = useState<Floor[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   // Selection states
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -48,28 +49,36 @@ export default function PosTerminalPage() {
 
   const loadData = async () => {
     try {
+      // Get active session
+      const sessRes = await fetch('/api/sessions');
+      const sessData = await sessRes.json();
+      if (sessData.active) {
+        setActiveSessionId(sessData.session.id);
+      }
+
       // 1. Fetch categories
-      const { data: cats } = await supabase.from('categories').select('*').order('name');
+      const catsRes = await fetch('/api/categories');
+      const cats = await catsRes.json();
       setCategories(cats || []);
       if (cats && cats.length > 0) setActiveCategory(cats[0].id);
 
       // 2. Fetch products
-      const { data: prods } = await supabase.from('products').select('*').order('name');
+      const prodsRes = await fetch('/api/products');
+      const prods = await prodsRes.json();
       setProducts(prods || []);
 
-      // 3. Fetch floors
-      const { data: flrs } = await supabase.from('floors').select('*').order('name');
-      setFloors(flrs || []);
+      // 3. Fetch floors & tables
+      const tablesRes = await fetch('/api/tables');
+      const tablesData = await tablesRes.json();
+      setFloors(tablesData.floors || []);
+      setTables(tablesData.tables || []);
 
-      // 4. Fetch tables
-      const { data: tbls } = await supabase.from('tables').select('*').order('table_number');
-      setTables(tbls || []);
-
-      // 5. Fetch customers
-      const { data: custs } = await supabase.from('customers').select('*').order('name');
+      // 4. Fetch customers
+      const custsRes = await fetch('/api/customers');
+      const custs = await custsRes.json();
       setCustomers(custs || []);
     } catch (err) {
-      console.error('Database connection error. Using mock data.', err);
+      console.error('API connection error. Using mock fallback.', err);
     }
   };
 
@@ -107,19 +116,17 @@ export default function PosTerminalPage() {
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
     try {
-      const { data: coupon } = await supabase
-        .from('coupons')
-        .select('*')
-        .eq('code', couponCode.toUpperCase())
-        .eq('is_active', true)
-        .single();
+      const res = await fetch('/api/promotions?type=coupons');
+      const coupons = await res.json();
+      
+      const coupon = coupons.find((c: any) => c.code === couponCode.toUpperCase() && c.is_active);
 
       if (coupon) {
         if (coupon.discount_type === 'percentage') {
           setDiscountPercent(Number(coupon.value));
         } else {
           // fixed discount conversion to equivalent percentage for simpler cart flow
-          const pct = (Number(coupon.value) / (subtotal + taxTotal)) * 100;
+          const pct = (Number(coupon.value) / (subtotal + taxTotal)) * 105;
           setDiscountPercent(Math.min(pct, 100));
         }
         alert('Coupon applied successfully!');
@@ -147,7 +154,33 @@ export default function PosTerminalPage() {
   const handleCheckout = async () => {
     setActionLoading(true);
     try {
+      if (!activeSessionId) {
+        throw new Error('No active POS session. Please open a session first.');
+      }
+
       const orderNum = 'ORD-' + Math.floor(Math.random() * 90000 + 10000);
+
+      // Create order via API route
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: activeSessionId,
+          table_id: selectedTable?.id || null,
+          customer_id: selectedCustomer?.id || null,
+          order_number: orderNum,
+          subtotal,
+          tax: taxTotal,
+          discount_amount: discountTotal,
+          total,
+          status: 'paid',
+          payment_method: selectedPaymentMethod,
+          items: cart,
+        }),
+      });
+
+      const orderResult = await res.json();
+      if (orderResult.error) throw new Error(orderResult.error);
 
       // Assemble order details
       const orderPayload = {
@@ -174,7 +207,8 @@ export default function PosTerminalPage() {
       setSelectedTable(null);
       setShowPaymentModal(false);
       setShowReceiptModal(true);
-    } catch (err) {
+    } catch (err: any) {
+      alert(`Checkout failed: ${err.message}`);
       console.error(err);
     } finally {
       setActionLoading(false);

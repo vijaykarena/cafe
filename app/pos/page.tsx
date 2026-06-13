@@ -22,28 +22,14 @@ export default function PosDashboardPage() {
   const fetchSessionData = async () => {
     setLoading(true);
     try {
-      // Get current open session
-      const { data: openSessions } = await supabase
-        .from('sessions')
-        .select('*')
-        .eq('status', 'open')
-        .order('opened_at', { ascending: false });
-
-      if (openSessions && openSessions.length > 0) {
-        setSession(openSessions[0]);
+      const res = await fetch('/api/sessions');
+      const data = await res.json();
+      
+      if (data.active) {
+        setSession(data.session);
       } else {
         setSession(null);
-        // Get last closed session
-        const { data: closedSessions } = await supabase
-          .from('sessions')
-          .select('*')
-          .eq('status', 'closed')
-          .order('closed_at', { ascending: false })
-          .limit(1);
-
-        if (closedSessions && closedSessions.length > 0) {
-          setLastSession(closedSessions[0]);
-        }
+        setLastSession(data.lastSession);
       }
     } catch (err) {
       console.error('Error fetching session:', err);
@@ -59,22 +45,22 @@ export default function PosDashboardPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data: newSession, error } = await supabase
-        .from('sessions')
-        .insert({
+      const res = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           opened_by: user.id,
           opening_balance: parseFloat(openingBalance),
-          status: 'open',
-        })
-        .select()
-        .single();
+        }),
+      });
 
-      if (error) throw error;
+      const newSession = await res.json();
+      if (newSession.error) throw new Error(newSession.error);
 
       setSession(newSession);
       router.push('/pos/terminal');
-    } catch (err) {
-      alert('Failed to open session. Ensure database schema is loaded.');
+    } catch (err: any) {
+      alert(`Failed to open session: ${err.message}`);
       console.error(err);
     } finally {
       setActionLoading(false);
@@ -86,21 +72,22 @@ export default function PosDashboardPage() {
     setActionLoading(true);
     try {
       const balance = parseFloat(closingBalance) || 0;
-      const { error } = await supabase
-        .from('sessions')
-        .update({
-          status: 'closed',
-          closed_at: new Date().toISOString(),
+      const res = await fetch('/api/sessions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: session.id,
           closing_balance: balance,
-        })
-        .eq('id', session.id);
+        }),
+      });
 
-      if (error) throw error;
+      const updated = await res.json();
+      if (updated.error) throw new Error(updated.error);
 
       await fetchSessionData();
       setClosingBalance('');
-    } catch (err) {
-      alert('Failed to close session.');
+    } catch (err: any) {
+      alert(`Failed to close session: ${err.message}`);
       console.error(err);
     } finally {
       setActionLoading(false);
@@ -109,6 +96,7 @@ export default function PosDashboardPage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    document.cookie = 'sb-access-token=; path=/; max-age=0; SameSite=Lax';
     router.push('/login');
   };
 

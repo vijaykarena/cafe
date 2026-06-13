@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import { PaymentMethod } from '@/lib/types';
 
 export default function AdminSettingsPage() {
@@ -15,18 +14,12 @@ export default function AdminSettingsPage() {
 
   const loadData = async () => {
     try {
-      const { data } = await supabase.from('payment_methods').select('*');
+      const res = await fetch('/api/settings');
+      const data = await res.json();
       if (data && data.length > 0) {
         setMethods(data);
-        const upi = data.find(m => m.name === 'upi');
+        const upi = data.find((m: any) => m.name === 'upi');
         if (upi?.upi_id) setUpiId(upi.upi_id);
-      } else {
-        // Mock default state
-        setMethods([
-          { id: '1', name: 'cash', is_enabled: true, upi_id: null, created_at: '' },
-          { id: '2', name: 'card', is_enabled: true, upi_id: null, created_at: '' },
-          { id: '3', name: 'upi', is_enabled: true, upi_id: 'cafe@ybl', created_at: '' },
-        ]);
       }
     } catch (err) {
       console.error('Error fetching settings:', err);
@@ -35,15 +28,17 @@ export default function AdminSettingsPage() {
 
   const handleToggle = async (id: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
-        .from('payment_methods')
-        .update({ is_enabled: !currentStatus })
-        .eq('id', id);
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, is_enabled: !currentStatus }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
       setMethods(methods.map(m => m.id === id ? { ...m, is_enabled: !currentStatus } : m));
     } catch (err) {
-      // Mock toggle
       setMethods(methods.map(m => m.id === id ? { ...m, is_enabled: !currentStatus } : m));
     }
   };
@@ -52,15 +47,15 @@ export default function AdminSettingsPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const upiMethod = methods.find(m => m.name === 'upi');
-      if (!upiMethod) return;
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'upi', upi_id: upiId }),
+      });
 
-      const { error } = await supabase
-        .from('payment_methods')
-        .update({ upi_id: upiId })
-        .eq('name', 'upi');
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
 
-      if (error) throw error;
       alert('UPI configurations updated successfully!');
     } catch (err) {
       alert('UPI updated locally (mock simulation)');
