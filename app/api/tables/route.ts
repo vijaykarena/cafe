@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseServer, supabaseAdmin } from '@/lib/supabase-server';
 
 export async function GET(request: Request) {
   try {
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     
     if (body.type === 'floor') {
-      const { data, error } = await supabaseServer
+      const { data, error } = await supabaseAdmin
         .from('floors')
         .insert({ name: body.name })
         .select()
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       if (error) throw error;
       return NextResponse.json(data);
     } else {
-      const { data, error } = await supabaseServer
+      const { data, error } = await supabaseAdmin
         .from('tables')
         .insert({
           floor_id: body.floor_id,

@@ -27,6 +27,11 @@ interface Table {
   is_active: boolean;
 }
 
+interface Floor {
+  id: string;
+  name: string;
+}
+
 interface OrderItem {
   product: Product;
   quantity: number;
@@ -38,21 +43,21 @@ export default function WaiterDashboard() {
 
   // Database loaded states
   const [dbTables, setDbTables] = useState<Table[]>([]);
+  const [floors, setFloors] = useState<Floor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [activeOrders, setActiveOrders] = useState<any[]>([]);
 
   // Selection states
-  const [selectedGridNum, setSelectedGridNum] = useState<number>(1);
+  const [selectedFloorId, setSelectedFloorId] = useState<string | null>(null);
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [cart, setCart] = useState<OrderItem[]>([]);
   
   // UI States
   const [actionLoading, setActionLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  // 1–16 Grid numbers
-  const gridTableNumbers = useMemo(() => Array.from({ length: 16 }, (_, i) => i + 1), []);
+  const [showBillModal, setShowBillModal] = useState(false);
 
   // Fetch initial data
   useEffect(() => {
@@ -83,10 +88,22 @@ export default function WaiterDashboard() {
       const prods = await prodsRes.json();
       setProducts(prods || []);
 
-      // Fetch tables
+      // Fetch tables & floors
       const tablesRes = await fetch('/api/tables');
       const tablesData = await tablesRes.json();
-      setDbTables(tablesData.tables || []);
+      const loadedTables = tablesData.tables || [];
+      const loadedFloors = tablesData.floors || [];
+      
+      setDbTables(loadedTables);
+      setFloors(loadedFloors);
+
+      if (loadedFloors.length > 0) {
+        setSelectedFloorId(loadedFloors[0].id);
+        const firstTable = loadedTables.find((t: any) => t.floor_id === loadedFloors[0].id);
+        if (firstTable) {
+          setSelectedTableId(firstTable.id);
+        }
+      }
 
       // Fetch active session orders to check table occupancy
       if (sessionId) {
@@ -102,20 +119,16 @@ export default function WaiterDashboard() {
     }
   };
 
-  // Helper: Find DB Table mapping for grid number
-  const dbTableForSelectedNum = useMemo(() => {
-    const num = selectedGridNum;
-    return dbTables.find(t => {
-      const match = t.table_number.match(/\d+/);
-      return match ? parseInt(match[0], 10) === num : t.table_number === String(num);
-    });
-  }, [dbTables, selectedGridNum]);
+  // Helper: Find DB Table mapping for selected table ID
+  const dbTableForSelectedId = useMemo(() => {
+    return dbTables.find(t => t.id === selectedTableId);
+  }, [dbTables, selectedTableId]);
 
   // Helper: Find active draft order for a given DB Table
   const activeOrderForTable = useMemo(() => {
-    if (!dbTableForSelectedNum) return null;
-    return activeOrders.find(o => o.table_id === dbTableForSelectedNum.id && o.status === 'draft');
-  }, [activeOrders, dbTableForSelectedNum]);
+    if (!selectedTableId) return null;
+    return activeOrders.find(o => o.table_id === selectedTableId && o.status === 'draft');
+  }, [activeOrders, selectedTableId]);
 
   // Sync cart when table selection changes
   useEffect(() => {
@@ -140,16 +153,33 @@ export default function WaiterDashboard() {
     } else {
       setCart([]);
     }
-  }, [selectedGridNum, activeOrderForTable, products]);
+  }, [selectedTableId, activeOrderForTable, products]);
 
-  // Check if a specific grid number table has an active draft order
-  const checkOccupied = (num: number) => {
-    const table = dbTables.find(t => {
-      const match = t.table_number.match(/\d+/);
-      return match ? parseInt(match[0], 10) === num : t.table_number === String(num);
-    });
-    if (!table) return false;
-    return activeOrders.some(o => o.table_id === table.id && o.status === 'draft');
+  // Check if a specific table ID has an active draft order
+  const checkOccupied = (tableId: string) => {
+    return activeOrders.some(o => o.table_id === tableId && o.status === 'draft');
+  };
+
+  // Resolve KDS ticket and preparation status for a table
+  const getTableStatus = (tableId: string) => {
+    const order = activeOrders.find(o => o.table_id === tableId && o.status === 'draft');
+    if (!order) return { state: 'empty', label: 'Empty' };
+
+    // Find KDS ticket status (from order.kds_tickets)
+    const kdsTicket = order.kds_tickets?.[0];
+    const kdsStatus = kdsTicket?.status || 'to_cook';
+
+    if (kdsStatus === 'to_cook') {
+      return { state: 'pending', label: 'Pending' };
+    }
+    if (kdsStatus === 'preparing') {
+      return { state: 'preparing', label: 'Preparing' };
+    }
+    if (kdsStatus === 'completed') {
+      return { state: 'ready', label: 'Ready' };
+    }
+
+    return { state: 'occupied', label: 'Occupied' };
   };
 
   // Cart operations
@@ -195,11 +225,11 @@ export default function WaiterDashboard() {
         throw new Error('No active store shift session open.');
       }
 
-      // If DB table is not mapped, we create a temporary table mapping to support checkout
-      let tableId = dbTableForSelectedNum?.id || null;
+      // If DB table is not mapped, we set it as null (takeaway fallback)
+      let tableId = selectedTableId;
       if (!tableId) {
         // Fallback or alert
-        toast.info('Table record not found in database. Setting order as takeaway.');
+        toast.info('No table selected. Setting order as takeaway.');
       }
 
       // We determine if we need to POST (create new order) or PUT (append to existing)
@@ -310,7 +340,7 @@ export default function WaiterDashboard() {
       
       {/* Middle/Left Column: Floor map & Menu Selector */}
       <div className="lg:col-span-8 flex flex-col gap-6 overflow-y-auto pr-2">
-        {/* Table Selector (1-16 Grid) */}
+        {/* Table & Floor Selector */}
         <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4 shadow-xl">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-sm uppercase tracking-wider">Restaurant Floor Plan</h3>
@@ -319,29 +349,79 @@ export default function WaiterDashboard() {
             </span>
           </div>
 
-          <div className="grid grid-cols-4 gap-3 max-w-lg mx-auto sm:max-w-none">
-            {gridTableNumbers.map((num) => {
-              const isOccupied = checkOccupied(num);
-              const isSelected = selectedGridNum === num;
-              return (
+          {/* Floor tabs */}
+          {floors.length > 0 && (
+            <div className="flex gap-2 pb-2 overflow-x-auto select-none no-scrollbar border-b border-zinc-800">
+              {floors.map((floor) => (
                 <button
-                  key={num}
-                  onClick={() => setSelectedGridNum(num)}
-                  className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-lg shadow-[#F9F5F2]/10 font-bold scale-[1.02]'
-                      : isOccupied
-                        ? 'bg-red-950/20 border-red-500/50 text-red-200 hover:border-red-400'
-                        : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                  key={floor.id}
+                  onClick={() => {
+                    setSelectedFloorId(floor.id);
+                    // Select first table on this floor automatically
+                    const firstTable = dbTables.find(t => t.floor_id === floor.id);
+                    if (firstTable) {
+                      setSelectedTableId(firstTable.id);
+                    } else {
+                      setSelectedTableId(null);
+                    }
+                  }}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
+                    selectedFloorId === floor.id
+                      ? 'bg-[#F9F5F2] text-black border-[#F9F5F2] font-bold shadow-sm'
+                      : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900'
                   }`}
                 >
-                  <span className="text-lg font-extrabold">{num}</span>
-                  <span className={`text-[9px] ${isSelected ? 'text-black/70' : isOccupied ? 'text-red-400' : 'text-zinc-550'}`}>
-                    {isOccupied ? 'Occupied' : 'Empty'}
-                  </span>
+                  {floor.name}
                 </button>
-              );
-            })}
+              ))}
+            </div>
+          )}
+
+          <div className="grid grid-cols-4 gap-3 max-w-lg mx-auto sm:max-w-none pt-2">
+            {dbTables
+              .filter(t => t.floor_id === selectedFloorId)
+              .map((table) => {
+                const status = getTableStatus(table.id);
+                const isSelected = selectedTableId === table.id;
+                
+                let buttonStyles = '';
+                let statusLabelStyles = '';
+                
+                if (isSelected) {
+                  buttonStyles = 'bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-lg shadow-[#F9F5F2]/10 font-bold scale-[1.02]';
+                  statusLabelStyles = 'text-black/70';
+                } else if (status.state === 'pending') {
+                  buttonStyles = 'bg-amber-950/20 border-amber-500/50 text-amber-200 hover:border-amber-400';
+                  statusLabelStyles = 'text-amber-405';
+                } else if (status.state === 'preparing') {
+                  buttonStyles = 'bg-orange-955/20 border-orange-500/50 text-orange-200 hover:border-orange-400';
+                  statusLabelStyles = 'text-orange-400';
+                } else if (status.state === 'ready') {
+                  buttonStyles = 'bg-emerald-955/20 border-emerald-500/50 text-emerald-200 hover:border-emerald-400 animate-pulse';
+                  statusLabelStyles = 'text-emerald-400 font-bold';
+                } else {
+                  buttonStyles = 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700';
+                  statusLabelStyles = 'text-zinc-600';
+                }
+
+                return (
+                  <button
+                    key={table.id}
+                    onClick={() => setSelectedTableId(table.id)}
+                    className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${buttonStyles}`}
+                  >
+                    <span className="text-lg font-extrabold">{table.table_number}</span>
+                    <span className={`text-[9px] uppercase tracking-wider ${statusLabelStyles}`}>
+                      {status.label}
+                    </span>
+                  </button>
+                );
+              })}
+            {dbTables.filter(t => t.floor_id === selectedFloorId).length === 0 && (
+              <p className="col-span-full text-center text-zinc-500 py-6 text-sm">
+                No tables registered on this floor.
+              </p>
+            )}
           </div>
         </div>
 
@@ -415,7 +495,7 @@ export default function WaiterDashboard() {
           <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
             <h3 className="font-bold text-white text-sm uppercase tracking-wider flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-[#F9F5F2]" />
-              Table {selectedGridNum} Order
+              {dbTableForSelectedId ? `Table ${dbTableForSelectedId.table_number}` : 'No Table Selected'} Order
             </h3>
             {cart.length > 0 && (
               <button
@@ -477,9 +557,17 @@ export default function WaiterDashboard() {
         </div>
 
         {/* Cart Total and Action Buttons */}
-        <div className="border-t border-zinc-800 pt-4 space-y-4">
-          <div className="flex justify-between items-center text-sm">
-            <span className="font-semibold text-zinc-450">Estimated Total:</span>
+        <div className="border-t border-zinc-800 pt-4 space-y-2">
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-semibold text-zinc-450">Subtotal:</span>
+            <span className="font-medium text-zinc-300">{formatCurrency(subtotal)}</span>
+          </div>
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-semibold text-zinc-450">Tax:</span>
+            <span className="font-medium text-zinc-300">{formatCurrency(taxTotal)}</span>
+          </div>
+          <div className="flex justify-between items-center text-sm border-t border-zinc-800 pt-2 mt-1">
+            <span className="font-semibold text-zinc-400">Total:</span>
             <span className="font-extrabold text-lg text-white">{formatCurrency(total)}</span>
           </div>
 
@@ -490,24 +578,167 @@ export default function WaiterDashboard() {
             </p>
           </div>
 
-          <button
-            onClick={handleSendToKds}
-            disabled={cart.length === 0 || actionLoading || isSubmitted}
-            className="w-full h-11 bg-[#F9F5F2] hover:bg-[#e5e1de] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold text-black flex items-center justify-center gap-2 cursor-pointer transition-all"
-          >
-            {actionLoading ? (
-              'Sending to Kitchen...'
-            ) : isSubmitted ? (
-              <>
-                <CheckCircle2 className="w-4 h-4" /> Sent to Kitchen!
-              </>
-            ) : (
-              'Send Draft Order to Kitchen'
-            )}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleSendToKds}
+              disabled={cart.length === 0 || actionLoading || isSubmitted}
+              className="flex-1 h-11 bg-[#F9F5F2] hover:bg-[#e5e1de] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold text-black flex items-center justify-center gap-2 cursor-pointer transition-all"
+            >
+              {actionLoading ? (
+                'Sending...'
+              ) : isSubmitted ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4" /> Sent!
+                </>
+              ) : (
+                'Send to Kitchen'
+              )}
+            </button>
+
+            <button
+              onClick={() => setShowBillModal(true)}
+              disabled={!activeOrderForTable || actionLoading}
+              className="flex-1 h-11 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed border border-zinc-700 rounded-xl text-xs font-bold text-zinc-300 flex items-center justify-center gap-2 cursor-pointer transition-all"
+            >
+              Generate Bill
+            </button>
+          </div>
         </div>
 
       </div>
+
+      {/* Bill Receipt Modal */}
+      {showBillModal && activeOrderForTable && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm p-6 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl space-y-6 text-zinc-150">
+            {/* Printable Receipt Container */}
+            <div id="printable-bill" className="space-y-4 p-4 bg-zinc-950 border border-zinc-850 rounded-xl font-mono text-xs text-zinc-300">
+              <div className="text-center space-y-1">
+                <h4 className="text-sm font-bold text-white uppercase tracking-wider">Cafe POS Receipt</h4>
+                <p className="text-[10px] text-zinc-500">Waiter Bill Invoice</p>
+              </div>
+              <div className="border-t border-zinc-850 pt-2 space-y-1 text-[11px]">
+                <div className="flex justify-between">
+                  <span>Order:</span>
+                  <span className="font-semibold text-white">{activeOrderForTable.order_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Table:</span>
+                  <span className="font-semibold text-white">
+                    {dbTableForSelectedId ? dbTableForSelectedId.table_number : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Date:</span>
+                  <span>{new Date(activeOrderForTable.created_at).toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* Items List */}
+              <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+                {activeOrderForTable.order_items?.map((oi: any) => {
+                  const prod = products.find(p => p.id === oi.product_id);
+                  const name = prod?.name || oi.products?.name || 'Unknown Item';
+                  const price = Number(oi.unit_price);
+                  return (
+                    <div key={oi.id} className="flex justify-between text-[11px]">
+                      <span className="truncate max-w-[180px]">{name} x {oi.quantity}</span>
+                      <span>{formatCurrency(price * oi.quantity)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Totals */}
+              <div className="border-t border-dashed border-zinc-800 pt-2 space-y-1 text-right text-[11px]">
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>{formatCurrency(Number(activeOrderForTable.subtotal))}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tax:</span>
+                  <span>{formatCurrency(Number(activeOrderForTable.tax))}</span>
+                </div>
+                <div className="flex justify-between font-bold border-t border-zinc-850 pt-1 text-xs text-white">
+                  <span>Total Due:</span>
+                  <span>{formatCurrency(Number(activeOrderForTable.total))}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  const printWindow = window.open('', '_blank');
+                  if (printWindow) {
+                    printWindow.document.write(`
+                      <html>
+                        <head>
+                          <title>Print Bill - Table ${dbTableForSelectedId?.table_number || ''}</title>
+                          <style>
+                            body {
+                              font-family: monospace;
+                              font-size: 12px;
+                              color: #000;
+                              padding: 20px;
+                              max-width: 300px;
+                              margin: 0 auto;
+                            }
+                            .flex { display: flex; justify-content: space-between; }
+                            .text-center { text-align: center; }
+                            .font-bold { font-weight: bold; }
+                            .border-t { border-top: 1px solid #000; }
+                            .border-t-dashed { border-top: 1px dashed #000; margin-top: 8px; padding-top: 8px; }
+                            .space-y-1 > * { margin-bottom: 4px; }
+                            .space-y-1.5 > * { margin-bottom: 6px; }
+                          </style>
+                        </head>
+                        <body>
+                          <div style="text-align: center; margin-bottom: 15px;">
+                            <h3 style="margin: 0; text-transform: uppercase;">Cafe POS Bill</h3>
+                            <small>Table: ${dbTableForSelectedId?.table_number || ''}</small>
+                          </div>
+                          <div style="margin-bottom: 10px;">
+                            <div class="flex"><span>Order:</span> <span>${activeOrderForTable.order_number}</span></div>
+                            <div class="flex"><span>Date:</span> <span>${new Date(activeOrderForTable.created_at).toLocaleString()}</span></div>
+                          </div>
+                          <div style="border-top: 1px dashed #000; padding: 10px 0;">
+                            ${activeOrderForTable.order_items?.map((oi: any) => {
+                              const prod = products.find(p => p.id === oi.product_id);
+                              const name = prod?.name || oi.products?.name || 'Unknown Item';
+                              const price = Number(oi.unit_price);
+                              return `<div class="flex"><span>${name} x ${oi.quantity}</span> <span>${formatCurrency(price * oi.quantity)}</span></div>`;
+                            }).join('')}
+                          </div>
+                          <div style="border-top: 1px dashed #000; padding-top: 10px;">
+                            <div class="flex"><span>Subtotal:</span> <span>${formatCurrency(Number(activeOrderForTable.subtotal))}</span></div>
+                            <div class="flex"><span>Tax:</span> <span>${formatCurrency(Number(activeOrderForTable.tax))}</span></div>
+                            <div class="flex font-bold" style="font-size: 14px; margin-top: 5px;"><span>Total:</span> <span>${formatCurrency(Number(activeOrderForTable.total))}</span></div>
+                          </div>
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                    printWindow.focus();
+                    printWindow.print();
+                    printWindow.close();
+                  }
+                }}
+                className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-xs font-bold text-zinc-300 cursor-pointer transition-colors"
+              >
+                Print Bill Receipt
+              </button>
+              <button
+                onClick={() => setShowBillModal(false)}
+                className="w-full py-2.5 bg-[#F9F5F2] hover:bg-[#e5e1de] text-black text-xs font-bold rounded-xl cursor-pointer transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

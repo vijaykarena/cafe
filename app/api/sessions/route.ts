@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseAdmin } from '@/lib/supabase-server';
 
 export async function GET() {
   try {
     // Check for open sessions
-    const { data: openSessions, error: openErr } = await supabaseServer
+    const { data: openSessions, error: openErr } = await supabaseAdmin
       .from('sessions')
       .select('*')
       .eq('status', 'open')
@@ -17,7 +17,7 @@ export async function GET() {
     }
 
     // Check for last closed session
-    const { data: closedSessions, error: closedErr } = await supabaseServer
+    const { data: closedSessions, error: closedErr } = await supabaseAdmin
       .from('sessions')
       .select('*')
       .eq('status', 'closed')
@@ -39,7 +39,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabaseAdmin
       .from('sessions')
       .insert({
         opened_by: body.opened_by,
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabaseAdmin
       .from('sessions')
       .update({
         status: 'closed',

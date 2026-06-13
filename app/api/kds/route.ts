@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseAdmin } from '@/lib/supabase-server';
 
 export async function GET() {
   try {
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabaseAdmin
       .from('kds_tickets')
       .select('*, orders(*, order_items(*, products(*)))')
       .order('created_at', { ascending: true });
@@ -38,7 +38,7 @@ export async function PUT(request: Request) {
     
     if (body.ticket_id && body.status) {
       // Update KDS Ticket Status (to_cook -> preparing -> completed)
-      const { data, error } = await supabaseServer
+      const { data, error } = await supabaseAdmin
         .from('kds_tickets')
         .update({ status: body.status })
         .eq('id', body.ticket_id)
@@ -48,7 +48,7 @@ export async function PUT(request: Request) {
       return NextResponse.json(data);
     } else if (body.item_id && body.hasOwnProperty('is_completed')) {
       // Toggle individual order item completion status in kitchen
-      const { data, error } = await supabaseServer
+      const { data, error } = await supabaseAdmin
         .from('order_items')
         .update({ is_completed_in_kitchen: body.is_completed })
         .eq('id', body.item_id)

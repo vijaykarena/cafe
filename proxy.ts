@@ -119,6 +119,7 @@ export async function proxy(request: NextRequest) {
     // Waiter constraints
     if (role === "waiter") {
       const allowedPaths = [
+        "/api/sessions",
         "/api/orders",
         "/api/categories",
         "/api/products",
@@ -147,9 +148,23 @@ export async function proxy(request: NextRequest) {
 
     // Cook constraints
     if (role === "cook") {
-      if (!path.startsWith("/api/kds")) {
+      const allowedPaths = [
+        "/api/kds",
+        "/api/sessions",
+      ];
+      if (!allowedPaths.some((p) => path.startsWith(p))) {
         return NextResponse.json(
-          { error: "Forbidden: Cooks are restricted to KDS operations only" },
+          { error: "Forbidden: Cooks are restricted to KDS and session checking only" },
+          { status: 403 },
+        );
+      }
+      const isWrite = ["POST", "PUT", "DELETE"].includes(request.method);
+      if (isWrite && !path.startsWith("/api/kds")) {
+        return NextResponse.json(
+          {
+            error:
+              "Forbidden: Cooks are restricted from modifying catalog properties",
+          },
           { status: 403 },
         );
       }
