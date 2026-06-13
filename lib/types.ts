@@ -2,6 +2,7 @@ export type UserRole = 'admin' | 'manager' | 'cashier' | 'cook' | 'waiter';
 
 export interface Profile {
   id: string;
+  manager_id: string | null;
   name: string;
   email: string;
   role: UserRole;
@@ -12,21 +13,28 @@ export interface Profile {
 
 export interface Category {
   id: string;
+  manager_id: string;
   name: string;
   color: string;
   created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface Product {
   id: string;
+  manager_id: string;
+  category_id: string;
   name: string;
-  category_id: string | null;
   price: number;
+  tax: string;
   unit_of_measure: string;
-  tax: number;
   description: string | null;
-  image_url: string | null;
+  image_url: string;
+  is_available: boolean;
   created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface Floor {

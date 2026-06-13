@@ -142,7 +142,7 @@ export default function PosTerminalPage() {
     return cartItems.reduce((sum, item) => {
       const price =
         item.customPrice !== undefined ? item.customPrice : item.product.price;
-      return sum + calculateTaxAmount(price * item.quantity, item.product.tax);
+      return sum + calculateTaxAmount(price * item.quantity, parseFloat(item.product.tax));
     }, 0);
   }, [cartItems]);
 

@@ -91,7 +91,7 @@ export default function WaiterTerminalPage() {
 
   // Totals calculations
   const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const taxTotal = cart.reduce((sum, item) => sum + calculateTaxAmount(item.product.price * item.quantity, item.product.tax), 0);
+  const taxTotal = cart.reduce((sum, item) => sum + calculateTaxAmount(item.product.price * item.quantity, parseFloat(item.product.tax)), 0);
   const total = subtotal + taxTotal;
 
   // Send to Kitchen

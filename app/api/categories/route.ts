@@ -1,3 +1,5 @@
+// TODO: DEPRECATED — Use /api/manager/categories instead. This route lacks manager_id scoping.
+
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase-server';
 

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Profile } from '@/lib/types';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -66,7 +67,8 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
 
   const navItems = [
     { name: 'Dashboard', path: '/manager' },
-    { name: 'Products & Categories', path: '/manager/products' },
+    { name: 'Categories', path: '/manager/categories' },
+    { name: 'Products', path: '/manager/products' },
     { name: 'Floor & Tables', path: '/manager/tables' },
     { name: 'Promotions & Coupons', path: '/manager/promos' },
     { name: 'Staff Management', path: '/manager/staff' },
@@ -130,10 +132,10 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-y-auto">
         {children}
       </main>
+      <Toaster richColors position="top-right" />
     </div>
   );
 }

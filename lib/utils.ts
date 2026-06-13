@@ -1,43 +1,35 @@
-// ClassName join utility
-export function cn(...inputs: (string | undefined | null | boolean | Record<string, boolean>)[]) {
-  const classes: string[] = [];
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 
-  for (const input of inputs) {
-    if (!input) continue;
-
-    if (typeof input === 'string') {
-      classes.push(input);
-    } else if (typeof input === 'object') {
-      for (const [key, value] of Object.entries(input)) {
-        if (value) {
-          classes.push(key);
-        }
-      }
-    }
-  }
-
-  return classes.join(' ');
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
-// Currency formatting (defaults to USD, but can be customized)
-export function formatCurrency(amount: number, currency: string = 'USD', locale: string = 'en-US') {
+export function formatCurrency(
+  amount: number,
+  currency: string = 'USD',
+  locale: string = 'en-US'
+) {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: currency,
+    currency,
+    minimumFractionDigits: 2,
   }).format(amount);
 }
 
-// Tax calculation helper
-export function calculateTaxAmount(subtotal: number, taxPercent: number) {
-  return (subtotal * taxPercent) / 100;
+export function formatDate(dateString: string, options?: Intl.DateTimeFormatOptions) {
+  if (options) {
+    return new Intl.DateTimeFormat('en-US', options).format(new Date(dateString));
+  }
+  return new Date(dateString).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
-// Date formatter helper
-export function formatDate(dateString: string | Date, options: Intl.DateTimeFormatOptions = {}) {
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    ...options,
-  }).format(date);
+export function calculateTaxAmount(subtotal: number, taxPercent: number) {
+  return (subtotal * taxPercent) / 100;
 }
