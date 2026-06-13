@@ -126,6 +126,7 @@ create table public.kds_tickets (
   id uuid default gen_random_uuid() primary key,
   order_id uuid references public.orders(id) on delete cascade not null,
   status text not null check (status in ('to_cook', 'preparing', 'completed')) default 'to_cook',
+  assigned_to uuid references public.profiles(id) on delete set null, -- cook who picked up the ticket
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

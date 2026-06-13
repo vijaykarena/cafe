@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const cookId = request.headers.get('x-user-id');
+    const role = request.headers.get('x-user-role');
+
     const { data, error } = await supabaseAdmin
       .from('kds_tickets')
       .select('*, orders(*, order_items(*, products(*)))')
@@ -11,12 +14,13 @@ export async function GET() {
     if (error) throw error;
     
     // Format to match KdsTicket structure expected by KDS frontend page
-    const formatted = data.map((ticket: any) => ({
+    let formatted = data.map((ticket: any) => ({
       id: ticket.id,
       orderNumber: ticket.orders?.order_number || 'ORD-UNKNOWN',
       table: ticket.orders?.table_id || 'Takeaway', // or resolve table name
       time: ticket.created_at,
       status: ticket.status,
+      assignedTo: ticket.assigned_to || null,
       items: (ticket.orders?.order_items || []).filter((oi: any) => !oi.is_served).map((oi: any) => ({
         id: oi.id,
         name: oi.products?.name || 'Unknown Item',
@@ -25,6 +29,13 @@ export async function GET() {
         category: 'Menu', // or resolve category name
       })),
     }));
+
+    // Cook-specific filtering: cooks only see their own preparing/completed tickets
+    if (role === 'cook' && cookId) {
+      formatted = formatted.filter((ticket: any) =>
+        ticket.status === 'to_cook' || ticket.assignedTo === cookId
+      );
+    }
 
     return NextResponse.json(formatted);
   } catch (err: any) {
@@ -38,9 +49,19 @@ export async function PUT(request: Request) {
     
     if (body.ticket_id && body.status) {
       // Update KDS Ticket Status (to_cook -> preparing -> completed)
+      const cookId = request.headers.get('x-user-id');
+      const updateData: Record<string, any> = { status: body.status };
+
+      // Assign ticket to cook when picking up (preparing), unassign when returning to queue
+      if (body.status === 'preparing' && cookId) {
+        updateData.assigned_to = cookId;
+      } else if (body.status === 'to_cook') {
+        updateData.assigned_to = null;
+      }
+
       const { data, error } = await supabaseAdmin
         .from('kds_tickets')
-        .update({ status: body.status })
+        .update(updateData)
         .eq('id', body.ticket_id)
         .select()
         .single();
