@@ -19,21 +19,35 @@ export type Database = {
           color: string
           created_at: string
           id: string
+          manager_id: string
           name: string
+          status: Database["public"]["Enums"]["category_status"]
         }
         Insert: {
           color: string
           created_at?: string
           id?: string
+          manager_id: string
           name: string
+          status: Database["public"]["Enums"]["category_status"]
         }
         Update: {
           color?: string
           created_at?: string
           id?: string
+          manager_id?: string
           name?: string
+          status?: Database["public"]["Enums"]["category_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coupons: {
         Row: {
@@ -106,24 +120,34 @@ export type Database = {
       }
       kds_tickets: {
         Row: {
+          assigned_to: string | null
           created_at: string
           id: string
           order_id: string
           status: string
         }
         Insert: {
+          assigned_to?: string | null
           created_at?: string
           id?: string
           order_id: string
           status?: string
         }
         Update: {
+          assigned_to?: string | null
           created_at?: string
           id?: string
           order_id?: string
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "kds_tickets_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "kds_tickets_order_id_fkey"
             columns: ["order_id"]
@@ -138,6 +162,7 @@ export type Database = {
           created_at: string
           id: string
           is_completed_in_kitchen: boolean | null
+          is_served: boolean | null
           order_id: string
           product_id: string | null
           quantity: number
@@ -149,6 +174,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_completed_in_kitchen?: boolean | null
+          is_served?: boolean | null
           order_id: string
           product_id?: string | null
           quantity: number
@@ -160,6 +186,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_completed_in_kitchen?: boolean | null
+          is_served?: boolean | null
           order_id?: string
           product_id?: string | null
           quantity?: number
@@ -280,37 +307,43 @@ export type Database = {
       }
       products: {
         Row: {
-          category_id: string | null
+          category_id: string
           created_at: string
           description: string | null
           id: string
-          image_url: string | null
+          image_url: string
+          is_available: boolean
+          manager_id: string
           name: string
           price: number
+          status: Database["public"]["Enums"]["product_status"] | null
           tax: number
-          unit_of_measure: string
         }
         Insert: {
-          category_id?: string | null
+          category_id: string
           created_at?: string
           description?: string | null
           id?: string
-          image_url?: string | null
+          image_url: string
+          is_available?: boolean
+          manager_id: string
           name: string
           price: number
-          tax?: number
-          unit_of_measure?: string
+          status?: Database["public"]["Enums"]["product_status"] | null
+          tax: number
         }
         Update: {
-          category_id?: string | null
+          category_id?: string
           created_at?: string
           description?: string | null
           id?: string
-          image_url?: string | null
+          image_url?: string
+          is_available?: boolean
+          manager_id?: string
           name?: string
           price?: number
+          status?: Database["public"]["Enums"]["product_status"] | null
           tax?: number
-          unit_of_measure?: string
         }
         Relationships: [
           {
@@ -318,6 +351,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -400,15 +440,7 @@ export type Database = {
           type?: string
           value?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "promotions_trigger_product_id_fkey"
-            columns: ["trigger_product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       sessions: {
         Row: {
@@ -491,7 +523,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      category_status: "enable" | "disable"
+      product_status: "enable" | "disable"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -618,6 +651,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      category_status: ["enable", "disable"],
+      product_status: ["enable", "disable"],
+    },
   },
 } as const
