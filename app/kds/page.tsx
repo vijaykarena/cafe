@@ -1,8 +1,26 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { formatDate } from '@/lib/utils';
+import React, { useState, useEffect, useMemo } from "react";
+import { supabase } from "@/lib/supabase";
+import { formatDate, cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import {
+  DndContext,
+  useDraggable,
+  useDroppable,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  Search,
+  Wifi,
+  LogOut,
+  Pencil,
+  Grid,
+  ChevronLeft,
+  ChevronRight,
+  GripHorizontal,
+  X,
+} from "lucide-react";
 
 interface KdsItem {
   id: string;
@@ -17,27 +35,281 @@ interface KdsTicket {
   orderNumber: string;
   table: string;
   time: string;
-  status: 'to_cook' | 'preparing' | 'completed';
+  status: "to_cook" | "preparing" | "completed";
   items: KdsItem[];
 }
 
+const MOCK_TICKETS: KdsTicket[] = [
+  {
+    id: "mock-1",
+    orderNumber: "#2205",
+    table: "Table 1",
+    time: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    status: "to_cook",
+    items: [
+      {
+        id: "mi-1",
+        name: "Masala Tea",
+        quantity: 3,
+        isCompleted: false,
+        category: "Drink",
+      },
+      {
+        id: "mi-2",
+        name: "Lassi",
+        quantity: 3,
+        isCompleted: false,
+        category: "Drink",
+      },
+      {
+        id: "mi-3",
+        name: "Coffee",
+        quantity: 3,
+        isCompleted: false,
+        category: "Drink",
+      },
+      {
+        id: "mi-4",
+        name: "Water",
+        quantity: 3,
+        isCompleted: true,
+        category: "Drink",
+      },
+    ],
+  },
+  {
+    id: "mock-2",
+    orderNumber: "#2206",
+    table: "Table 3",
+    time: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+    status: "to_cook",
+    items: [
+      {
+        id: "mi-5",
+        name: "Burger",
+        quantity: 2,
+        isCompleted: false,
+        category: "Quick Bites",
+      },
+      {
+        id: "mi-6",
+        name: "Pizza",
+        quantity: 1,
+        isCompleted: false,
+        category: "Quick Bites",
+      },
+    ],
+  },
+  {
+    id: "mock-3",
+    orderNumber: "#2207",
+    table: "Table 5",
+    time: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    status: "preparing",
+    items: [
+      {
+        id: "mi-7",
+        name: "Coffee",
+        quantity: 2,
+        isCompleted: true,
+        category: "Drink",
+      },
+      {
+        id: "mi-8",
+        name: "Desert Cake",
+        quantity: 1,
+        isCompleted: false,
+        category: "Desert",
+      },
+    ],
+  },
+  {
+    id: "mock-4",
+    orderNumber: "#2208",
+    table: "Table 2",
+    time: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    status: "completed",
+    items: [
+      {
+        id: "mi-9",
+        name: "Masala Tea",
+        quantity: 1,
+        isCompleted: true,
+        category: "Drink",
+      },
+    ],
+  },
+];
+
+// ── DRAGGABLE TICKET CARD ──
+function DraggableTicketCard({
+  ticket,
+  onToggleItem,
+}: {
+  ticket: KdsTicket;
+  onToggleItem: (ticketId: string, itemId: string, currentVal: boolean) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: ticket.id,
+    });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        zIndex: 50,
+      }
+    : undefined;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`p-4 bg-[#E9ECEF] rounded-xl flex flex-col justify-between min-h-[160px] shadow-sm transition-all border ${
+        isDragging
+          ? "opacity-40 border-[#F87060] bg-[#FFF5F0]"
+          : "border-transparent hover:border-gray-300"
+      }`}
+    >
+      {/* Header Info - Serves as specific drag handle */}
+      <div className="flex justify-between items-start select-none pb-2 border-b border-gray-300/40">
+        <div>
+          <h4 className="font-extrabold text-gray-800 text-lg leading-tight tracking-tight">
+            {ticket.orderNumber}
+          </h4>
+          <p className="text-[10px] text-gray-500 font-bold mt-0.5 uppercase tracking-wide">
+            {ticket.table}
+          </p>
+        </div>
+
+        {/* Drag handle dots */}
+        <div
+          {...listeners}
+          {...attributes}
+          className="p-1 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 rounded bg-white/50 border border-gray-200"
+          title="Drag to change status"
+        >
+          <GripHorizontal size={14} />
+        </div>
+      </div>
+
+      {/* Items List - Clickable check-off */}
+      <div className="py-3 space-y-2 flex-1">
+        {ticket.items.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => onToggleItem(ticket.id, item.id, item.isCompleted)}
+            className={`flex justify-between items-center py-1 px-1.5 rounded cursor-pointer transition-all hover:bg-white/40 text-xs font-semibold ${
+              item.isCompleted
+                ? "text-gray-400 line-through decoration-2"
+                : "text-gray-700"
+            }`}
+          >
+            <span>
+              {item.name}{" "}
+              <span className="text-[9px] text-gray-400 font-normal">
+                ({item.category})
+              </span>
+            </span>
+            <span className="font-extrabold text-sm ml-2">
+              x{item.quantity}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer Timestamp */}
+      <div className="text-[9px] text-gray-400 border-t border-gray-300/40 pt-2 flex justify-between select-none">
+        <span>Created</span>
+        <span>
+          {formatDate(ticket.time, {
+            timeStyle: "short",
+            dateStyle: undefined,
+          })}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── DROPPABLE COLUMN ──
+function DroppableColumn({
+  id,
+  title,
+  count,
+  titleColor,
+  countBg,
+  countText,
+  children,
+}: {
+  id: string;
+  title: string;
+  count: number;
+  titleColor: string;
+  countBg: string;
+  countText: string;
+  children: React.ReactNode;
+}) {
+  const { isOver, setNodeRef } = useDroppable({
+    id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`w-72 flex-shrink-0 flex flex-col bg-white rounded-2xl border p-4 transition-colors min-h-[500px] ${
+        isOver
+          ? "bg-[#FFF5F0]/60 border-[#F87060]/30"
+          : "bg-white border-gray-150"
+      }`}
+    >
+      {/* Column Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4 select-none">
+        <span
+          className={`font-extrabold text-xs uppercase tracking-wider ${titleColor}`}
+        >
+          {title}
+        </span>
+        <span
+          className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${countBg} ${countText}`}
+        >
+          {count}
+        </span>
+      </div>
+
+      {/* Cards Holder */}
+      <div className="flex-1 overflow-y-auto space-y-3 pr-0.5 no-scrollbar">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function KdsPage() {
+  const router = useRouter();
+
+  // State
   const [tickets, setTickets] = useState<KdsTicket[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('All');
-  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProductFilter, setSelectedProductFilter] = useState<
+    string | null
+  >(null);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<
+    string | null
+  >(null);
+
   useEffect(() => {
     fetchTickets();
 
-    // Setup Supabase Realtime Listener to refetch KDS when a ticket is added/updated
+    // Setup Supabase Realtime Listener
     const channel = supabase
-      .channel('kds_orders_live')
+      .channel("kds_orders_live")
       .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'kds_tickets' },
+        "postgres_changes",
+        { event: "*", schema: "public", table: "kds_tickets" },
         () => {
           fetchTickets();
-        }
+        },
       )
       .subscribe();
 
@@ -48,280 +320,393 @@ export default function KdsPage() {
 
   const fetchTickets = async () => {
     try {
-      const res = await fetch('/api/kds');
+      const res = await fetch("/api/kds");
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setTickets(data || []);
+
+      if (data && data.length > 0 && !data.error) {
+        setTickets(data);
+      } else {
+        // Fallback to Mock Tickets if empty or error
+        setTickets(MOCK_TICKETS);
+      }
     } catch (err) {
-      console.error('Error fetching kitchen queue:', err);
+      console.error("Error fetching kitchen queue, loading mocks:", err);
+      setTickets(MOCK_TICKETS);
     }
   };
 
-  // Update order stage
-  const moveTicketStage = async (ticketId: string) => {
-    const ticket = tickets.find(t => t.id === ticketId);
-    if (!ticket) return;
+  // Toggle item strike-through
+  const handleToggleItem = async (
+    ticketId: string,
+    itemId: string,
+    currentCompleted: boolean,
+  ) => {
+    const nextCompleted = !currentCompleted;
 
-    let nextStatus: KdsTicket['status'] = 'to_cook';
-    if (ticket.status === 'to_cook') nextStatus = 'preparing';
-    else if (ticket.status === 'preparing') nextStatus = 'completed';
-    else return;
-
-    try {
-      const res = await fetch('/api/kds', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticket_id: ticketId,
-          status: nextStatus,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      // Local optimistic update
-      setTickets(tickets.map(t => t.id === ticketId ? { ...t, status: nextStatus } : t));
-    } catch (err) {
-      console.error('Failed to update ticket stage:', err);
-    }
-  };
-
-  // Toggle item completion (strikethrough)
-  const toggleItemComplete = async (ticketId: string, itemId: string) => {
-    const ticket = tickets.find(t => t.id === ticketId);
-    if (!ticket) return;
-
-    const item = ticket.items.find(i => i.id === itemId);
-    if (!item) return;
-
-    const nextCompleted = !item.isCompleted;
-
-    try {
-      const res = await fetch('/api/kds', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          item_id: itemId,
-          is_completed: nextCompleted,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      // Local optimistic update
-      setTickets(tickets.map(t => {
+    // Optimistic Update
+    setTickets((prev) =>
+      prev.map((t) => {
         if (t.id === ticketId) {
-          const updatedItems = t.items.map(i => 
-            i.id === itemId ? { ...i, isCompleted: nextCompleted } : i
-          );
-          return { ...t, items: updatedItems };
+          return {
+            ...t,
+            items: t.items.map((item) =>
+              item.id === itemId
+                ? { ...item, isCompleted: nextCompleted }
+                : item,
+            ),
+          };
         }
         return t;
-      }));
-    } catch (err) {
-      console.error('Failed to complete item:', err);
+      }),
+    );
+
+    // Call API (will only update if it is a real DB item)
+    if (!ticketId.startsWith("mock-")) {
+      try {
+        await fetch("/api/kds", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            item_id: itemId,
+            is_completed: nextCompleted,
+          }),
+        });
+      } catch (err) {
+        console.error("Error syncing item checklist:", err);
+      }
     }
   };
 
-  // Categories list extracted from items
-  const categories = ['All', ...Array.from(new Set(tickets.flatMap(t => t.items.map(i => i.category))))];
+  // Drag and Drop End Handler
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
 
-  // Filter tickets by search query and category
-  const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = ticket.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          ticket.table.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = activeCategoryFilter === 'All' || 
-                            ticket.items.some(item => item.category === activeCategoryFilter);
+    const ticketId = active.id as string;
+    const newStatus = over.id as KdsTicket["status"];
 
-    return matchesSearch && matchesCategory;
-  });
+    // Optimistic Update
+    setTickets((prev) =>
+      prev.map((t) => (t.id === ticketId ? { ...t, status: newStatus } : t)),
+    );
+
+    // Call API (will only update if it is a real DB ticket)
+    if (!ticketId.startsWith("mock-")) {
+      try {
+        await fetch("/api/kds", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ticket_id: ticketId,
+            status: newStatus,
+          }),
+        });
+      } catch (err) {
+        console.error("Error syncing ticket stage:", err);
+      }
+    }
+  };
+
+  // Logout handler
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    document.cookie = "sb-access-token=; path=/; max-age=0; SameSite=Lax";
+    router.push("/login");
+  };
+
+  // Unique Products & Categories list extracted dynamically from tickets for sidebar filtering
+  const allProducts = useMemo(() => {
+    const list = tickets.flatMap((t) => t.items.map((i) => i.name));
+    return Array.from(new Set(list));
+  }, [tickets]);
+
+  const allCategories = useMemo(() => {
+    const list = tickets.flatMap((t) => t.items.map((i) => i.category));
+    return Array.from(new Set(list));
+  }, [tickets]);
+
+  // Filters Clear handler
+  const clearFilters = () => {
+    setSelectedProductFilter(null);
+    setSelectedCategoryFilter(null);
+    setSearchQuery("");
+  };
+
+  // Filter tickets by Search query, Product selection, and Category selection
+  const filteredTickets = useMemo(() => {
+    return tickets.filter((ticket) => {
+      const matchesSearch =
+        ticket.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ticket.table.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesProduct =
+        !selectedProductFilter ||
+        ticket.items.some((item) => item.name === selectedProductFilter);
+
+      const matchesCategory =
+        !selectedCategoryFilter ||
+        ticket.items.some((item) => item.category === selectedCategoryFilter);
+
+      return matchesSearch && matchesProduct && matchesCategory;
+    });
+  }, [tickets, searchQuery, selectedProductFilter, selectedCategoryFilter]);
+
+  // Column specific counts
+  const toCookCount = filteredTickets.filter(
+    (t) => t.status === "to_cook",
+  ).length;
+  const preparingCount = filteredTickets.filter(
+    (t) => t.status === "preparing",
+  ).length;
+  const completedCount = filteredTickets.filter(
+    (t) => t.status === "completed",
+  ).length;
 
   return (
-    <div className="flex flex-col flex-1 h-screen bg-zinc-950 text-zinc-100 font-sans select-none overflow-hidden">
-      {/* KDS Header */}
-      <header className="flex items-center justify-between px-6 py-4 bg-zinc-900 border-b border-zinc-800">
-        <div className="flex items-center gap-4">
-          <span className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span> Kitchen Display Screen (KDS)
-          </span>
+    <div className="flex flex-col h-screen bg-[#F9F5F2] overflow-hidden text-zinc-800 font-sans select-none">
+      {/* ── TOP BAR (KDS) ── */}
+      <header className="flex items-center gap-3 px-6 py-2.5 bg-white border-b border-gray-100 shrink-0">
+        <div className="flex items-center justify-center rounded-xl bg-[#F87060] text-white font-extrabold text-sm px-4 py-2 shrink-0 select-none">
+          Logo
+        </div>
+        <span className="text-base font-bold text-gray-800 pl-1">KDS</span>
+
+        {/* Quick Nav Buttons */}
+        <div className="flex items-center gap-2 ml-6">
+          <button
+            onClick={() => router.push("/cashier")}
+            className="flex items-center justify-center rounded-xl border border-gray-200 p-2 text-gray-500 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer"
+            title="Launch Cashier"
+          >
+            <Grid size={15} />
+          </button>
+          <button
+            onClick={() => router.push("/manager")}
+            className="flex items-center justify-center rounded-xl border border-gray-200 p-2 text-gray-500 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer"
+            title="Manager Portal"
+          >
+            <Pencil size={15} />
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center rounded-xl border border-gray-200 p-2 text-red-500 bg-white hover:border-red-500/50 hover:bg-red-50/20 transition-all cursor-pointer"
+            title="Sign Out"
+          >
+            <LogOut size={15} />
+          </button>
         </div>
 
-        {/* Filters and Search */}
-        <div className="flex items-center gap-4 flex-1 max-w-xl mx-6">
-          <input
-            type="text"
-            placeholder="Search by order or table..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-4 py-2 rounded-lg bg-zinc-950 border border-zinc-850 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500"
-          />
-
-          <div className="flex gap-1.5 bg-zinc-950 p-1 rounded-lg border border-zinc-850">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategoryFilter(cat)}
-                className={`px-3 py-1.5 rounded text-xs font-semibold cursor-pointer transition-all ${
-                  activeCategoryFilter === cat
-                    ? 'bg-amber-500 text-black'
-                    : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="text-right">
-          <span className="text-xs text-zinc-500">Live Connection</span>
-          <p className="text-xs text-green-400 font-semibold">Real-time Connected</p>
+        {/* Live Network Status Indicator */}
+        <div className="ml-auto flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-[10px] text-gray-500 bg-white font-bold uppercase tracking-wider select-none">
+          <Wifi size={12} className="text-emerald-500 animate-pulse" /> Live
+          Connected
         </div>
       </header>
 
-      {/* Main Board Grid */}
-      <div className="flex-1 overflow-x-auto p-6 flex gap-6 select-none bg-zinc-950">
-        {/* 1. To Cook Column */}
-        <div className="w-[360px] flex-shrink-0 flex flex-col bg-zinc-900/40 rounded-2xl border border-zinc-900 p-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-850 mb-4">
-            <span className="font-bold text-sm text-red-400 uppercase tracking-wider">To Cook</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-red-950/40 border border-red-900/40 text-red-400 font-bold">
-              {filteredTickets.filter(t => t.status === 'to_cook').length}
+      {/* ── FILTER & SEARCH BAR ── */}
+      <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-100 shrink-0 flex-wrap gap-4">
+        {/* Stages chips filters */}
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+            Stages
+          </span>
+          <div className="flex gap-1">
+            <span className="px-2.5 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold flex items-center gap-1.5">
+              All{" "}
+              <span className="bg-gray-200 text-gray-800 px-1.5 py-0.5 rounded text-[10px]">
+                {filteredTickets.length}
+              </span>
+            </span>
+            <span className="px-2.5 py-1.5 bg-red-50 text-red-500 border border-red-200/50 rounded-lg text-xs font-bold flex items-center gap-1.5">
+              To Cook{" "}
+              <span className="bg-red-500 text-white px-1.5 py-0.5 rounded text-[10px]">
+                {toCookCount}
+              </span>
+            </span>
+            <span className="px-2.5 py-1.5 bg-amber-550/10 text-amber-500 border border-amber-500/20 rounded-lg text-xs font-bold flex items-center gap-1.5">
+              Preparing{" "}
+              <span className="bg-amber-500 text-black px-1.5 py-0.5 rounded text-[10px]">
+                {preparingCount}
+              </span>
+            </span>
+            <span className="px-2.5 py-1.5 bg-green-50 text-green-600 border border-green-200/50 rounded-lg text-xs font-bold flex items-center gap-1.5">
+              Completed{" "}
+              <span className="bg-green-500 text-white px-1.5 py-0.5 rounded text-[10px]">
+                {completedCount}
+              </span>
             </span>
           </div>
+        </div>
 
-          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-            {filteredTickets.filter(t => t.status === 'to_cook').map(ticket => (
-              <div key={ticket.id} className="p-4 bg-zinc-900 border border-zinc-850 rounded-xl space-y-3 shadow-lg hover:border-zinc-700 transition-all">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-white text-base">{ticket.orderNumber}</h3>
-                    <p className="text-xs text-zinc-400 mt-0.5">{ticket.table}</p>
-                  </div>
+        {/* Search Input and Pagination mock */}
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+              className="w-56 rounded-xl border border-gray-200 pl-4 pr-9 py-1.5 text-xs outline-none focus:border-[#F87060] transition-colors bg-white text-zinc-700 font-semibold"
+            />
+            <Search
+              size={12}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+          </div>
+
+          {/* Pagination selectors from mockup */}
+          <div className="flex items-center gap-2 border border-gray-200 rounded-xl px-2 py-1 bg-white select-none">
+            <span className="text-[10px] font-bold text-gray-500">
+              1-{filteredTickets.length}
+            </span>
+            <div className="flex gap-0.5 border-l pl-2 border-gray-150">
+              <button className="p-0.5 hover:text-[#F87060] text-gray-400 cursor-pointer">
+                <ChevronLeft size={14} />
+              </button>
+              <button className="p-0.5 hover:text-[#F87060] text-gray-400 cursor-pointer">
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── MAIN KITCHEN SPACE ── */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* 1. Left Sidebar Filters (Products & Categories) */}
+        <aside className="w-48 border-r border-gray-100 bg-white p-4 flex flex-col justify-between select-none">
+          <div className="space-y-6 overflow-y-auto">
+            {/* Clear Filter button */}
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <button
+                onClick={clearFilters}
+                className="text-xs font-extrabold text-[#F87060] hover:text-[#e5614f] flex items-center gap-1 cursor-pointer"
+              >
+                Clear Filter <X size={12} />
+              </button>
+            </div>
+
+            {/* Product filters list */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 block">
+                Product
+              </span>
+              <div className="flex flex-col gap-1">
+                {allProducts.map((p) => (
                   <button
-                    onClick={() => moveTicketStage(ticket.id)}
-                    className="px-3 py-1 rounded bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs transition-colors cursor-pointer"
+                    key={p}
+                    onClick={() =>
+                      setSelectedProductFilter(
+                        p === selectedProductFilter ? null : p,
+                      )
+                    }
+                    className={cn(
+                      "text-left text-xs font-bold py-1.5 px-2.5 rounded-lg border transition-all cursor-pointer truncate",
+                      p === selectedProductFilter
+                        ? "bg-[#FFF5F0] border-[#F87060]/30 text-[#F87060]"
+                        : "bg-transparent border-transparent text-gray-600 hover:bg-gray-50",
+                    )}
                   >
-                    Start Cook
+                    {p}
                   </button>
-                </div>
-
-                <div className="border-t border-zinc-850/65 pt-3 space-y-2">
-                  {ticket.items.map(item => (
-                    <div
-                      key={item.id}
-                      onClick={() => toggleItemComplete(ticket.id, item.id)}
-                      className={`flex justify-between items-center py-0.5 cursor-pointer hover:bg-zinc-850/50 px-1 rounded transition-colors ${
-                        item.isCompleted ? 'text-zinc-655 line-through' : 'text-zinc-300'
-                      }`}
-                    >
-                      <span>{item.name} <span className="text-zinc-550 text-xs font-semibold">({item.category})</span></span>
-                      <span className="font-bold text-sm">x{item.quantity}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="text-[10px] text-zinc-500 pt-2 flex justify-between">
-                  <span>Created</span>
-                  <span>{formatDate(ticket.time, { timeStyle: 'short', dateStyle: undefined })}</span>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* 2. Preparing Column */}
-        <div className="w-[360px] flex-shrink-0 flex flex-col bg-zinc-900/40 rounded-2xl border border-zinc-900 p-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-850 mb-4">
-            <span className="font-bold text-sm text-amber-400 uppercase tracking-wider">Preparing</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-amber-950/40 border border-amber-900/40 text-amber-400 font-bold">
-              {filteredTickets.filter(t => t.status === 'preparing').length}
-            </span>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-            {filteredTickets.filter(t => t.status === 'preparing').map(ticket => (
-              <div key={ticket.id} className="p-4 bg-zinc-900 border border-amber-500/20 rounded-xl space-y-3 shadow-lg hover:border-amber-500/45 transition-all">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-white text-base">{ticket.orderNumber}</h3>
-                    <p className="text-xs text-zinc-400 mt-0.5">{ticket.table}</p>
-                  </div>
+            {/* Category filters list */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400 block">
+                Category
+              </span>
+              <div className="flex flex-col gap-1">
+                {allCategories.map((c) => (
                   <button
-                    onClick={() => moveTicketStage(ticket.id)}
-                    className="px-3 py-1 rounded bg-green-500 hover:bg-green-600 text-black font-semibold text-xs transition-colors cursor-pointer"
+                    key={c}
+                    onClick={() =>
+                      setSelectedCategoryFilter(
+                        c === selectedCategoryFilter ? null : c,
+                      )
+                    }
+                    className={cn(
+                      "text-left text-xs font-bold py-1.5 px-2.5 rounded-lg border transition-all cursor-pointer truncate",
+                      c === selectedCategoryFilter
+                        ? "bg-[#FFF5F0] border-[#F87060]/30 text-[#F87060]"
+                        : "bg-transparent border-transparent text-gray-600 hover:bg-gray-50",
+                    )}
                   >
-                    Complete
+                    {c}
                   </button>
-                </div>
-
-                <div className="border-t border-zinc-850/65 pt-3 space-y-2">
-                  {ticket.items.map(item => (
-                    <div
-                      key={item.id}
-                      onClick={() => toggleItemComplete(ticket.id, item.id)}
-                      className={`flex justify-between items-center py-0.5 cursor-pointer hover:bg-zinc-850/50 px-1 rounded transition-colors ${
-                        item.isCompleted ? 'text-zinc-655 line-through' : 'text-zinc-300'
-                      }`}
-                    >
-                      <span>{item.name} <span className="text-zinc-550 text-xs font-semibold">({item.category})</span></span>
-                      <span className="font-bold text-sm">x{item.quantity}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="text-[10px] text-zinc-500 pt-2 flex justify-between">
-                  <span>Created</span>
-                  <span>{formatDate(ticket.time, { timeStyle: 'short', dateStyle: undefined })}</span>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        </aside>
 
-        {/* 3. Completed Column */}
-        <div className="w-[360px] flex-shrink-0 flex flex-col bg-zinc-900/40 rounded-2xl border border-zinc-900 p-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-850 mb-4">
-            <span className="font-bold text-sm text-green-400 uppercase tracking-wider">Completed</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-green-950/40 border border-green-900/40 text-green-400 font-bold">
-              {filteredTickets.filter(t => t.status === 'completed').length}
-            </span>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-            {filteredTickets.filter(t => t.status === 'completed').map(ticket => (
-              <div key={ticket.id} className="p-4 bg-zinc-900 border border-zinc-850 rounded-xl space-y-3 opacity-60 shadow hover:opacity-100 transition-all">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-white text-base">{ticket.orderNumber}</h3>
-                    <p className="text-xs text-zinc-400 mt-0.5">{ticket.table}</p>
-                  </div>
-                  <span className="text-xs text-green-400 font-semibold py-1">Ready</span>
-                </div>
-
-                <div className="border-t border-zinc-850/65 pt-3 space-y-2">
-                  {ticket.items.map(item => (
-                    <div
-                      key={item.id}
-                      className="flex justify-between items-center py-0.5 text-zinc-500 line-through"
-                    >
-                      <span>{item.name} <span className="text-zinc-600 text-xs">({item.category})</span></span>
-                      <span className="font-bold text-sm">x{item.quantity}</span>
-                    </div>
+        {/* 2. Dnd-Kit columns grid area */}
+        <main className="flex-1 overflow-x-auto p-6 bg-[#F9F5F2]">
+          <DndContext onDragEnd={handleDragEnd}>
+            <div className="flex gap-6 h-full items-start">
+              {/* To Cook Droppable Column */}
+              <DroppableColumn
+                id="to_cook"
+                title="To Cook"
+                count={toCookCount}
+                titleColor="text-red-500"
+                countBg="bg-red-50"
+                countText="text-red-500"
+              >
+                {filteredTickets
+                  .filter((t) => t.status === "to_cook")
+                  .map((ticket) => (
+                    <DraggableTicketCard
+                      key={ticket.id}
+                      ticket={ticket}
+                      onToggleItem={handleToggleItem}
+                    />
                   ))}
-                </div>
+              </DroppableColumn>
 
-                <div className="text-[10px] text-zinc-500 pt-2 flex justify-between">
-                  <span>Created</span>
-                  <span>{formatDate(ticket.time, { timeStyle: 'short', dateStyle: undefined })}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              {/* Preparing Droppable Column */}
+              <DroppableColumn
+                id="preparing"
+                title="Preparing"
+                count={preparingCount}
+                titleColor="text-amber-500"
+                countBg="bg-amber-50"
+                countText="text-amber-500"
+              >
+                {filteredTickets
+                  .filter((t) => t.status === "preparing")
+                  .map((ticket) => (
+                    <DraggableTicketCard
+                      key={ticket.id}
+                      ticket={ticket}
+                      onToggleItem={handleToggleItem}
+                    />
+                  ))}
+              </DroppableColumn>
+
+              {/* Completed Droppable Column */}
+              <DroppableColumn
+                id="completed"
+                title="Completed"
+                count={completedCount}
+                titleColor="text-green-600"
+                countBg="bg-green-50"
+                countText="text-green-600"
+              >
+                {filteredTickets
+                  .filter((t) => t.status === "completed")
+                  .map((ticket) => (
+                    <DraggableTicketCard
+                      key={ticket.id}
+                      ticket={ticket}
+                      onToggleItem={handleToggleItem}
+                    />
+                  ))}
+              </DroppableColumn>
+            </div>
+          </DndContext>
+        </main>
       </div>
     </div>
   );

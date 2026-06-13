@@ -1,18 +1,48 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { Product, Category, Table, Customer, Floor } from '@/lib/types';
-import { formatCurrency, calculateTaxAmount, formatDate } from '@/lib/utils';
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { Product, Category, Table, Customer, Floor } from "@/lib/types";
+import {
+  formatCurrency,
+  calculateTaxAmount,
+  formatDate,
+  cn,
+} from "@/lib/utils";
+import {
+  Minus,
+  Plus,
+  Send,
+  User,
+  Tag,
+  Search,
+  ShoppingCart,
+  RotateCcw,
+  PlusSquare,
+  Wifi,
+  Menu,
+  Banknote,
+  Smartphone,
+  CreditCard,
+  X,
+  Delete,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
 
 interface CartItem {
   product: Product;
   quantity: number;
+  customPrice?: number;
 }
+
+type PaymentMethod = "cash" | "upi" | "card";
+type NumpadMode = "qty" | "disc" | "price";
 
 export default function PosTerminalPage() {
   const router = useRouter();
+
+  // Database state
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [floors, setFloors] = useState<Floor[]>([]);
@@ -20,29 +50,37 @@ export default function PosTerminalPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
-  // Selection states
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  // Selector/Interaction state
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [couponCode, setCouponCode] = useState('');
-  const [discountPercent, setDiscountPercent] = useState(0);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
 
-  // UI state overlays
+  // Cart state
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [activeCartItemId, setActiveCartItemId] = useState<string | null>(null);
+  const [discount, setDiscount] = useState(0);
+
+  // Numpad state
+  const [numpadBuffer, setNumpadBuffer] = useState("");
+  const [numpadMode, setNumpadMode] = useState<NumpadMode>("qty");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
+
+  // Modals overlays
   const [showTableModal, setShowTableModal] = useState(true);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cash' | 'card' | 'upi'>('cash');
 
-  // Checkout forms
-  const [cashReceived, setCashReceived] = useState('');
-  const [cardRef, setCardRef] = useState('');
-  const [receiptEmail, setReceiptEmail] = useState('');
+  // Action state
+  const [actionLoading, setActionLoading] = useState(false);
   const [lastOrderDetails, setLastOrderDetails] = useState<any>(null);
+  const [receiptEmail, setReceiptEmail] = useState("");
+  const [cashReceived, setCashReceived] = useState("");
+  const [cardRef, setCardRef] = useState("");
 
-  // Load Initial Data
+  // Load initial data
   useEffect(() => {
     loadData();
   }, []);
@@ -50,37 +88,69 @@ export default function PosTerminalPage() {
   const loadData = async () => {
     try {
       // Get active session
-      const sessRes = await fetch('/api/sessions');
+      const sessRes = await fetch("/api/sessions");
       const sessData = await sessRes.json();
       if (sessData.active) {
         setActiveSessionId(sessData.session.id);
       }
 
       // 1. Fetch categories
-      const catsRes = await fetch('/api/categories');
+      const catsRes = await fetch("/api/categories");
       const cats = await catsRes.json();
       setCategories(cats || []);
-      if (cats && cats.length > 0) setActiveCategory(cats[0].id);
+      if (cats && cats.length > 0) setSelectedCategory(cats[0].id);
 
       // 2. Fetch products
-      const prodsRes = await fetch('/api/products');
+      const prodsRes = await fetch("/api/products");
       const prods = await prodsRes.json();
       setProducts(prods || []);
 
       // 3. Fetch floors & tables
-      const tablesRes = await fetch('/api/tables');
+      const tablesRes = await fetch("/api/tables");
       const tablesData = await tablesRes.json();
       setFloors(tablesData.floors || []);
       setTables(tablesData.tables || []);
 
       // 4. Fetch customers
-      const custsRes = await fetch('/api/customers');
+      const custsRes = await fetch("/api/customers");
       const custs = await custsRes.json();
       setCustomers(custs || []);
     } catch (err) {
-      console.error('API connection error. Using mock fallback.', err);
+      console.error("API connection error. Using mock fallback.", err);
     }
   };
+
+  // Derived visible products
+  const visibleProducts = useMemo(() => {
+    const byCat = products.filter((p) => p.category_id === selectedCategory);
+    if (!search.trim()) return byCat;
+    return products.filter((p) =>
+      p.name.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [selectedCategory, products, search]);
+
+  // Totals calculations
+  const subtotal = useMemo(() => {
+    return cartItems.reduce((sum, item) => {
+      const price =
+        item.customPrice !== undefined ? item.customPrice : item.product.price;
+      return sum + price * item.quantity;
+    }, 0);
+  }, [cartItems]);
+
+  const taxTotal = useMemo(() => {
+    return cartItems.reduce((sum, item) => {
+      const price =
+        item.customPrice !== undefined ? item.customPrice : item.product.price;
+      return sum + calculateTaxAmount(price * item.quantity, item.product.tax);
+    }, 0);
+  }, [cartItems]);
+
+  const discountTotal = useMemo(() => {
+    return (subtotal + taxTotal) * (discount / 100);
+  }, [subtotal, taxTotal, discount]);
+
+  const total = Math.round(subtotal + taxTotal - discountTotal);
 
   // Cart operations
   const addToCart = (product: Product) => {
@@ -88,82 +158,101 @@ export default function PosTerminalPage() {
       setShowTableModal(true);
       return;
     }
-    const existing = cart.find(item => item.product.id === product.id);
-    if (existing) {
-      setCart(cart.map(item => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
-    } else {
-      setCart([...cart, { product, quantity: 1 }]);
-    }
+    setCartItems((prev) => {
+      const hit = prev.find((item) => item.product.id === product.id);
+      let updated;
+      if (hit) {
+        updated = prev.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        );
+      } else {
+        updated = [...prev, { product, quantity: 1 }];
+      }
+      // Set the active cart item for numpad adjustments
+      setActiveCartItemId(product.id);
+      return updated;
+    });
   };
 
-  const updateQuantity = (productId: string, delta: number) => {
-    setCart(cart.map(item => {
-      if (item.product.id === productId) {
-        const newQty = item.quantity + delta;
-        return newQty > 0 ? { ...item, quantity: newQty } : null;
-      }
-      return item;
-    }).filter(Boolean) as CartItem[]);
-  };
-
-  // Totals calculations
-  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  const taxTotal = cart.reduce((sum, item) => sum + calculateTaxAmount(item.product.price * item.quantity, item.product.tax), 0);
-  const discountTotal = (subtotal + taxTotal) * (discountPercent / 100);
-  const total = subtotal + taxTotal - discountTotal;
-
-  // Apply Coupon
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
-    try {
-      const res = await fetch('/api/promotions?type=coupons');
-      const coupons = await res.json();
-      
-      const coupon = coupons.find((c: any) => c.code === couponCode.toUpperCase() && c.is_active);
-
-      if (coupon) {
-        if (coupon.discount_type === 'percentage') {
-          setDiscountPercent(Number(coupon.value));
-        } else {
-          // fixed discount conversion to equivalent percentage for simpler cart flow
-          const pct = (Number(coupon.value) / (subtotal + taxTotal)) * 105;
-          setDiscountPercent(Math.min(pct, 100));
-        }
-        alert('Coupon applied successfully!');
-      } else {
-        alert('Invalid or expired coupon code.');
-      }
-    } catch (err) {
-      // Offline fallback simple demo code
-      if (couponCode.toUpperCase() === 'WELCOME10') {
-        setDiscountPercent(10);
-        alert('Mock Coupon WELCOME10 Applied: 10% Off!');
-      } else {
-        alert('Could not verify coupon.');
+  const changeQty = (productId: string, delta: number) => {
+    setCartItems((prev) =>
+      prev
+        .map((item) =>
+          item.product.id === productId
+            ? { ...item, quantity: item.quantity + delta }
+            : item,
+        )
+        .filter((item) => item.quantity > 0),
+    );
+    if (delta < 0 && activeCartItemId === productId) {
+      // check if item still exists
+      const remains = cartItems.find((i) => i.product.id === productId);
+      if (!remains || remains.quantity + delta <= 0) {
+        setActiveCartItemId(null);
       }
     }
   };
 
-  // Send to Kitchen
+  const clearCart = () => {
+    setCartItems([]);
+    setDiscount(0);
+    setActiveCartItemId(null);
+    setNumpadBuffer("");
+  };
+
+  // Numpad key input handler
+  const handleNumpadKey = (key: string) => {
+    if (key === "backspace") {
+      const next = numpadBuffer.slice(0, -1);
+      setNumpadBuffer(next);
+      applyNumpadValue(next);
+      return;
+    }
+    if (key === "+/-") return;
+    const next = numpadBuffer + key;
+    setNumpadBuffer(next);
+    applyNumpadValue(next);
+  };
+
+  const applyNumpadValue = (valStr: string) => {
+    const num = parseInt(valStr) || 0;
+    if (numpadMode === "disc") {
+      setDiscount(Math.min(num, 100));
+    } else if (numpadMode === "qty" && activeCartItemId) {
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.product.id === activeCartItemId
+            ? { ...item, quantity: Math.max(num, 1) }
+            : item,
+        ),
+      );
+    } else if (numpadMode === "price" && activeCartItemId) {
+      const floatVal = parseFloat(valStr) || 0;
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.product.id === activeCartItemId
+            ? { ...item, customPrice: floatVal > 0 ? floatVal : undefined }
+            : item,
+        ),
+      );
+    }
+  };
+
+  // Send draft to kitchen (KDS)
   const handleSendToKitchen = async () => {
-    if (cart.length === 0) return;
-    alert('Order sent to Kitchen Display System!');
-  };
-
-  // Complete Payment
-  const handleCheckout = async () => {
+    if (cartItems.length === 0) return;
     setActionLoading(true);
     try {
       if (!activeSessionId) {
-        throw new Error('No active POS session. Please open a session first.');
+        throw new Error("No active POS session. Please open a session first.");
       }
+      const orderNum = "ORD-" + Math.floor(Math.random() * 90000 + 10000);
 
-      const orderNum = 'ORD-' + Math.floor(Math.random() * 90000 + 10000);
-
-      // Create order via API route
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           session_id: activeSessionId,
           table_id: selectedTable?.id || null,
@@ -173,39 +262,81 @@ export default function PosTerminalPage() {
           tax: taxTotal,
           discount_amount: discountTotal,
           total,
-          status: 'paid',
-          payment_method: selectedPaymentMethod,
-          items: cart,
+          status: "draft",
+          payment_method: null,
+          items: cartItems,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      alert(`Draft Order ${orderNum} successfully sent to kitchen!`);
+      clearCart();
+      setSelectedTable(null);
+    } catch (err: any) {
+      alert(`Failed to send to kitchen: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Checkout payment handler
+  const checkout = async () => {
+    if (cartItems.length === 0) return;
+    setActionLoading(true);
+    try {
+      if (!activeSessionId) {
+        throw new Error("No active POS session. Please open a session first.");
+      }
+
+      const orderNum = "ORD-" + Math.floor(Math.random() * 90000 + 10000);
+
+      // Create order via API
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: activeSessionId,
+          table_id: selectedTable?.id || null,
+          customer_id: selectedCustomer?.id || null,
+          order_number: orderNum,
+          subtotal,
+          tax: taxTotal,
+          discount_amount: discountTotal,
+          total,
+          status: "paid",
+          payment_method: paymentMethod,
+          items: cartItems,
         }),
       });
 
       const orderResult = await res.json();
       if (orderResult.error) throw new Error(orderResult.error);
 
-      // Assemble order details
       const orderPayload = {
         order_number: orderNum,
-        table: selectedTable?.table_number || 'Takeaway',
-        customer: selectedCustomer?.name || 'Guest',
+        table: selectedTable?.table_number || "Takeaway",
+        customer: selectedCustomer?.name || "Guest Customer",
         subtotal,
         tax: taxTotal,
         discount: discountTotal,
         total,
-        payment_method: selectedPaymentMethod,
-        items: cart,
+        payment_method: paymentMethod,
+        items: cartItems,
         date: new Date().toISOString(),
       };
 
       setLastOrderDetails(orderPayload);
-      setReceiptEmail(selectedCustomer?.email || '');
+      setReceiptEmail(selectedCustomer?.email || "");
 
-      // Reset cart and modals
-      setCart([]);
-      setDiscountPercent(0);
-      setCouponCode('');
+      // Reset cart and states
+      setCartItems([]);
+      setDiscount(0);
       setSelectedCustomer(null);
       setSelectedTable(null);
-      setShowPaymentModal(false);
+      setActiveCartItemId(null);
+      setNumpadBuffer("");
       setShowReceiptModal(true);
     } catch (err: any) {
       alert(`Checkout failed: ${err.message}`);
@@ -215,275 +346,526 @@ export default function PosTerminalPage() {
     }
   };
 
-  const [actionLoading, setActionLoading] = useState(false);
-
-  // Filter products
-  const filteredProducts = products.filter(prod => {
-    const matchesCategory = activeCategory ? prod.category_id === activeCategory : true;
-    const matchesSearch = prod.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
   return (
-    <div className="flex flex-col flex-1 h-screen bg-zinc-950 font-sans select-none">
-      {/* 1. Header Navigation */}
-      <nav className="flex items-center justify-between px-6 py-4 bg-zinc-900 border-b border-zinc-800">
-        <div className="flex items-center gap-6">
-          <span className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span className="w-2.5 h-2.5 bg-amber-500 rounded-full"></span> Cafe POS Terminal
-          </span>
-          <button
-            onClick={() => setShowTableModal(true)}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer border ${
-              selectedTable 
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' 
-                : 'bg-zinc-950 border-zinc-800 text-zinc-400'
-            }`}
-          >
-            {selectedTable ? `Table: ${selectedTable.table_number}` : 'Select Table'}
-          </button>
+    <div className="flex flex-col h-screen bg-[#F9F5F2] overflow-hidden font-sans select-none text-zinc-800">
+      {/* ── TOP BAR ── */}
+      <header className="flex items-center gap-3 px-6 py-3 bg-white border-b border-gray-100 shrink-0">
+        <div className="flex items-center justify-center rounded-xl bg-[#F87060] text-white font-bold text-xs px-4 py-2 shrink-0 select-none tracking-tight">
+          CAFE POS
         </div>
 
-        {/* Search Input */}
-        <div className="flex-1 max-w-md mx-6">
+        <button
+          onClick={() => setShowTableModal(true)}
+          className={cn(
+            "px-4 py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer",
+            selectedTable
+              ? "bg-[#FFF5F0] border-[#F87060]/30 text-[#F87060]"
+              : "bg-white border-gray-200 text-gray-500 hover:border-[#F87060]/50",
+          )}
+        >
+          {selectedTable
+            ? `Table: ${selectedTable.table_number}`
+            : "Select Table"}
+        </button>
+
+        <div className="relative flex-1 max-w-xs ml-4">
           <input
-            type="text"
-            placeholder="Search products by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search items…"
+            className="w-full rounded-xl border border-gray-200 pl-4 pr-9 py-2 text-sm outline-none focus:border-[#F87060] transition-colors bg-white text-zinc-700"
+          />
+          <Search
+            size={14}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
         </div>
 
-        {/* User Action links */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 ml-4">
           <button
-            onClick={() => router.push('/cashier')}
-            className="px-4 py-2 text-xs font-semibold rounded-lg bg-zinc-950 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 cursor-pointer"
+            onClick={clearCart}
+            className="flex items-center justify-center rounded-xl border border-gray-200 p-2.5 text-gray-500 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer"
+            title="Clear Cart"
+          >
+            <RotateCcw size={15} />
+          </button>
+
+          <div className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2 text-xs text-gray-600 bg-white">
+            <Wifi size={13} className="text-[#F87060]" />{" "}
+            <span className="font-semibold">Terminal Connected</span>
+          </div>
+        </div>
+
+        <div className="ml-auto flex gap-2">
+          <button
+            onClick={() => router.push("/cashier")}
+            className="flex items-center justify-center rounded-xl border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer"
           >
             Leave Terminal
           </button>
         </div>
-      </nav>
+      </header>
 
-      {/* 2. Main content container */}
+      {/* ── BODY ── */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Section: Categories tabs & Products Grid */}
-        <div className="flex flex-1 flex-col p-6 overflow-hidden">
-          {/* Categories bar */}
-          <div className="flex gap-2 pb-4 overflow-x-auto select-none no-scrollbar">
+        {/* ── PRODUCT PANEL ── */}
+        <section className="flex gap-3 flex-1 p-4 overflow-hidden border-r border-gray-100">
+          {/* Category sidebar */}
+          <aside className="flex flex-col gap-2 w-36 shrink-0 overflow-y-auto pr-1">
             {categories.map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-5 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  activeCategory === cat.id
-                    ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20'
-                    : 'bg-zinc-900 text-zinc-400 border border-zinc-800/80 hover:bg-zinc-850'
-                }`}
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  setSearch("");
+                }}
+                className={cn(
+                  "rounded-xl px-4 py-3 text-xs font-bold text-left transition-all border cursor-pointer",
+                  selectedCategory === cat.id && !search
+                    ? "bg-[#F87060] text-white border-[#F87060] shadow-sm"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-[#F87060] hover:text-[#F87060]",
+                )}
               >
                 {cat.name}
               </button>
             ))}
-          </div>
+          </aside>
 
-          {/* Products Grid */}
-          <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pr-1">
-            {filteredProducts.map((prod) => (
-              <div
-                key={prod.id}
-                onClick={() => addToCart(prod)}
-                className="flex flex-col justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-850 hover:border-amber-500/50 hover:bg-zinc-850/30 transition-all cursor-pointer group"
+          {/* Product grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto flex-1 content-start pr-1">
+            {visibleProducts.map((product) => (
+              <button
+                key={product.id}
+                onClick={() => addToCart(product)}
+                className="relative flex flex-col items-center justify-center rounded-2xl border px-3 py-5 text-center transition-all bg-white border-gray-200 hover:border-[#F87060] hover:shadow-md cursor-pointer group"
               >
-                <div>
-                  <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors">{prod.name}</h3>
-                  <p className="text-zinc-500 text-xs mt-1 line-clamp-2">{prod.description || 'No description available.'}</p>
-                </div>
-                <div className="flex items-end justify-between mt-4">
-                  <span className="text-xs text-zinc-400 font-medium">{prod.unit_of_measure}</span>
-                  <span className="font-bold text-amber-500">{formatCurrency(Number(prod.price))}</span>
-                </div>
-              </div>
+                <span className="absolute top-2.5 left-2.5 h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="mt-1 text-xs font-bold text-zinc-700 leading-tight group-hover:text-[#F87060] transition-colors">
+                  {product.name}
+                </span>
+                <span className="mt-2 text-xs font-extrabold text-[#F87060]">
+                  {formatCurrency(Number(product.price), "INR", "en-IN")}
+                </span>
+              </button>
             ))}
-            {filteredProducts.length === 0 && (
-              <div className="col-span-full flex flex-col items-center justify-center text-zinc-500 py-20">
-                <p className="text-sm">No products found in this category.</p>
-              </div>
+            {visibleProducts.length === 0 && (
+              <p className="col-span-3 text-center text-gray-400 mt-16 text-sm">
+                No products found.
+              </p>
             )}
           </div>
-        </div>
+        </section>
 
-        {/* Right Section: Sidebar Cart */}
-        <div className="w-[400px] bg-zinc-900 border-l border-zinc-850 flex flex-col h-full">
-          {/* Cart Header */}
-          <div className="p-4 border-b border-zinc-850 flex items-center justify-between">
-            <span className="font-bold text-white text-lg">Active Cart</span>
-            <span className="text-xs px-2.5 py-1 rounded bg-zinc-950 border border-zinc-800 text-zinc-400">
-              {cart.reduce((sum, item) => sum + item.quantity, 0)} items
-            </span>
-          </div>
+        {/* ── CART PANEL ── */}
+        <section className="w-80 shrink-0 flex flex-col p-4 overflow-hidden border-r border-gray-100 bg-white">
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#F87060] mb-3">
+            Current Order
+          </h2>
 
-          {/* Cart Items List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {cart.map((item) => (
-              <div key={item.product.id} className="p-3 rounded-lg bg-zinc-950 border border-zinc-850 flex items-center justify-between">
-                <div className="flex-1 min-w-0 pr-2">
-                  <h4 className="text-sm font-semibold text-white truncate">{item.product.name}</h4>
-                  <p className="text-xs text-zinc-500 mt-0.5">{formatCurrency(Number(item.product.price))}</p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => updateQuantity(item.product.id, -1)}
-                    className="w-7 h-7 flex items-center justify-center rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 text-sm cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <span className="text-sm font-bold text-white w-5 text-center">{item.quantity}</span>
-                  <button
-                    onClick={() => updateQuantity(item.product.id, 1)}
-                    className="w-7 h-7 flex items-center justify-center rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 text-sm cursor-pointer"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {cart.length === 0 && (
-              <div className="flex flex-col items-center justify-center text-zinc-600 h-full">
-                <p className="text-sm">Cart is empty.</p>
-                <p className="text-xs mt-1">Select a table and click products to add.</p>
+          {/* Items */}
+          <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
+            {cartItems.length === 0 && (
+              <div className="flex flex-col items-center justify-center text-center text-gray-400 mt-16 text-xs gap-1.5">
+                <ShoppingCart size={24} className="text-gray-300" />
+                <p>Cart is empty</p>
+                <p className="text-[10px] text-gray-400">
+                  Select a table and choose menu items
+                </p>
               </div>
             )}
+            {cartItems.map((item) => {
+              const price =
+                item.customPrice !== undefined
+                  ? item.customPrice
+                  : item.product.price;
+              const isActive = activeCartItemId === item.product.id;
+              return (
+                <div
+                  key={item.product.id}
+                  onClick={() => {
+                    setActiveCartItemId(item.product.id);
+                    setNumpadBuffer("");
+                  }}
+                  className={cn(
+                    "flex items-center gap-2 rounded-xl px-3 py-2.5 transition-all cursor-pointer border",
+                    isActive
+                      ? "bg-[#FFF5F0] border-[#F87060]/30 shadow-sm"
+                      : "bg-gray-50/50 border-gray-100 hover:bg-gray-50",
+                  )}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-gray-800 truncate">
+                      {item.product.name}
+                    </p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">
+                      {formatCurrency(price, "INR", "en-IN")}{" "}
+                      {item.customPrice !== undefined && "(Custom)"}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        changeQty(item.product.id, -1);
+                      }}
+                      className="h-5 w-5 rounded-full bg-white border border-gray-250 flex items-center justify-center hover:border-[#F87060] hover:text-[#F87060] transition-colors cursor-pointer"
+                    >
+                      <Minus size={10} />
+                    </button>
+                    <span className="w-4 text-center text-xs font-bold">
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        changeQty(item.product.id, 1);
+                      }}
+                      className="h-5 w-5 rounded-full bg-white border border-gray-250 flex items-center justify-center hover:border-[#F87060] hover:text-[#F87060] transition-colors cursor-pointer"
+                    >
+                      <Plus size={10} />
+                    </button>
+                  </div>
+
+                  <span className="text-xs font-extrabold text-gray-700 w-16 text-right">
+                    {formatCurrency(price * item.quantity, "INR", "en-IN")}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Cart Footer / Totals & Actions */}
-          <div className="p-4 bg-zinc-950 border-t border-zinc-850 space-y-4">
-            <div className="space-y-1.5 text-sm">
-              <div className="flex justify-between text-zinc-500">
-                <span>Subtotal</span>
-                <span>{formatCurrency(subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-zinc-500">
-                <span>Tax</span>
-                <span>{formatCurrency(taxTotal)}</span>
-              </div>
-              {discountPercent > 0 && (
-                <div className="flex justify-between text-green-500 font-medium">
-                  <span>Discount ({discountPercent.toFixed(0)}%)</span>
-                  <span>-{formatCurrency(discountTotal)}</span>
-                </div>
+          {/* Cart footer */}
+          <div className="mt-3 space-y-2 border-t border-gray-100 pt-3">
+            <button
+              onClick={handleSendToKitchen}
+              disabled={!cartItems.length || actionLoading}
+              className={cn(
+                "w-full flex items-center justify-between rounded-xl px-4 py-2.5 font-semibold text-xs transition-all cursor-pointer",
+                cartItems.length
+                  ? "bg-[#FFE4DC] text-[#F87060] hover:bg-[#F87060] hover:text-white"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed",
               )}
-              <div className="flex justify-between text-white font-bold text-base pt-1.5 border-t border-zinc-900">
-                <span>Total</span>
-                <span>{formatCurrency(total)}</span>
-              </div>
-            </div>
+            >
+              <span>
+                {actionLoading ? "Sending..." : "Send Draft to Kitchen (KDS)"}
+              </span>
+              <Send size={13} />
+            </button>
 
-            {/* Coupons & Customer Assignments */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                onClick={() => {
-                  const code = prompt('Enter coupon code:');
-                  if (code) {
-                    setCouponCode(code);
-                    setTimeout(() => handleApplyCoupon(), 100);
-                  }
-                }}
-                className="py-2 rounded bg-zinc-900 border border-zinc-850 hover:bg-zinc-800 text-zinc-300 font-semibold cursor-pointer text-center"
-              >
-                Promo Code
-              </button>
-              <button
-                onClick={() => setShowCustomerModal(true)}
-                className="py-2 rounded bg-zinc-900 border border-zinc-850 hover:bg-zinc-800 text-zinc-300 font-semibold cursor-pointer text-center"
-              >
-                {selectedCustomer ? selectedCustomer.name : 'Add Customer'}
-              </button>
-            </div>
-
-            {/* Main Action buttons */}
             <div className="flex gap-2">
               <button
-                onClick={handleSendToKitchen}
-                disabled={cart.length === 0}
-                className="flex-1 py-3 text-center text-xs font-semibold rounded bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                onClick={() => setShowCustomerModal(true)}
+                className="flex-1 flex items-center justify-center gap-1 rounded-xl border border-gray-200 py-2 text-[10px] font-bold text-gray-600 bg-white hover:border-[#F87060] hover:text-[#F87060] transition-colors cursor-pointer"
               >
-                KDS Send
+                <User size={11} />
+                <span className="truncate max-w-[70px]">
+                  {selectedCustomer ? selectedCustomer.name : "Guest"}
+                </span>
               </button>
+
               <button
                 onClick={() => {
-                  if (cart.length > 0) setShowPaymentModal(true);
+                  setNumpadMode("disc");
+                  setNumpadBuffer("");
                 }}
-                disabled={cart.length === 0}
-                className="flex-1 py-3 text-center text-xs font-semibold rounded bg-amber-500 hover:bg-amber-600 text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1 rounded-xl border py-2 text-[10px] font-bold transition-all cursor-pointer",
+                  numpadMode === "disc"
+                    ? "border-[#F87060] text-[#F87060] bg-[#FFF5F0]"
+                    : "border-gray-200 text-gray-600 hover:border-[#F87060] hover:text-[#F87060]",
+                )}
               >
-                Checkout / Pay
+                <Tag size={11} /> Discount {discount > 0 && `(${discount}%)`}
               </button>
             </div>
+
+            {/* Totals */}
+            <div className="rounded-xl bg-gray-50 px-4 py-3 space-y-1.5 text-xs">
+              <div className="flex justify-between text-gray-500 font-semibold">
+                <span>Subtotal</span>
+                <span>{formatCurrency(subtotal, "INR", "en-IN")}</span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-green-600 font-semibold">
+                  <span>Discount ({discount}%)</span>
+                  <span>− {formatCurrency(discountTotal, "INR", "en-IN")}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-gray-500 font-semibold">
+                <span>Tax (GST)</span>
+                <span>{formatCurrency(taxTotal, "INR", "en-IN")}</span>
+              </div>
+              <div className="flex justify-between font-extrabold text-gray-900 border-t border-gray-200 pt-1.5 text-sm">
+                <span>Total</span>
+                <span className="text-[#F87060]">
+                  {formatCurrency(total, "INR", "en-IN")}
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
+
+        {/* ── PAYMENT PANEL ── */}
+        <section className="w-64 shrink-0 flex flex-col p-4 overflow-hidden bg-white border-r border-gray-100">
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#F87060] mb-3">
+            Payment Method
+          </h2>
+
+          {/* Methods */}
+          <div className="space-y-2">
+            {[
+              { id: "cash" as PaymentMethod, label: "Cash", Icon: Banknote },
+              { id: "upi" as PaymentMethod, label: "UPI QR", Icon: Smartphone },
+              {
+                id: "card" as PaymentMethod,
+                label: "Card Swipe",
+                Icon: CreditCard,
+              },
+            ].map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                onClick={() => {
+                  setPaymentMethod(id);
+                  if (id === "cash") setCashReceived("");
+                }}
+                className={cn(
+                  "w-full flex items-center gap-3 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all cursor-pointer",
+                  paymentMethod === id
+                    ? "bg-[#F87060] text-white border-[#F87060] shadow-sm"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-[#F87060]",
+                )}
+              >
+                <Icon size={14} />
+                <span className="flex-1 text-left">{label}</span>
+                {paymentMethod === id && <X size={11} />}
+              </button>
+            ))}
+          </div>
+
+          {/* Amount Display */}
+          <div className="my-4 rounded-xl bg-gray-50 px-4 py-4 text-center">
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">
+              Payment Due
+            </p>
+            <p className="text-2xl font-extrabold text-[#F87060]">
+              {formatCurrency(total, "INR", "en-IN")}
+            </p>
+            <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase">
+              {paymentMethod} checkout
+            </p>
+          </div>
+
+          {/* Numpad Input Field */}
+          {paymentMethod === "cash" && (
+            <div className="mb-2 text-center text-xs space-y-1">
+              <span className="text-gray-400 font-semibold uppercase text-[9px] block">
+                Cash Received
+              </span>
+              <div className="text-sm font-extrabold px-3 py-1.5 bg-gray-50 border rounded-lg border-gray-200 font-mono">
+                {cashReceived
+                  ? formatCurrency(Number(cashReceived), "INR", "en-IN")
+                  : "₹0.00"}
+              </div>
+              {Number(cashReceived) >= total && (
+                <div className="text-[10px] text-emerald-600 font-bold">
+                  Change:{" "}
+                  {formatCurrency(Number(cashReceived) - total, "INR", "en-IN")}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* UPI QR Code helper */}
+          {paymentMethod === "upi" && (
+            <div className="mb-3 p-2 border border-dashed border-gray-200 rounded-xl flex flex-col items-center gap-1.5 bg-gray-50">
+              <div className="w-24 h-24 bg-white border border-gray-200 rounded flex flex-col items-center justify-center p-1 text-black font-mono font-bold text-[8px] leading-tight select-none">
+                <span className="text-[#F87060] font-sans font-bold text-[9px] mb-1">
+                  UPI QR
+                </span>
+                <span>{formatCurrency(total, "INR", "en-IN")}</span>
+                <span className="text-[5px] text-gray-400 mt-1">cafe@ybl</span>
+              </div>
+              <p className="text-[9px] text-gray-500 font-bold">
+                Scan to complete UPI
+              </p>
+            </div>
+          )}
+
+          {/* Numpad Grid */}
+          <div className="grid grid-cols-4 gap-1 flex-1">
+            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((k) => (
+              <button
+                key={k}
+                onClick={() => {
+                  if (paymentMethod === "cash") {
+                    const next = cashReceived + k;
+                    setCashReceived(next);
+                  } else {
+                    handleNumpadKey(k);
+                  }
+                }}
+                className="rounded-xl border border-gray-200 bg-white py-2 text-xs font-bold text-gray-700 hover:border-[#F87060] hover:text-[#F87060] transition-all cursor-pointer flex items-center justify-center"
+              >
+                {k}
+              </button>
+            ))}
+
+            <button
+              onClick={() => {
+                if (paymentMethod === "cash") {
+                  setCashReceived("");
+                } else {
+                  setNumpadBuffer("");
+                  applyNumpadValue("");
+                }
+              }}
+              className="rounded-xl border border-blue-100 bg-blue-50 py-2 text-xs font-bold text-blue-500 hover:bg-blue-100 transition-all cursor-pointer flex items-center justify-center"
+            >
+              C
+            </button>
+
+            <button
+              onClick={() => {
+                if (paymentMethod === "cash") {
+                  const next = cashReceived.slice(0, -1);
+                  setCashReceived(next);
+                } else {
+                  handleNumpadKey("backspace");
+                }
+              }}
+              className="rounded-xl border border-red-100 bg-red-50 py-2 text-xs font-bold text-red-400 hover:bg-red-100 transition-all flex items-center justify-center cursor-pointer"
+            >
+              <Delete size={12} />
+            </button>
+
+            {(["price", "qty"] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => {
+                  setNumpadMode(mode);
+                  setNumpadBuffer("");
+                }}
+                className={cn(
+                  "rounded-xl border py-2 text-[10px] font-bold transition-all cursor-pointer uppercase",
+                  numpadMode === mode
+                    ? "bg-[#F87060] text-white border-[#F87060]"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-[#F87060]",
+                )}
+              >
+                {mode}
+              </button>
+            ))}
+
+            <button
+              onClick={checkout}
+              disabled={
+                !cartItems.length ||
+                actionLoading ||
+                (paymentMethod === "cash" && Number(cashReceived) < total)
+              }
+              className={cn(
+                "col-span-2 rounded-xl py-2 text-xs font-bold transition-all cursor-pointer uppercase flex items-center justify-center",
+                cartItems.length &&
+                  !(paymentMethod === "cash" && Number(cashReceived) < total)
+                  ? "bg-[#F87060] text-white hover:bg-[#e5614f]"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed",
+              )}
+            >
+              {actionLoading ? "Pay..." : "Pay"}
+            </button>
+          </div>
+        </section>
       </div>
 
       {/* ==================== MODALS ==================== */}
 
-      {/* 1. Table Selector Floor Plan Modal */}
+      {/* 1. Floor Tables Plan Modal */}
       {showTableModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl max-h-[85vh] flex flex-col">
-            <h2 className="text-xl font-bold text-white mb-4">Select Floor Table</h2>
-            <div className="flex-1 overflow-y-auto space-y-6">
-              {floors.map(floor => (
-                <div key={floor.id} className="space-y-3">
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">{floor.name}</h3>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                    {tables.filter(t => t.floor_id === floor.id).map(table => (
-                      <div
-                        key={table.id}
-                        onClick={() => {
-                          setSelectedTable(table);
-                          setShowTableModal(false);
-                        }}
-                        className={`p-4 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
-                          selectedTable?.id === table.id
-                            ? 'bg-amber-500 border-amber-500 text-black font-bold'
-                            : 'bg-zinc-950 border-zinc-850 text-zinc-300 hover:border-zinc-750'
-                        }`}
-                      >
-                        <span className="text-base font-semibold">{table.table_number}</span>
-                        <span className={`text-[10px] mt-0.5 ${selectedTable?.id === table.id ? 'text-black/70' : 'text-zinc-500'}`}>
-                          {table.seats} Seats
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              {floors.length === 0 && (
-                <div className="py-8 text-center text-zinc-500">
-                  <p className="text-sm">No floors or tables configured.</p>
-                  <p className="text-xs mt-1">Please set up floors and tables in the admin dashboard.</p>
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl bg-white border border-gray-100 rounded-2xl p-6 shadow-2xl max-h-[85vh] flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                <h2 className="text-lg font-bold text-zinc-800">
+                  Select Floor Table Section
+                </h2>
+                {selectedTable && (
                   <button
-                    onClick={() => {
-                      // fallback for immediate demo without db configured
-                      setSelectedTable({
-                        id: 'demo-t1',
-                        floor_id: 'demo-f1',
-                        table_number: 'Table 1',
-                        seats: 4,
-                        is_active: true,
-                        created_at: '',
-                      });
-                      setShowTableModal(false);
-                    }}
-                    className="mt-4 px-4 py-2 bg-amber-500 text-black font-semibold rounded text-xs"
+                    onClick={() => setShowTableModal(false)}
+                    className="text-gray-400 hover:text-gray-600 font-bold text-sm cursor-pointer"
                   >
-                    Use Demo Table
+                    Close [✕]
                   </button>
-                </div>
-              )}
+                )}
+              </div>
+
+              <div className="overflow-y-auto max-h-[55vh] space-y-6 pr-1">
+                {floors.map((floor) => (
+                  <div key={floor.id} className="space-y-3">
+                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      {floor.name}
+                    </h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                      {tables
+                        .filter((t) => t.floor_id === floor.id)
+                        .map((table) => (
+                          <button
+                            key={table.id}
+                            onClick={() => {
+                              setSelectedTable(table);
+                              setShowTableModal(false);
+                            }}
+                            className={cn(
+                              "p-4 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer",
+                              selectedTable?.id === table.id
+                                ? "bg-[#F87060] border-[#F87060] text-white font-bold"
+                                : "bg-gray-50 border-gray-200 hover:border-[#F87060] text-zinc-700 hover:bg-white",
+                            )}
+                          >
+                            <span className="text-sm font-bold">
+                              {table.table_number}
+                            </span>
+                            <span
+                              className={cn(
+                                "text-[9px] mt-0.5",
+                                selectedTable?.id === table.id
+                                  ? "text-white/80"
+                                  : "text-gray-500",
+                              )}
+                            >
+                              {table.seats} Seats
+                            </span>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+
+                {floors.length === 0 && (
+                  <div className="py-8 text-center text-gray-500">
+                    <p className="text-sm">No floors or tables configured.</p>
+                    <p className="text-xs mt-1 text-gray-400">
+                      Please set up floors and tables in the manager dashboard.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSelectedTable({
+                          id: "demo-t1",
+                          floor_id: "demo-f1",
+                          table_number: "T-1",
+                          seats: 4,
+                          is_active: true,
+                          created_at: "",
+                        });
+                        setShowTableModal(false);
+                      }}
+                      className="mt-4 px-4 py-2 bg-[#F87060] text-white font-bold rounded-xl text-xs cursor-pointer"
+                    >
+                      Use Demo Table 1
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -491,54 +873,57 @@ export default function PosTerminalPage() {
 
       {/* 2. Customer Selector Modal */}
       {showCustomerModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[80vh]">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white">Select Customer</h2>
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white border border-gray-100 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[80vh]">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-zinc-800">
+                Select Customer Profile
+              </h2>
               <button
                 onClick={() => setShowCustomerModal(false)}
-                className="text-zinc-500 hover:text-white font-bold cursor-pointer"
+                className="text-gray-400 hover:text-gray-600 font-bold text-sm cursor-pointer"
               >
                 ✕
               </button>
             </div>
-            
-            <div className="flex-1 overflow-y-auto space-y-2">
-              {customers.map(cust => (
-                <div
+
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+              {customers.map((cust) => (
+                <button
                   key={cust.id}
                   onClick={() => {
                     setSelectedCustomer(cust);
                     setShowCustomerModal(false);
                   }}
-                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                  className={cn(
+                    "w-full text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col",
                     selectedCustomer?.id === cust.id
-                      ? 'bg-amber-500 border-amber-500 text-black font-semibold'
-                      : 'bg-zinc-950 border-zinc-850 text-zinc-300 hover:border-zinc-750'
-                  }`}
+                      ? "bg-[#FFF5F0] border-[#F87060] text-zinc-800"
+                      : "bg-gray-50 border-gray-200 hover:border-[#F87060] text-zinc-700 hover:bg-white",
+                  )}
                 >
-                  <p className="text-sm font-semibold">{cust.name}</p>
-                  <p className={`text-xs mt-0.5 ${selectedCustomer?.id === cust.id ? 'text-black/70' : 'text-zinc-500'}`}>
-                    {cust.phone || cust.email || 'No contact details'}
+                  <p className="text-xs font-bold">{cust.name}</p>
+                  <p className="text-[10px] mt-0.5 text-gray-500">
+                    {cust.phone || cust.email || "No contact details"}
                   </p>
-                </div>
+                </button>
               ))}
 
               {customers.length === 0 && (
-                <div className="py-6 text-center text-zinc-500 text-sm">
-                  No customers found. Assigning guest order.
+                <div className="py-6 text-center text-gray-500 text-xs">
+                  No customer profiles registered.
                   <button
                     onClick={() => {
                       setSelectedCustomer({
-                        id: 'c-guest',
-                        name: 'Guest Customer',
-                        email: 'guest@cafe.com',
+                        id: "c-guest",
+                        name: "Guest Customer",
+                        email: "guest@cafe.com",
                         phone: null,
-                        created_at: '',
+                        created_at: "",
                       });
                       setShowCustomerModal(false);
                     }}
-                    className="block mt-4 mx-auto px-4 py-2 bg-amber-500 text-black text-xs font-semibold rounded"
+                    className="block mt-4 mx-auto px-4 py-2 bg-[#F87060] text-white text-xs font-bold rounded-xl cursor-pointer"
                   >
                     Select Guest
                   </button>
@@ -549,190 +934,123 @@ export default function PosTerminalPage() {
         </div>
       )}
 
-      {/* 3. Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold text-white">Select Payment Method</h2>
-              <button
-                onClick={() => setShowPaymentModal(false)}
-                className="text-zinc-500 hover:text-white font-bold cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-850 flex justify-between items-center text-white">
-              <span className="text-sm text-zinc-400">Total Amount Due</span>
-              <span className="text-2xl font-bold text-amber-500">{formatCurrency(total)}</span>
-            </div>
-
-            {/* Payment Methods tabs */}
-            <div className="grid grid-cols-3 gap-3">
-              {(['cash', 'card', 'upi'] as const).map(method => (
-                <button
-                  key={method}
-                  onClick={() => setSelectedPaymentMethod(method)}
-                  className={`py-3 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer font-semibold uppercase text-xs tracking-wider ${
-                    selectedPaymentMethod === method
-                      ? 'bg-amber-500 border-amber-500 text-black font-bold'
-                      : 'bg-zinc-950 border-zinc-850 text-zinc-400 hover:text-zinc-300'
-                  }`}
-                >
-                  {method}
-                </button>
-              ))}
-            </div>
-
-            {/* Inputs based on payment method */}
-            {selectedPaymentMethod === 'cash' && (
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <label className="text-xs text-zinc-400 font-semibold uppercase">Amount Received</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="Enter cash amount"
-                    value={cashReceived}
-                    onChange={(e) => setCashReceived(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm"
-                  />
-                </div>
-                {Number(cashReceived) >= total && (
-                  <div className="p-3 bg-green-500/10 border border-green-500/25 rounded-lg flex justify-between items-center text-green-400 text-sm font-semibold">
-                    <span>Change Due</span>
-                    <span>{formatCurrency(Number(cashReceived) - total)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {selectedPaymentMethod === 'upi' && (
-              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-850 flex flex-col items-center justify-center gap-4 text-center">
-                <div className="w-40 h-40 bg-white rounded-lg flex items-center justify-center p-2">
-                  {/* Mock QR representation */}
-                  <div className="w-full h-full border-2 border-black flex flex-col items-center justify-center gap-1 text-black font-mono font-bold text-[10px]">
-                    <span>QR CODE</span>
-                    <span>{formatCurrency(total)}</span>
-                    <span className="text-[6px] text-zinc-500 font-sans mt-1">cafe@ybl</span>
-                  </div>
-                </div>
-                <p className="text-xs text-zinc-500">Scan this QR code on any UPI App to pay</p>
-              </div>
-            )}
-
-            {selectedPaymentMethod === 'card' && (
-              <div className="space-y-1">
-                <label className="text-xs text-zinc-400 font-semibold uppercase">Transaction Reference Number</label>
-                <input
-                  type="text"
-                  placeholder="e.g. TXN982348"
-                  value={cardRef}
-                  onChange={(e) => setCardRef(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm"
-                />
-              </div>
-            )}
-
-            <button
-              onClick={handleCheckout}
-              disabled={selectedPaymentMethod === 'cash' && Number(cashReceived) < total}
-              className="w-full py-3 text-sm font-semibold rounded-lg bg-amber-500 hover:bg-amber-600 text-black disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-            >
-              Complete Checkout
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Receipt Screen Modal */}
+      {/* 3. Receipt Success Modal */}
       {showReceiptModal && lastOrderDetails && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-6">
-            <h2 className="text-xl font-bold text-center text-white">Payment Successful!</h2>
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-250">
+          <div className="w-full max-w-sm bg-white border border-gray-150 rounded-2xl p-6 shadow-2xl space-y-5">
+            <h2 className="text-base font-extrabold text-center text-zinc-800 flex items-center justify-center gap-1.5">
+              <CheckCircle2 className="text-emerald-500 w-5 h-5" /> Order
+              Completed!
+            </h2>
 
-            <div className="bg-white text-zinc-900 p-6 rounded-xl font-mono text-xs space-y-4 shadow-inner">
+            {/* Paper Receipt Box */}
+            <div className="bg-gray-50 border border-gray-200 text-zinc-800 p-6 rounded-xl font-mono text-[10px] space-y-4 shadow-sm select-text">
               <div className="text-center space-y-0.5">
-                <h3 className="font-bold text-sm">CAFE POS TERMINAL</h3>
-                <p className="text-zinc-500">123 Street Road, City</p>
-                <p className="text-zinc-500">Tel: (555) 123-4567</p>
+                <h3 className="font-bold text-xs uppercase tracking-tight">
+                  CAFE POS SYSTEM
+                </h3>
+                <p className="text-gray-500 text-[9px]">
+                  123 Gourmet Lane, Food City
+                </p>
+                <p className="text-gray-500 text-[9px]">Tel: 1800-CAFE-POS</p>
               </div>
 
-              <div className="border-t border-dashed border-zinc-400 pt-2 space-y-1">
-                <p>Order: {lastOrderDetails.order_number}</p>
+              <div className="border-t border-dashed border-gray-300 pt-2 space-y-1">
+                <p>Order Ref: {lastOrderDetails.order_number}</p>
                 <p>Date: {formatDate(lastOrderDetails.date)}</p>
                 <p>Table: {lastOrderDetails.table}</p>
-                <p>Cashier: Cashier Profile</p>
                 <p>Customer: {lastOrderDetails.customer}</p>
               </div>
 
-              <div className="border-t border-dashed border-zinc-400 pt-2 space-y-2">
-                {lastOrderDetails.items.map((item: any) => (
-                  <div key={item.product.id} className="flex justify-between">
-                    <span>
-                      {item.product.name} x {item.quantity}
-                    </span>
-                    <span>{formatCurrency(item.product.price * item.quantity)}</span>
-                  </div>
-                ))}
+              <div className="border-t border-dashed border-gray-300 pt-2 space-y-1.5">
+                {lastOrderDetails.items.map((item: any) => {
+                  const price =
+                    item.customPrice !== undefined
+                      ? item.customPrice
+                      : item.product.price;
+                  return (
+                    <div key={item.product.id} className="flex justify-between">
+                      <span>
+                        {item.product.name} x {item.quantity}
+                      </span>
+                      <span>
+                        {formatCurrency(price * item.quantity, "INR", "en-IN")}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
-              <div className="border-t border-dashed border-zinc-400 pt-2 space-y-1 text-right">
+              <div className="border-t border-dashed border-gray-300 pt-2 space-y-1 text-right">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>{formatCurrency(lastOrderDetails.subtotal)}</span>
+                  <span>
+                    {formatCurrency(lastOrderDetails.subtotal, "INR", "en-IN")}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tax:</span>
-                  <span>{formatCurrency(lastOrderDetails.tax)}</span>
+                  <span>Tax Total:</span>
+                  <span>
+                    {formatCurrency(lastOrderDetails.tax, "INR", "en-IN")}
+                  </span>
                 </div>
                 {lastOrderDetails.discount > 0 && (
                   <div className="flex justify-between text-green-700">
                     <span>Discount:</span>
-                    <span>-{formatCurrency(lastOrderDetails.discount)}</span>
+                    <span>
+                      -
+                      {formatCurrency(
+                        lastOrderDetails.discount,
+                        "INR",
+                        "en-IN",
+                      )}
+                    </span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold border-t border-zinc-300 pt-1 text-sm">
-                  <span>TOTAL:</span>
-                  <span>{formatCurrency(lastOrderDetails.total)}</span>
+                <div className="flex justify-between font-bold border-t border-gray-300 pt-1 text-xs text-zinc-900">
+                  <span>TOTAL PAID:</span>
+                  <span>
+                    {formatCurrency(lastOrderDetails.total, "INR", "en-IN")}
+                  </span>
                 </div>
               </div>
 
-              <div className="text-center border-t border-dashed border-zinc-400 pt-3 text-[10px] text-zinc-500">
-                Thank you for your visit!
+              <div className="text-center border-t border-dashed border-gray-300 pt-3 text-[9px] text-gray-500 uppercase tracking-wider">
+                Thank you! Scan QR to review.
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex gap-2">
                 <input
                   type="email"
-                  placeholder="Enter customer email"
+                  placeholder="Enter email address"
                   value={receiptEmail}
                   onChange={(e) => setReceiptEmail(e.target.value)}
-                  className="flex-1 px-3 py-2 text-xs rounded-lg bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="flex-1 px-3 py-2 text-xs rounded-xl bg-gray-50 border border-gray-200 text-zinc-800 focus:outline-none focus:border-[#F87060]"
                 />
                 <button
-                  onClick={() => alert(`Receipt emailed to ${receiptEmail}`)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-xs font-semibold text-zinc-300 cursor-pointer"
+                  onClick={() =>
+                    alert(`Receipt has been emailed to ${receiptEmail}`)
+                  }
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-250 rounded-xl text-xs font-bold text-gray-600 cursor-pointer"
                 >
                   Email
                 </button>
               </div>
+
               <button
-                onClick={() => {
-                  window.print();
-                }}
-                className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-xs font-semibold text-zinc-300 cursor-pointer"
+                onClick={() => window.print()}
+                className="w-full py-2 bg-gray-100 hover:bg-gray-200 border border-gray-250 rounded-xl text-xs font-bold text-gray-600 cursor-pointer"
               >
-                Print Receipt
+                Print Receipt Invoice
               </button>
+
               <button
                 onClick={() => setShowReceiptModal(false)}
-                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-black text-sm font-semibold rounded-lg cursor-pointer"
+                className="w-full py-2.5 bg-[#F87060] hover:bg-[#e5614f] text-white text-xs font-bold rounded-xl cursor-pointer transition-colors"
               >
-                New Order
+                Start New Order
               </button>
             </div>
           </div>
