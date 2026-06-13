@@ -15,7 +15,10 @@ export const productValidation = {
     required: "Price is required",
     min: { value: 0.01, message: "Price must be greater than 0" },
   },
-  tax: { required: "Tax is required" },
+  tax: {
+    required: "Tax is required",
+    min: { value: 0, message: "Tax cannot be negative" },
+  },
   image: { required: "Product image is required" },
   description: {},
   is_available: {},

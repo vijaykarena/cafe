@@ -325,6 +325,7 @@ export function ProductModal({
                   id="product-price"
                   type="number"
                   step="0.01"
+                  min="0.01"
                   placeholder="0.00"
                   {...register("price", productValidation.price)}
                 />
@@ -341,6 +342,7 @@ export function ProductModal({
                   id="product-tax"
                   type="number"
                   step="0.01"
+                  min="0"
                   placeholder="5"
                   {...register("tax", productValidation.tax)}
                 />
