@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { formatCurrency } from "@/lib/utils";
 import {
   ShoppingBag,
@@ -154,28 +154,115 @@ export default function WaiterDashboard() {
   useEffect(() => {
     if (!activeSessionId) return;
 
+    const handleRealtimeActiveOrders = (payload: any) => {
+      const { eventType, table, new: newRow, old: oldRow } = payload;
+
+      setActiveOrders((prevOrders) => {
+        if (table === "orders") {
+          if (eventType === "INSERT") {
+            if (newRow.session_id !== activeSessionId) return prevOrders;
+            if (prevOrders.some((o) => o.id === newRow.id)) return prevOrders;
+            return [
+              { ...newRow, order_items: [], kds_tickets: [] },
+              ...prevOrders,
+            ];
+          }
+          if (eventType === "UPDATE") {
+            return prevOrders.map((o) =>
+              o.id === newRow.id ? { ...o, ...newRow } : o
+            );
+          }
+          if (eventType === "DELETE") {
+            return prevOrders.filter((o) => o.id !== oldRow.id);
+          }
+        }
+
+        if (table === "order_items") {
+          if (eventType === "INSERT") {
+            return prevOrders.map((o) => {
+              if (o.id !== newRow.order_id) return o;
+              if ((o.order_items || []).some((item: any) => item.id === newRow.id)) return o;
+              return {
+                ...o,
+                order_items: [...(o.order_items || []), newRow],
+              };
+            });
+          }
+          if (eventType === "UPDATE") {
+            return prevOrders.map((o) => {
+              if (o.id !== newRow.order_id) return o;
+              return {
+                ...o,
+                order_items: (o.order_items || []).map((item: any) =>
+                  item.id === newRow.id ? { ...item, ...newRow } : item
+                ),
+              };
+            });
+          }
+          if (eventType === "DELETE") {
+            return prevOrders.map((o) => {
+              if (o.id !== oldRow.order_id) return o;
+              return {
+                ...o,
+                order_items: (o.order_items || []).filter((item: any) => item.id !== oldRow.id),
+              };
+            });
+          }
+        }
+
+        if (table === "kds_tickets") {
+          if (eventType === "INSERT") {
+            return prevOrders.map((o) => {
+              if (o.id !== newRow.order_id) return o;
+              if ((o.kds_tickets || []).some((ticket: any) => ticket.id === newRow.id)) return o;
+              return {
+                ...o,
+                kds_tickets: [...(o.kds_tickets || []), newRow],
+              };
+            });
+          }
+          if (eventType === "UPDATE") {
+            return prevOrders.map((o) => {
+              if (o.id !== newRow.order_id) return o;
+              return {
+                ...o,
+                kds_tickets: (o.kds_tickets || []).map((ticket: any) =>
+                  ticket.id === newRow.id ? { ...ticket, ...newRow } : ticket
+                ),
+              };
+            });
+          }
+          if (eventType === "DELETE") {
+            return prevOrders.map((o) => {
+              if (o.id !== oldRow.order_id) return o;
+              return {
+                ...o,
+                kds_tickets: (o.kds_tickets || []).filter((ticket: any) => ticket.id !== oldRow.id),
+              };
+            });
+          }
+        }
+
+        return prevOrders;
+      });
+    };
+
     const channel = supabase
       .channel("waiter_dashboard_live")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "orders" },
-        () => {
-          fetchActiveOrders(activeSessionId);
-        },
+        handleRealtimeActiveOrders,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "kds_tickets" },
-        () => {
-          fetchActiveOrders(activeSessionId);
-        },
+        handleRealtimeActiveOrders,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "order_items" },
-        () => {
-          fetchActiveOrders(activeSessionId);
-        },
+        handleRealtimeActiveOrders,
       )
       .subscribe();
 
@@ -198,10 +285,15 @@ export default function WaiterDashboard() {
   }, [activeOrders, selectedTableId]);
 
   // Sync cart when table selection changes
+  const prevSelectedTableIdRef = useRef<string | null>(null);
+
   useEffect(() => {
+    const tableChanged = prevSelectedTableIdRef.current !== selectedTableId;
+    prevSelectedTableIdRef.current = selectedTableId;
+
     if (activeOrderForTable) {
       // Map database order_items to cart structure
-      const items = (activeOrderForTable.order_items || []).map((oi: any) => {
+      const dbCartItems = (activeOrderForTable.order_items || []).map((oi: any) => {
         // Resolve full product details
         const prod = products.find((p) => p.id === oi.product_id) || {
           id: oi.product_id,
@@ -217,7 +309,61 @@ export default function WaiterDashboard() {
           isServed: oi.is_served || false,
         };
       });
-      setCart(items);
+
+      if (tableChanged) {
+        setCart(dbCartItems);
+      } else {
+        // Table didn't change: merge database items and unsaved items
+        setCart((prevCart) => {
+          // Identify unsaved items
+          const unsavedItems: OrderItem[] = [];
+          
+          prevCart.forEach((prevItem) => {
+            if (prevItem.isServed) return;
+            
+            // Calculate total quantity of this product in dbCartItems (both served and unserved)
+            const dbTotalQty = dbCartItems
+              .filter((di: OrderItem) => di.product.id === prevItem.product.id)
+              .reduce((sum: number, di: OrderItem) => sum + di.quantity, 0);
+              
+            // Calculate total quantity of this product in prevCart
+            const prevTotalQty = prevCart
+              .filter((pi: OrderItem) => pi.product.id === prevItem.product.id && !pi.isServed)
+              .reduce((sum: number, pi: OrderItem) => sum + pi.quantity, 0);
+
+            // If we have more in the cart than in the database, the difference is unsaved
+            if (prevTotalQty > dbTotalQty) {
+              const delta = prevTotalQty - dbTotalQty;
+              // To prevent duplicate additions, only add to unsavedItems once per product
+              const alreadyAdded = unsavedItems.some((ui) => ui.product.id === prevItem.product.id);
+              if (!alreadyAdded) {
+                unsavedItems.push({
+                  product: prevItem.product,
+                  quantity: delta,
+                  isServed: false,
+                });
+              }
+            }
+          });
+
+          // Helper to combine items by product and isServed status
+          const combineCartItems = (items: OrderItem[]): OrderItem[] => {
+            const map = new Map<string, OrderItem>();
+            items.forEach((item) => {
+              const key = `${item.product.id}-${item.isServed ? "served" : "new"}`;
+              const existing = map.get(key);
+              if (existing) {
+                existing.quantity += item.quantity;
+              } else {
+                map.set(key, { ...item });
+              }
+            });
+            return Array.from(map.values());
+          };
+
+          return combineCartItems([...dbCartItems, ...unsavedItems]);
+        });
+      }
     } else {
       setCart([]);
     }

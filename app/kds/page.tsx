@@ -219,18 +219,64 @@ export default function KdsPage() {
 
     fetchTickets();
 
+    const handleRealtimeKds = (payload: any) => {
+      const { eventType, table, new: newRow, old: oldRow } = payload;
+
+      if (table === "kds_tickets") {
+        if (eventType === "INSERT") {
+          fetchTickets();
+        } else if (eventType === "UPDATE") {
+          setTickets((prev) =>
+            prev.map((t) =>
+              t.id === newRow.id
+                ? { ...t, status: newRow.status, assignedTo: newRow.assigned_to }
+                : t
+            )
+          );
+        } else if (eventType === "DELETE") {
+          setTickets((prev) => prev.filter((t) => t.id !== oldRow.id));
+        }
+      } else if (table === "order_items") {
+        if (eventType === "INSERT") {
+          fetchTickets();
+        } else if (eventType === "UPDATE") {
+          setTickets((prev) =>
+            prev.map((t) => ({
+              ...t,
+              items: t.items.map((item) =>
+                item.id === newRow.id
+                  ? { ...item, isCompleted: newRow.is_completed_in_kitchen }
+                  : item
+              ),
+            }))
+          );
+        } else if (eventType === "DELETE") {
+          fetchTickets();
+        }
+      } else if (table === "orders") {
+        if (eventType === "INSERT" || eventType === "DELETE") {
+          fetchTickets();
+        }
+      }
+    };
+
     // Setup Supabase Realtime Listener
     const channel = supabase
       .channel("kds_orders_live")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "kds_tickets" },
-        () => fetchTickets(),
+        handleRealtimeKds,
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "orders" },
-        () => fetchTickets(),
+        handleRealtimeKds,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "order_items" },
+        handleRealtimeKds,
       )
       .subscribe();
 

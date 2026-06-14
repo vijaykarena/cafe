@@ -75,7 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setLoading(true);
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        setLoading(true);
+      }
       if (session) {
         setUser(session.user);
         document.cookie = `sb-access-token=${session.access_token || ""}; path=/; max-age=604800; SameSite=Lax`;

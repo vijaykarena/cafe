@@ -1159,7 +1159,7 @@
       "label": "CartItem",
       "file_type": "code",
       "source_file": "app/cashier/page.tsx",
-      "source_location": "L34",
+      "source_location": "L31",
       "id": "cashier_page_cartitem",
       "community": 5,
       "norm_label": "cartitem"
@@ -1168,7 +1168,7 @@
       "label": "PaymentMethod",
       "file_type": "code",
       "source_file": "app/cashier/page.tsx",
-      "source_location": "L41",
+      "source_location": "L38",
       "id": "cashier_page_paymentmethod",
       "community": 5,
       "norm_label": "paymentmethod"
@@ -1177,7 +1177,7 @@
       "label": "NumpadMode",
       "file_type": "code",
       "source_file": "app/cashier/page.tsx",
-      "source_location": "L42",
+      "source_location": "L39",
       "id": "cashier_page_numpadmode",
       "community": 5,
       "norm_label": "numpadmode"
@@ -1186,7 +1186,7 @@
       "label": "PosTerminalPage()",
       "file_type": "code",
       "source_file": "app/cashier/page.tsx",
-      "source_location": "L44",
+      "source_location": "L41",
       "id": "cashier_page_posterminalpage",
       "community": 5,
       "norm_label": "posterminalpage()"
@@ -1573,7 +1573,7 @@
       "label": "Product",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L19",
+      "source_location": "L18",
       "id": "waiter_page_product",
       "community": 21,
       "norm_label": "product"
@@ -1582,7 +1582,7 @@
       "label": "Category",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L28",
+      "source_location": "L27",
       "id": "waiter_page_category",
       "community": 21,
       "norm_label": "category"
@@ -1591,7 +1591,7 @@
       "label": "Table",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L33",
+      "source_location": "L32",
       "id": "waiter_page_table",
       "community": 21,
       "norm_label": "table"
@@ -1600,7 +1600,7 @@
       "label": "Floor",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L41",
+      "source_location": "L40",
       "id": "waiter_page_floor",
       "community": 21,
       "norm_label": "floor"
@@ -1609,7 +1609,7 @@
       "label": "OrderItem",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L46",
+      "source_location": "L45",
       "id": "waiter_page_orderitem",
       "community": 21,
       "norm_label": "orderitem"
@@ -1618,7 +1618,7 @@
       "label": "WaiterDashboard()",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L52",
+      "source_location": "L51",
       "id": "waiter_page_waiterdashboard",
       "community": 21,
       "norm_label": "waiterdashboard()"
@@ -2131,7 +2131,7 @@
       "label": "useAuth()",
       "file_type": "code",
       "source_file": "providers/auth-provider.tsx",
-      "source_location": "L106",
+      "source_location": "L108",
       "id": "providers_auth_provider_useauth",
       "community": 4,
       "norm_label": "useauth()"
@@ -5304,9 +5304,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "lib_types_product",
-      "confidence_score": 1.0
+      "target": "lib_types_product"
     },
     {
       "relation": "imports",
@@ -5315,9 +5315,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "lib_types_category",
-      "confidence_score": 1.0
+      "target": "lib_types_category"
     },
     {
       "relation": "imports",
@@ -5326,9 +5326,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "lib_types_table",
-      "confidence_score": 1.0
+      "target": "lib_types_table"
     },
     {
       "relation": "imports",
@@ -5337,9 +5337,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "lib_types_customer",
-      "confidence_score": 1.0
+      "target": "lib_types_customer"
     },
     {
       "relation": "imports",
@@ -5348,9 +5348,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "lib_types_floor",
-      "confidence_score": 1.0
+      "target": "lib_types_floor"
     },
     {
       "relation": "imports_from",
@@ -5403,9 +5403,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "lib_utils_calculatetaxamount",
-      "confidence_score": 1.0
+      "target": "lib_utils_calculatetaxamount"
     },
     {
       "relation": "imports",
@@ -5425,9 +5425,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "lib_utils_cn",
-      "confidence_score": 1.0
+      "target": "lib_utils_cn"
     },
     {
       "relation": "contains",
@@ -5435,9 +5435,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L34",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "cashier_page_cartitem",
-      "confidence_score": 1.0
+      "target": "cashier_page_cartitem"
     },
     {
       "relation": "contains",
@@ -5445,9 +5445,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "cashier_page_paymentmethod",
-      "confidence_score": 1.0
+      "target": "cashier_page_paymentmethod"
     },
     {
       "relation": "contains",
@@ -5455,9 +5455,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L42",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "cashier_page_numpadmode",
-      "confidence_score": 1.0
+      "target": "cashier_page_numpadmode"
     },
     {
       "relation": "contains",
@@ -5465,9 +5465,9 @@
       "source_file": "app/cashier/page.tsx",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "cashier_page_posterminalpage",
-      "confidence_score": 1.0
+      "target": "cashier_page_posterminalpage"
     },
     {
       "relation": "contains",
@@ -14009,5 +14009,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "5aa847714078be6cc6f888effe83da347ae1183b"
+  "built_at_commit": "89dba6708e40582aac6c50c6ab925fda6bdb625a"
 }
