@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { getManagerId } from "@/lib/permissions";
 
 export async function GET(request: Request) {
   try {
+    const managerId = await getManagerId(request);
+
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get("session_id");
 
     let query = supabaseAdmin
       .from("orders")
-      .select("*, order_items(*), kds_tickets(*)");
+      .select("*, order_items(*), kds_tickets(*)")
+      .eq("manager_id", managerId);
+
     if (sessionId) {
       query = query.eq("session_id", sessionId);
     }
@@ -19,18 +24,21 @@ export async function GET(request: Request) {
     if (error) throw error;
     return NextResponse.json(data);
   } catch (err: any) {
+    if (err instanceof NextResponse) return err;
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const managerId = await getManagerId(request);
     const body = await request.json();
 
     // 1. Create order
     const { data: order, error: orderErr } = await supabaseAdmin
       .from("orders")
       .insert({
+        manager_id: managerId,
         session_id: body.session_id,
         table_id: body.table_id || null,
         customer_id: body.customer_id || null,
@@ -78,12 +86,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ order, items });
   } catch (err: any) {
+    if (err instanceof NextResponse) return err;
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
 export async function PUT(request: Request) {
   try {
+    const managerId = await getManagerId(request);
     const body = await request.json();
     const {
       order_id,
@@ -115,6 +125,7 @@ export async function PUT(request: Request) {
           total: total,
         })
         .eq("id", order_id)
+        .eq("manager_id", managerId)
         .select()
         .single();
 
@@ -173,10 +184,14 @@ export async function PUT(request: Request) {
       .from("orders")
       .select("*")
       .eq("id", order_id)
+      .eq("manager_id", managerId)
       .single();
 
     if (orderErr || !order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Order not found or access denied" },
+        { status: 404 },
+      );
     }
 
     // 2. Calculate appended totals
@@ -211,7 +226,8 @@ export async function PUT(request: Request) {
     const { error: updateOrderErr } = await supabaseAdmin
       .from("orders")
       .update({ subtotal: newSubtotal, tax: newTax, total: newTotal })
-      .eq("id", order_id);
+      .eq("id", order_id)
+      .eq("manager_id", managerId);
 
     if (updateOrderErr) throw updateOrderErr;
 
@@ -243,6 +259,7 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({ success: true, items: insertedItems });
   } catch (err: any) {
+    if (err instanceof NextResponse) return err;
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
