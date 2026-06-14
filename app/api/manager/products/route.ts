@@ -28,10 +28,9 @@ export async function GET(request: Request) {
       .eq("manager_id", userId)
       .eq("status", "enable");
 
-    if (search.trim())
-      query = query.or(
-        `name.ilike.%${search.trim()}%,categories.name.ilike.%${search.trim()}%`,
-      );
+    if (search.trim()) {
+      query = query.or(`name.ilike.%${search.trim()}%`);
+    }
 
     if (categoryFilter && categoryFilter !== "all")
       query = query.eq("category_id", categoryFilter);

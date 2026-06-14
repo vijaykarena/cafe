@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Profile } from "@/lib/types";
 import { useAuth } from "@/providers/auth-provider";
 import { Search, FolderOpen } from "lucide-react";
@@ -42,8 +42,6 @@ export default function AdminManagersPage() {
   useEffect(() => {
     loadData(page, debouncedSearch);
   }, [page, debouncedSearch]);
-
-
 
   const handleToggleBan = async (id: string, currentBanStatus: boolean) => {
     const action = currentBanStatus ? "Unblock" : "Block";
