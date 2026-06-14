@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Product, Category, Table, Customer, Floor } from "@/lib/types";
+import { Product, Category, Table, Floor } from "@/lib/types";
 import { supabase, getProductImageUrl } from "@/lib/supabase";
 import {
   formatCurrency,
@@ -14,8 +14,6 @@ import {
   Minus,
   Plus,
   Send,
-  User,
-  Tag,
   Search,
   ShoppingCart,
   RotateCcw,
@@ -37,7 +35,7 @@ interface CartItem {
 }
 
 type PaymentMethod = "cash" | "upi" | "card";
-type NumpadMode = "qty" | "disc" | "price";
+type NumpadMode = "qty" | "price";
 
 export default function PosTerminalPage() {
   const router = useRouter();
@@ -47,7 +45,6 @@ export default function PosTerminalPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [floors, setFloors] = useState<Floor[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   // Active orders and toggles
@@ -62,14 +59,10 @@ export default function PosTerminalPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null,
-  );
 
   // Cart state
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [activeCartItemId, setActiveCartItemId] = useState<string | null>(null);
-  const [discount, setDiscount] = useState(0);
 
   // Numpad state
   const [numpadBuffer, setNumpadBuffer] = useState("");
@@ -77,7 +70,6 @@ export default function PosTerminalPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
 
   // Modals overlays
-  const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
 
   // Action state
@@ -140,11 +132,6 @@ export default function PosTerminalPage() {
           setSelectedFloorId(loadedFloors[0].id);
         }
 
-        // 4. Fetch customers
-        const custsRes = await fetch("/api/customers");
-        const custs = await custsRes.json();
-        setCustomers(custs || []);
-
         if (sessionId) {
           await fetchActiveOrders(sessionId);
         }
@@ -189,7 +176,7 @@ export default function PosTerminalPage() {
           }
           if (eventType === "UPDATE") {
             return prevOrders.map((o) =>
-              o.id === newRow.id ? { ...o, ...newRow } : o
+              o.id === newRow.id ? { ...o, ...newRow } : o,
             );
           }
           if (eventType === "DELETE") {
@@ -201,7 +188,10 @@ export default function PosTerminalPage() {
           if (eventType === "INSERT") {
             return prevOrders.map((o) => {
               if (o.id !== newRow.order_id) return o;
-              if ((o.order_items || []).some((item: any) => item.id === newRow.id)) return o;
+              if (
+                (o.order_items || []).some((item: any) => item.id === newRow.id)
+              )
+                return o;
               return {
                 ...o,
                 order_items: [...(o.order_items || []), newRow],
@@ -214,7 +204,7 @@ export default function PosTerminalPage() {
               return {
                 ...o,
                 order_items: (o.order_items || []).map((item: any) =>
-                  item.id === newRow.id ? { ...item, ...newRow } : item
+                  item.id === newRow.id ? { ...item, ...newRow } : item,
                 ),
               };
             });
@@ -224,7 +214,9 @@ export default function PosTerminalPage() {
               if (o.id !== oldRow.order_id) return o;
               return {
                 ...o,
-                order_items: (o.order_items || []).filter((item: any) => item.id !== oldRow.id),
+                order_items: (o.order_items || []).filter(
+                  (item: any) => item.id !== oldRow.id,
+                ),
               };
             });
           }
@@ -234,7 +226,12 @@ export default function PosTerminalPage() {
           if (eventType === "INSERT") {
             return prevOrders.map((o) => {
               if (o.id !== newRow.order_id) return o;
-              if ((o.kds_tickets || []).some((ticket: any) => ticket.id === newRow.id)) return o;
+              if (
+                (o.kds_tickets || []).some(
+                  (ticket: any) => ticket.id === newRow.id,
+                )
+              )
+                return o;
               return {
                 ...o,
                 kds_tickets: [...(o.kds_tickets || []), newRow],
@@ -247,7 +244,7 @@ export default function PosTerminalPage() {
               return {
                 ...o,
                 kds_tickets: (o.kds_tickets || []).map((ticket: any) =>
-                  ticket.id === newRow.id ? { ...ticket, ...newRow } : ticket
+                  ticket.id === newRow.id ? { ...ticket, ...newRow } : ticket,
                 ),
               };
             });
@@ -257,7 +254,9 @@ export default function PosTerminalPage() {
               if (o.id !== oldRow.order_id) return o;
               return {
                 ...o,
-                kds_tickets: (o.kds_tickets || []).filter((ticket: any) => ticket.id !== oldRow.id),
+                kds_tickets: (o.kds_tickets || []).filter(
+                  (ticket: any) => ticket.id !== oldRow.id,
+                ),
               };
             });
           }
@@ -320,11 +319,7 @@ export default function PosTerminalPage() {
     }, 0);
   }, [cartItems]);
 
-  const discountTotal = useMemo(() => {
-    return (subtotal + taxTotal) * (discount / 100);
-  }, [subtotal, taxTotal, discount]);
-
-  const total = Math.round(subtotal + taxTotal - discountTotal);
+  const total = Math.round(subtotal + taxTotal);
 
   // Helper: Find active draft order for selected table
   const activeOrderForTable = useMemo(() => {
@@ -417,25 +412,30 @@ export default function PosTerminalPage() {
         setCartItems((prevCart) => {
           // Identify unsaved items
           const unsavedItems: CartItem[] = [];
-          
+
           prevCart.forEach((prevItem) => {
             if (prevItem.isServed) return;
-            
+
             // Calculate total quantity of this product in dbCartItems (both served and unserved)
             const dbTotalQty = dbCartItems
               .filter((di: CartItem) => di.product.id === prevItem.product.id)
               .reduce((sum: number, di: CartItem) => sum + di.quantity, 0);
-              
+
             // Calculate total quantity of this product in prevCart
             const prevTotalQty = prevCart
-              .filter((pi: CartItem) => pi.product.id === prevItem.product.id && !pi.isServed)
+              .filter(
+                (pi: CartItem) =>
+                  pi.product.id === prevItem.product.id && !pi.isServed,
+              )
               .reduce((sum: number, pi: CartItem) => sum + pi.quantity, 0);
 
             // If we have more in the cart than in the database, the difference is unsaved
             if (prevTotalQty > dbTotalQty) {
               const delta = prevTotalQty - dbTotalQty;
               // To prevent duplicate additions, only add to unsavedItems once per product
-              const alreadyAdded = unsavedItems.some((ui) => ui.product.id === prevItem.product.id);
+              const alreadyAdded = unsavedItems.some(
+                (ui) => ui.product.id === prevItem.product.id,
+              );
               if (!alreadyAdded) {
                 unsavedItems.push({
                   product: prevItem.product,
@@ -464,24 +464,8 @@ export default function PosTerminalPage() {
           return combineCartItems([...dbCartItems, ...unsavedItems]);
         });
       }
-
-      if (activeOrder.discount_amount) {
-        const orderSubtotal = Number(activeOrder.subtotal);
-        const orderTax = Number(activeOrder.tax);
-        const orderDiscount = Number(activeOrder.discount_amount);
-        if (orderSubtotal + orderTax > 0) {
-          setDiscount(
-            Math.round((orderDiscount / (orderSubtotal + orderTax)) * 100),
-          );
-        } else {
-          setDiscount(0);
-        }
-      } else {
-        setDiscount(0);
-      }
     } else {
       setCartItems([]);
-      setDiscount(0);
     }
     setActiveCartItemId(null);
   }, [
@@ -541,7 +525,6 @@ export default function PosTerminalPage() {
 
   const clearCart = () => {
     setCartItems((prev) => prev.filter((item) => item.isServed));
-    setDiscount(0);
     setActiveCartItemId(null);
     setNumpadBuffer("");
   };
@@ -562,9 +545,7 @@ export default function PosTerminalPage() {
 
   const applyNumpadValue = (valStr: string) => {
     const num = parseInt(valStr) || 0;
-    if (numpadMode === "disc") {
-      setDiscount(Math.min(num, 100));
-    } else if (numpadMode === "qty" && activeCartItemId) {
+    if (numpadMode === "qty" && activeCartItemId) {
       setCartItems((prev) =>
         prev.map((item) =>
           item.product.id === activeCartItemId && !item.isServed
@@ -642,11 +623,10 @@ export default function PosTerminalPage() {
           body: JSON.stringify({
             session_id: activeSessionId,
             table_id: orderMode === "table" ? selectedTable?.id : null,
-            customer_id: selectedCustomer?.id || null,
+            customer_id: null,
             order_number: orderNum,
             subtotal,
             tax: taxTotal,
-            discount_amount: discountTotal,
             total,
             status: "draft",
             payment_method: null,
@@ -721,7 +701,6 @@ export default function PosTerminalPage() {
             payment_method: paymentMethod,
             subtotal,
             tax: taxTotal,
-            discount_amount: discountTotal,
             total,
             items: itemsToAppend,
           }),
@@ -736,10 +715,9 @@ export default function PosTerminalPage() {
             orderMode === "table"
               ? selectedTable?.table_number || "Table"
               : "Takeaway",
-          customer: selectedCustomer?.name || "Guest Customer",
+          customer: "Guest Customer",
           subtotal,
           tax: taxTotal,
-          discount: discountTotal,
           total,
           payment_method: paymentMethod,
           items: cartItems,
@@ -752,11 +730,10 @@ export default function PosTerminalPage() {
           body: JSON.stringify({
             session_id: activeSessionId,
             table_id: orderMode === "table" ? selectedTable?.id : null,
-            customer_id: selectedCustomer?.id || null,
+            customer_id: null,
             order_number: orderNum,
             subtotal,
             tax: taxTotal,
-            discount_amount: discountTotal,
             total,
             status: "paid",
             payment_method: paymentMethod,
@@ -773,10 +750,9 @@ export default function PosTerminalPage() {
             orderMode === "table"
               ? selectedTable?.table_number || "Table"
               : "Takeaway",
-          customer: selectedCustomer?.name || "Guest Customer",
+          customer: "Guest Customer",
           subtotal,
           tax: taxTotal,
-          discount: discountTotal,
           total,
           payment_method: paymentMethod,
           items: cartItems,
@@ -785,12 +761,10 @@ export default function PosTerminalPage() {
       }
 
       setLastOrderDetails(orderPayload);
-      setReceiptEmail(selectedCustomer?.email || "");
+      setReceiptEmail("");
 
       // Reset cart and states
       setCartItems([]);
-      setDiscount(0);
-      setSelectedCustomer(null);
       setSelectedTable(null);
       setSelectedCounterOrderId(null);
       setActiveCartItemId(null);
@@ -1117,7 +1091,8 @@ export default function PosTerminalPage() {
                       className="relative flex flex-col items-center justify-between rounded-2xl border px-3 py-3 text-center transition-all bg-zinc-900 border-zinc-800 hover:border-[#F9F5F2] hover:shadow-md cursor-pointer group overflow-hidden h-[160px]"
                     >
                       <span className="absolute top-2.5 left-2.5 h-2 w-2 rounded-full bg-emerald-500 z-10" />
-                      {product.image_url && product.image_url !== "pending-upload" ? (
+                      {product.image_url &&
+                      product.image_url !== "pending-upload" ? (
                         <img
                           src={getProductImageUrl(product.image_url)}
                           alt={product.name}
@@ -1276,45 +1251,12 @@ export default function PosTerminalPage() {
               <Send size={13} />
             </button>
 
-            {/* <div className="flex gap-2">
-              <button
-                onClick={() => setShowCustomerModal(true)}
-                className="flex-1 flex items-center justify-center gap-1 rounded-xl border border-gray-200 py-2 text-[10px] font-bold text-zinc-350 bg-zinc-900 hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-colors cursor-pointer"
-              >
-                <User size={11} />
-                <span className="truncate max-w-[70px]">
-                  {selectedCustomer ? selectedCustomer.name : "Guest"}
-                </span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setNumpadMode("disc");
-                  setNumpadBuffer("");
-                }}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-1 rounded-xl border py-2 text-[10px] font-bold transition-all cursor-pointer",
-                  numpadMode === "disc"
-                    ? "border-[#F9F5F2] text-[#F9F5F2] bg-[#F9F5F2]/10"
-                    : "border-gray-200 text-gray-600 hover:border-[#F9F5F2] hover:text-[#F9F5F2]",
-                )}
-              >
-                <Tag size={11} /> Discount {discount > 0 && `(${discount}%)`}
-              </button>
-            </div> */}
-
             {/* Totals */}
             <div className="rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3 space-y-1.5 text-xs">
               <div className="flex justify-between text-zinc-400 font-semibold">
                 <span>Subtotal</span>
                 <span>{formatCurrency(subtotal, "INR", "en-IN")}</span>
               </div>
-              {discount > 0 && (
-                <div className="flex justify-between text-green-600 font-semibold">
-                  <span>Discount ({discount}%)</span>
-                  <span>− {formatCurrency(discountTotal, "INR", "en-IN")}</span>
-                </div>
-              )}
               <div className="flex justify-between text-zinc-400 font-semibold">
                 <span>Tax (GST)</span>
                 <span>{formatCurrency(taxTotal, "INR", "en-IN")}</span>
@@ -1326,245 +1268,56 @@ export default function PosTerminalPage() {
                 </span>
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* ── PAYMENT PANEL ── */}
-        <section className="w-64 shrink-0 flex flex-col p-4 overflow-hidden bg-white border-r border-zinc-800">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#F9F5F2] mb-3">
-            Payment Method
-          </h2>
-
-          {/* Methods */}
-          <div className="space-y-2">
-            {[
-              { id: "cash" as PaymentMethod, label: "Cash", Icon: Banknote },
-              { id: "upi" as PaymentMethod, label: "UPI QR", Icon: Smartphone },
-              {
-                id: "card" as PaymentMethod,
-                label: "Card Swipe",
-                Icon: CreditCard,
-              },
-            ].map(({ id, label, Icon }) => (
-              <button
-                key={id}
-                onClick={() => {
-                  setPaymentMethod(id);
-                  if (id === "cash") setCashReceived("");
-                }}
-                className={cn(
-                  "w-full flex items-center gap-3 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all cursor-pointer",
-                  paymentMethod === id
-                    ? "bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-sm"
-                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-[#F9F5F2]",
-                )}
-              >
-                <Icon size={14} />
-                <span className="flex-1 text-left">{label}</span>
-                {paymentMethod === id && <X size={11} />}
-              </button>
-            ))}
-          </div>
-
-          {/* Amount Display */}
-          <div className="my-4 rounded-xl bg-zinc-950 border border-zinc-850 px-4 py-4 text-center">
-            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">
-              Payment Due
-            </p>
-            <p className="text-2xl font-extrabold text-[#F9F5F2]">
-              {formatCurrency(total, "INR", "en-IN")}
-            </p>
-            <p className="text-[9px] text-gray-400 font-bold mt-1 uppercase">
-              {paymentMethod} checkout
-            </p>
-          </div>
-
-          {/* Numpad Input Field */}
-          {paymentMethod === "cash" && (
-            <div className="mb-2 text-center text-xs space-y-1">
-              <span className="text-gray-400 font-semibold uppercase text-[9px] block">
-                Cash Received
-              </span>
-              <div className="text-sm font-extrabold px-3 py-1.5 bg-zinc-950 border rounded-lg border-zinc-800 font-mono text-white">
-                {cashReceived
-                  ? formatCurrency(Number(cashReceived), "INR", "en-IN")
-                  : "₹0.00"}
+            {/* Payment Methods */}
+            <div className="pt-2">
+              <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#F9F5F2] mb-2">
+                Payment Method
+              </h2>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: "cash" as PaymentMethod, label: "Cash", Icon: Banknote },
+                  { id: "upi" as PaymentMethod, label: "UPI", Icon: Smartphone },
+                  { id: "card" as PaymentMethod, label: "Card", Icon: CreditCard },
+                ].map(({ id, label, Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => {
+                      setPaymentMethod(id);
+                      if (id === "cash") setCashReceived("");
+                    }}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 text-[10px] font-bold transition-all cursor-pointer",
+                      paymentMethod === id
+                        ? "bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-sm"
+                        : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-[#F9F5F2] hover:text-[#F9F5F2]",
+                    )}
+                  >
+                    <Icon size={14} />
+                    <span>{label}</span>
+                  </button>
+                ))}
               </div>
-              {Number(cashReceived) >= total && (
-                <div className="text-[10px] text-emerald-400 font-bold">
-                  Change:{" "}
-                  {formatCurrency(Number(cashReceived) - total, "INR", "en-IN")}
-                </div>
-              )}
             </div>
-          )}
 
-          {/* UPI QR Code helper */}
-          {paymentMethod === "upi" && (
-            <div className="mb-3 p-2 border border-dashed border-zinc-800 rounded-xl flex flex-col items-center gap-1.5 bg-zinc-950">
-              <div className="w-24 h-24 bg-zinc-900 border border-zinc-800 rounded flex flex-col items-center justify-center p-1 text-white font-mono font-bold text-[8px] leading-tight select-none">
-                <span className="text-[#F9F5F2] font-sans font-bold text-[9px] mb-1">
-                  UPI QR
-                </span>
-                <span>{formatCurrency(total, "INR", "en-IN")}</span>
-                <span className="text-[5px] text-gray-400 mt-1">cafe@ybl</span>
-              </div>
-              <p className="text-[9px] text-gray-500 font-bold">
-                Scan to complete UPI
-              </p>
-            </div>
-          )}
-
-          {/* Numpad Grid */}
-          <div className="grid grid-cols-4 gap-1 flex-1">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((k) => (
-              <button
-                key={k}
-                onClick={() => {
-                  if (paymentMethod === "cash") {
-                    const next = cashReceived + k;
-                    setCashReceived(next);
-                  } else {
-                    handleNumpadKey(k);
-                  }
-                }}
-                className="rounded-xl border border-zinc-800 bg-zinc-900 py-2 text-xs font-bold text-zinc-300 hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-all cursor-pointer flex items-center justify-center"
-              >
-                {k}
-              </button>
-            ))}
-
-            <button
-              onClick={() => {
-                if (paymentMethod === "cash") {
-                  setCashReceived("");
-                } else {
-                  setNumpadBuffer("");
-                  applyNumpadValue("");
-                }
-              }}
-              className="rounded-xl border border-zinc-800 bg-zinc-800 py-2 text-xs font-bold text-zinc-300 hover:bg-zinc-700 transition-all cursor-pointer flex items-center justify-center"
-            >
-              C
-            </button>
-
-            <button
-              onClick={() => {
-                if (paymentMethod === "cash") {
-                  const next = cashReceived.slice(0, -1);
-                  setCashReceived(next);
-                } else {
-                  handleNumpadKey("backspace");
-                }
-              }}
-              className="rounded-xl border border-zinc-800 bg-zinc-800 py-2 text-xs font-bold text-red-400 hover:bg-red-955/30 transition-all flex items-center justify-center cursor-pointer"
-            >
-              <Delete size={12} />
-            </button>
-
-            {(["price", "qty"] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => {
-                  setNumpadMode(mode);
-                  setNumpadBuffer("");
-                }}
-                className={cn(
-                  "rounded-xl border py-2 text-[10px] font-bold transition-all cursor-pointer uppercase",
-                  numpadMode === mode
-                    ? "bg-[#F9F5F2] text-black border-[#F9F5F2]"
-                    : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-[#F9F5F2]",
-                )}
-              >
-                {mode}
-              </button>
-            ))}
-
+            {/* Checkout Button */}
             <button
               onClick={checkout}
-              disabled={
-                !cartItems.length ||
-                actionLoading ||
-                (paymentMethod === "cash" && Number(cashReceived) < total)
-              }
+              disabled={!cartItems.length || actionLoading}
               className={cn(
-                "col-span-2 rounded-xl py-2 text-xs font-bold transition-all cursor-pointer uppercase flex items-center justify-center",
-                cartItems.length &&
-                  !(paymentMethod === "cash" && Number(cashReceived) < total)
+                "w-full rounded-xl py-3 mt-1 text-xs font-bold transition-all cursor-pointer uppercase flex items-center justify-center gap-2",
+                cartItems.length
                   ? "bg-[#F9F5F2] text-black hover:bg-[#e5e1de]"
                   : "bg-zinc-800 text-zinc-500 cursor-not-allowed",
               )}
             >
-              {actionLoading ? "Pay..." : "Pay"}
+              {actionLoading ? "Processing..." : `Checkout • ${formatCurrency(total, "INR", "en-IN")}`}
             </button>
           </div>
         </section>
       </div>
 
       {/* ==================== MODALS ==================== */}
-
-      {/* 2. Customer Selector Modal */}
-      {showCustomerModal && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[80vh]">
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-zinc-800">
-              <h2 className="text-lg font-bold text-zinc-100">
-                Select Customer Profile
-              </h2>
-              <button
-                onClick={() => setShowCustomerModal(false)}
-                className="text-zinc-400 hover:text-zinc-200 font-bold text-sm cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-              {customers.map((cust) => (
-                <button
-                  key={cust.id}
-                  onClick={() => {
-                    setSelectedCustomer(cust);
-                    setShowCustomerModal(false);
-                  }}
-                  className={cn(
-                    "w-full text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col",
-                    selectedCustomer?.id === cust.id
-                      ? "bg-[#F9F5F2]/10 border-[#F9F5F2] text-zinc-100"
-                      : "bg-zinc-950 border-zinc-800 hover:border-[#F9F5F2] text-zinc-300 hover:bg-zinc-900",
-                  )}
-                >
-                  <p className="text-xs font-bold">{cust.name}</p>
-                  <p className="text-[10px] mt-0.5 text-gray-500">
-                    {cust.phone || cust.email || "No contact details"}
-                  </p>
-                </button>
-              ))}
-
-              {customers.length === 0 && (
-                <div className="py-6 text-center text-zinc-400 text-xs">
-                  No customer profiles registered.
-                  <button
-                    onClick={() => {
-                      setSelectedCustomer({
-                        id: "c-guest",
-                        name: "Guest Customer",
-                        email: "guest@cafe.com",
-                        phone: null,
-                        created_at: "",
-                      });
-                      setShowCustomerModal(false);
-                    }}
-                    className="block mt-4 mx-auto px-4 py-2 bg-[#F9F5F2] text-black text-xs font-bold rounded-xl cursor-pointer"
-                  >
-                    Select Guest
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 3. Receipt Success Modal */}
       {showReceiptModal && lastOrderDetails && (
@@ -1626,19 +1379,6 @@ export default function PosTerminalPage() {
                     {formatCurrency(lastOrderDetails.tax, "INR", "en-IN")}
                   </span>
                 </div>
-                {lastOrderDetails.discount > 0 && (
-                  <div className="flex justify-between text-green-700">
-                    <span>Discount:</span>
-                    <span>
-                      -
-                      {formatCurrency(
-                        lastOrderDetails.discount,
-                        "INR",
-                        "en-IN",
-                      )}
-                    </span>
-                  </div>
-                )}
                 <div className="flex justify-between font-bold border-t border-gray-300 pt-1 text-xs text-zinc-900">
                   <span>TOTAL PAID:</span>
                   <span>
