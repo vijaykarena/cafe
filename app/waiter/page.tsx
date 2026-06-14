@@ -108,7 +108,7 @@ export default function WaiterDashboard() {
         const tablesRes = await fetch("/api/tables");
         const tablesData = await tablesRes.json();
         const loadedTables = tablesData.tables || [];
-        const loadedFloors = tablesData.floors || [];
+        const loadedFloors = (tablesData.floors || []).filter((f: any) => f.status !== 'disable');
 
         setDbTables(loadedTables);
         setFloors(loadedFloors);

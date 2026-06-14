@@ -122,7 +122,7 @@ export default function PosTerminalPage() {
         // 3. Fetch floors & tables
         const tablesRes = await fetch("/api/tables");
         const tablesData = await tablesRes.json();
-        const loadedFloors = tablesData.floors || [];
+        const loadedFloors = (tablesData.floors || []).filter((f: any) => f.status !== 'disable');
         setFloors(loadedFloors);
         setTables(tablesData.tables || []);
         if (loadedFloors.length > 0) {
