@@ -1,38 +1,24 @@
 'use client';
 
-import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/providers/auth-provider';
+import { useRequireRoles } from '@/hooks/use-require-roles';
+
+const ALLOWED_ROLES = ['admin'];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { profile, loading, signOut } = useAuth();
-
-  useEffect(() => {
-    if (loading) return;
-
-    if (!profile || profile.is_archived) {
-      signOut();
-      router.push('/login');
-      return;
-    }
-
-    if (profile.role !== 'admin') {
-      if (profile.role === 'manager') router.push('/manager');
-      else if (profile.role === 'cook') router.push('/kds');
-      else if (profile.role === 'waiter') router.push('/waiter');
-      else router.push('/cashier');
-    }
-  }, [profile, loading, router, signOut]);
+  const { profile, loading } = useRequireRoles(ALLOWED_ROLES);
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
     await signOut();
     router.push('/login');
   };
 
-  if (loading || !profile || profile.role !== 'admin') {
+  if (loading || !profile || !ALLOWED_ROLES.includes(profile.role)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-50">
         <div className="flex flex-col items-center gap-3">

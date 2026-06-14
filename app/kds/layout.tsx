@@ -1,38 +1,26 @@
 "use client";
 
-import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/auth-provider";
+import { useRequireRoles } from "@/hooks/use-require-roles";
+import { LogOut } from "lucide-react";
+
+const ALLOWED_ROLES = ["cook"];
 
 export default function KdsLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { profile, loading, signOut } = useAuth();
+  const { profile, loading } = useRequireRoles(ALLOWED_ROLES);
+  const { signOut } = useAuth();
 
-  useEffect(() => {
-    if (loading) return;
-
-    if (!profile || profile.is_archived) {
-      signOut();
-      router.push("/login");
-      return;
-    }
-
-    if (
-      profile.role !== "manager" &&
-      profile.role !== "admin" &&
-      profile.role !== "cook"
-    ) {
-      if (profile.role === "waiter") router.push("/waiter");
-      else router.push("/cashier");
-    }
-  }, [profile, loading, router, signOut]);
+  const handleLogout = async () => {
+    await signOut();
+    router.push("/login");
+  };
 
   if (
     loading ||
     !profile ||
-    (profile.role !== "manager" &&
-      profile.role !== "admin" &&
-      profile.role !== "cook")
+    !ALLOWED_ROLES.includes(profile.role)
   ) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-50">
@@ -48,7 +36,27 @@ export default function KdsLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100 font-sans">
-      {children}
+      {/* Top Header */}
+      <header className="h-16 border-b border-zinc-900 bg-zinc-900/40 px-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-lg text-zinc-500 capitalize">
+            {profile?.role}:
+          </span>
+          <span className="text-lg font-bold text-white leading-none">
+            {profile?.name}
+          </span>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="px-3 py-1.5 flex gap-2 items-center bg-red-955/20 border border-red-900/30 hover:bg-red-900/30 text-red-400 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+        >
+          <LogOut size={15} /> Sign Out
+        </button>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col overflow-y-auto">{children}</main>
     </div>
   );
 }

@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatDate } from "@/lib/utils";
-import { useDebouncer } from "@/hooks/debounce";
 import { useRouter } from "next/navigation";
 import {
   DndContext,
@@ -13,17 +12,7 @@ import {
   DragOverlay,
 } from "@dnd-kit/core";
 import { createPortal } from "react-dom";
-import {
-  Search,
-  Wifi,
-  LogOut,
-  Pencil,
-  Grid,
-  ChevronLeft,
-  ChevronRight,
-  GripHorizontal,
-  X,
-} from "lucide-react";
+import { GripHorizontal } from "lucide-react";
 
 interface KdsItem {
   id: string;
@@ -206,16 +195,6 @@ export default function KdsPage() {
   // State
   const [tickets, setTickets] = useState<KdsTicket[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery, debouncedSearchQuery] = useDebouncer(
-    "",
-    300,
-  );
-  const [selectedProductFilter, setSelectedProductFilter] = useState<
-    string | null
-  >(null);
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<
-    string | null
-  >(null);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -335,88 +314,13 @@ export default function KdsPage() {
     }
   };
 
-  // Logout handler
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    document.cookie = "sb-access-token=; path=/; max-age=0; SameSite=Lax";
-    router.push("/login");
-  };
-
-
-  // Filters Clear handler
-  const clearFilters = () => {
-    setSelectedProductFilter(null);
-    setSelectedCategoryFilter(null);
-    setSearchQuery("");
-  };
-
-  // Filter tickets by Search query, Product selection, and Category selection
-  const filteredTickets = useMemo(() => {
-    return tickets.filter((ticket) => {
-      const matchesSearch =
-        ticket.orderNumber
-          .toLowerCase()
-          .includes(debouncedSearchQuery.toLowerCase()) ||
-        ticket.table.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
-
-      const matchesProduct =
-        !selectedProductFilter ||
-        ticket.items.some((item) => item.name === selectedProductFilter);
-
-      const matchesCategory =
-        !selectedCategoryFilter ||
-        ticket.items.some((item) => item.category === selectedCategoryFilter);
-
-      return matchesSearch && matchesProduct && matchesCategory;
-    });
-  }, [
-    tickets,
-    debouncedSearchQuery,
-    selectedProductFilter,
-    selectedCategoryFilter,
-  ]);
-
   // Column specific counts
-  const toCookCount = filteredTickets.filter(
-    (t) => t.status === "to_cook",
-  ).length;
-  const preparingCount = filteredTickets.filter(
-    (t) => t.status === "preparing",
-  ).length;
-  const completedCount = filteredTickets.filter(
-    (t) => t.status === "completed",
-  ).length;
+  const toCookCount = tickets.filter((t) => t.status === "to_cook").length;
+  const preparingCount = tickets.filter((t) => t.status === "preparing").length;
+  const completedCount = tickets.filter((t) => t.status === "completed").length;
 
   return (
     <div className="flex flex-col h-screen bg-zinc-950 overflow-hidden text-zinc-200 font-sans select-none">
-      {/* ── TOP BAR (KDS) ── */}
-      <header className="flex items-center gap-3 px-6 py-2.5 bg-zinc-900 border-b border-zinc-800 shrink-0 text-white">
-        <div className="flex items-center justify-center rounded-xl bg-[#F9F5F2] text-black font-extrabold text-sm px-4 py-2 shrink-0 select-none">
-          Logo
-        </div>
-        <span className="text-base font-bold text-white pl-1">KDS</span>
-
-        {/* Quick Nav Buttons */}
-
-        {/* Live Network Status Indicator */}
-        <div className="ml-auto flex items-center gap-1.5 rounded-xl border border-zinc-850 px-3 py-2 text-[10px] text-zinc-400 bg-zinc-900 font-bold uppercase tracking-wider select-none">
-          <Wifi size={12} className="text-emerald-500 animate-pulse" /> Live
-          Connected
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center rounded-xl border border-zinc-850 p-2 text-red-400 bg-zinc-900 hover:border-red-500/50 hover:bg-red-950/20 transition-all cursor-pointer"
-            title="Sign Out"
-          >
-            <LogOut size={15} />
-          </button>
-        </div>
-      </header>
-
-      {/* ── FILTER & SEARCH BAR ── */}
-
-      {/* ── MAIN KITCHEN SPACE ── */}
       <div className="flex-1 flex overflow-hidden">
         {/* 2. Dnd-Kit columns grid area */}
         <main className="flex-1 overflow-x-auto p-6 bg-zinc-950">
@@ -431,7 +335,7 @@ export default function KdsPage() {
                 countBg="bg-red-950/40 border border-red-900/30"
                 countText="text-red-400"
               >
-                {filteredTickets
+                {tickets
                   .filter((t) => t.status === "to_cook")
                   .map((ticket) => (
                     <DraggableTicketCard
@@ -451,7 +355,7 @@ export default function KdsPage() {
                 countBg="bg-amber-950/40 border border-amber-900/30"
                 countText="text-amber-400"
               >
-                {filteredTickets
+                {tickets
                   .filter((t) => t.status === "preparing")
                   .map((ticket) => (
                     <DraggableTicketCard
@@ -471,7 +375,7 @@ export default function KdsPage() {
                 countBg="bg-green-950/40 border border-green-900/30"
                 countText="text-emerald-400"
               >
-                {filteredTickets
+                {tickets
                   .filter((t) => t.status === "completed")
                   .map((ticket) => (
                     <DraggableTicketCard

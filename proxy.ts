@@ -31,8 +31,9 @@ export async function proxy(request: NextRequest) {
   }
 
   // 4. Extract role and status from DB profile, fallback to user metadata
-  const role = profile?.role || user.user_metadata?.role || "cashier";
-  const isArchived = profile?.is_archived === true || user.user_metadata?.is_archived === true;
+  const role = profile?.role || user.user_metadata?.role;
+  const isArchived =
+    profile?.is_archived === true || user.user_metadata?.is_archived === true;
 
   if (isArchived) {
     if (path.startsWith("/api/")) {
@@ -135,7 +136,11 @@ export async function proxy(request: NextRequest) {
       }
       const isWrite = ["POST", "PUT", "DELETE"].includes(request.method);
       // Waiters can only POST/write orders and DELETE KDS tickets
-      if (isWrite && !path.startsWith("/api/orders") && !(request.method === "DELETE" && path.startsWith("/api/kds"))) {
+      if (
+        isWrite &&
+        !path.startsWith("/api/orders") &&
+        !(request.method === "DELETE" && path.startsWith("/api/kds"))
+      ) {
         return NextResponse.json(
           {
             error:
@@ -149,13 +154,13 @@ export async function proxy(request: NextRequest) {
 
     // Cook constraints
     if (role === "cook") {
-      const allowedPaths = [
-        "/api/kds",
-        "/api/sessions",
-      ];
+      const allowedPaths = ["/api/kds", "/api/sessions"];
       if (!allowedPaths.some((p) => path.startsWith(p))) {
         return NextResponse.json(
-          { error: "Forbidden: Cooks are restricted to KDS and session checking only" },
+          {
+            error:
+              "Forbidden: Cooks are restricted to KDS and session checking only",
+          },
           { status: 403 },
         );
       }
@@ -179,39 +184,21 @@ export async function proxy(request: NextRequest) {
   }
 
   // --- Frontend Pages Access Control ---
-  if (path.startsWith("/pos")) {
-    return NextResponse.redirect(new URL("/cashier", request.url));
-  }
 
-  if (path.startsWith("/admin")) {
-    if (role !== "admin") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
+  if (path.startsWith("/admin") && role !== "admin")
+    return NextResponse.redirect(new URL("/login", request.url));
 
-  if (path.startsWith("/manager")) {
-    if (role !== "admin" && role !== "manager") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
+  if (path.startsWith("/manager") && role !== "manager")
+    return NextResponse.redirect(new URL("/login", request.url));
 
-  if (path.startsWith("/cashier")) {
-    if (role !== "admin" && role !== "manager" && role !== "cashier") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
+  if (path.startsWith("/cashier") && role !== "cashier")
+    return NextResponse.redirect(new URL("/login", request.url));
 
-  if (path.startsWith("/waiter")) {
-    if (role !== "admin" && role !== "manager" && role !== "waiter") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
+  if (path.startsWith("/waiter") && role !== "waiter")
+    return NextResponse.redirect(new URL("/login", request.url));
 
-  if (path.startsWith("/kds")) {
-    if (role !== "admin" && role !== "manager" && role !== "cook") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
+  if (path.startsWith("/kds") && role !== "cook")
+    return NextResponse.redirect(new URL("/login", request.url));
 
   return finalResponse;
 }

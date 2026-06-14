@@ -1,57 +1,49 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '@/providers/auth-provider';
-import { Toaster } from '@/components/ui/sonner';
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/providers/auth-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { useRequireRoles } from "@/hooks/use-require-roles";
 
-export default function ManagerLayout({ children }: { children: React.ReactNode }) {
+const ALLOWED_ROLES = ["manager"];
+
+export default function ManagerLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
-  const { profile, loading, signOut } = useAuth();
-
-  useEffect(() => {
-    if (loading) return;
-
-    if (!profile || profile.is_archived) {
-      signOut();
-      router.push('/login');
-      return;
-    }
-
-    if (profile.role !== 'admin' && profile.role !== 'manager') {
-      // Redirect non-managers to cashier or appropriate default
-      if (profile.role === 'cook') router.push('/kds');
-      else if (profile.role === 'waiter') router.push('/waiter');
-      else router.push('/cashier');
-    }
-  }, [profile, loading, router, signOut]);
+  const { profile, loading } = useRequireRoles(ALLOWED_ROLES);
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
     await signOut();
-    router.push('/login');
+    router.push("/login");
   };
 
-  if (loading || !profile || (profile.role !== 'admin' && profile.role !== 'manager')) {
+  if (loading || !profile || !ALLOWED_ROLES.includes(profile.role)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-50">
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 border-4 border-[#F9F5F2] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm text-zinc-400 font-medium font-sans">Verifying Manager privileges...</p>
+          <p className="text-sm text-zinc-400 font-medium font-sans">
+            Verifying Manager privileges...
+          </p>
         </div>
       </div>
     );
   }
 
   const navItems = [
-    { name: 'Dashboard', path: '/manager' },
-    { name: 'Categories', path: '/manager/categories' },
-    { name: 'Products', path: '/manager/products' },
-    { name: 'Floor & Tables', path: '/manager/tables' },
-    { name: 'Promotions & Coupons', path: '/manager/promos' },
-    { name: 'Staff Management', path: '/manager/staff' },
-    { name: 'Payment Settings', path: '/manager/settings' },
+    { name: "Dashboard", path: "/manager" },
+    { name: "Categories", path: "/manager/categories" },
+    { name: "Products", path: "/manager/products" },
+    { name: "Floor & Tables", path: "/manager/tables" },
+    { name: "Promotions & Coupons", path: "/manager/promos" },
+    { name: "Staff Management", path: "/manager/staff" },
+    { name: "Payment Settings", path: "/manager/settings" },
   ];
 
   return (
@@ -61,7 +53,9 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
         <div className="p-6">
           <div className="flex items-center gap-2 mb-8">
             <span className="w-2.5 h-2.5 bg-[#F9F5F2] rounded-full"></span>
-            <span className="text-lg font-bold tracking-tight text-white">Cafe POS Manager</span>
+            <span className="text-lg font-bold tracking-tight text-white">
+              Cafe POS Manager
+            </span>
           </div>
 
           <nav className="space-y-1.5">
@@ -71,10 +65,11 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`block px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors ${isActive
-                    ? 'bg-[#F9F5F2] text-black'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
-                    }`}
+                  className={`block px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
+                    isActive
+                      ? "bg-[#F9F5F2] text-black"
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900"
+                  }`}
                 >
                   {item.name}
                 </Link>
@@ -89,8 +84,12 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
               MGR
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-white truncate">{profile?.name}</p>
-              <p className="text-[10px] text-zinc-500 truncate">{profile?.email}</p>
+              <p className="text-xs font-bold text-white truncate">
+                {profile?.name}
+              </p>
+              <p className="text-[10px] text-zinc-500 truncate">
+                {profile?.email}
+              </p>
             </div>
           </div>
 
@@ -103,9 +102,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-y-auto">
-        {children}
-      </main>
+      <main className="flex-1 flex flex-col overflow-y-auto">{children}</main>
       <Toaster richColors position="top-right" />
     </div>
   );

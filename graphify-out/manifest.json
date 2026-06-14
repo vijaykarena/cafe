@@ -1,7 +1,7 @@
 {
   "/Users/chirag7096/Documents/GitHub/cafe/schema.sql": {
-    "mtime": 1781352980.3558183,
-    "ast_hash": "f41160235fb645eb3759c9f5596aed86",
+    "mtime": 1781388009.4917731,
+    "ast_hash": "165162c8a9c37dfcf3d5c2300b7a43e8",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/postcss.config.mjs": {
@@ -10,18 +10,18 @@
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/next-env.d.ts": {
-    "mtime": 1781378590.87209,
+    "mtime": 1781396129.6638877,
     "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/package.json": {
-    "mtime": 1781367474.4102628,
-    "ast_hash": "12b83a69152e50275780d58994784463",
+    "mtime": 1781395646.8472981,
+    "ast_hash": "abdd9e4c318fd54ba92a6d00034d453d",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/proxy.ts": {
-    "mtime": 1781381569.932285,
-    "ast_hash": "f87bd954eb17f009d9f2d5fa81964def",
+    "mtime": 1781395232.5574942,
+    "ast_hash": "2aaf2ff925605ff73bbe123127579bad",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/tsconfig.json": {
@@ -50,13 +50,13 @@
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/kds/page.tsx": {
-    "mtime": 1781383083.8960965,
-    "ast_hash": "0c4c9f16a2c5dc2defeb03879c52f1c8",
+    "mtime": 1781394401.9509447,
+    "ast_hash": "f880ea7e820e013125d1c627cc131784",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/admin/layout.tsx": {
-    "mtime": 1781378157.2196414,
-    "ast_hash": "2003bf9f4a6c3d95858cb95eddb0fdb6",
+    "mtime": 1781394923.1629138,
+    "ast_hash": "36cf204ac8ea34d735291f0ab3323ec5",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/admin/page.tsx": {
@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/api/kds/route.ts": {
-    "mtime": 1781382807.578966,
-    "ast_hash": "643a46c89a555851a2720ef8dac5cd74",
+    "mtime": 1781387997.5543568,
+    "ast_hash": "2c7718d48611e7b3d2a208b14a763a2f",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/api/tables/route.ts": {
@@ -105,8 +105,8 @@
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/api/orders/route.ts": {
-    "mtime": 1781375111.3906024,
-    "ast_hash": "b99107dc2e0fd3c0086a26de5106a5a3",
+    "mtime": 1781395891.3360522,
+    "ast_hash": "2595e3f54b197496dbac6e5e8a4f2eff",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/api/categories/route.ts": {
@@ -200,23 +200,18 @@
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/types/supabase.ts": {
-    "mtime": 1781352980.356361,
-    "ast_hash": "6832c7d3d5028c1e381cebea2d7e8fae",
+    "mtime": 1781395719.8927536,
+    "ast_hash": "5906142886b47a10907a26afd807bf2e",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/cashier/layout.tsx": {
-    "mtime": 1781367633.8976047,
-    "ast_hash": "f67cb2095340197c38dcb35523cc6f6f",
+    "mtime": 1781395287.6386142,
+    "ast_hash": "67149693400e730f625b3a041dd9d2d2",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/cashier/page.tsx": {
-    "mtime": 1781358676.430785,
-    "ast_hash": "7a2c72bf47a7adf851f9e83102f40c48",
-    "semantic_hash": ""
-  },
-  "/Users/chirag7096/Documents/GitHub/cafe/app/cashier/terminal/page.tsx": {
-    "mtime": 1781359662.3545744,
-    "ast_hash": "e339ae7f41bc4f04482a760aee124120",
+    "mtime": 1781396250.4598227,
+    "ast_hash": "1a401240a3d7713d8fac84ca564787ec",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/admin/managers/page.tsx": {
@@ -225,8 +220,8 @@
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/manager/layout.tsx": {
-    "mtime": 1781381118.266406,
-    "ast_hash": "3555c1ccef9a8031164b636bc6bc21a5",
+    "mtime": 1781395294.5819252,
+    "ast_hash": "7a96f5514e1c45b8bb179562c30db940",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/manager/page.tsx": {
@@ -245,8 +240,8 @@
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/manager/products/page.tsx": {
-    "mtime": 1781381118.2667718,
-    "ast_hash": "36f304cd3b5e48f7d6fd464e14a5567e",
+    "mtime": 1781393044.9819758,
+    "ast_hash": "be33d9cc84eea4c0b2583060eab1b8ce",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/manager/staff/page.tsx": {
@@ -265,13 +260,13 @@
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/waiter/layout.tsx": {
-    "mtime": 1781367269.0682724,
-    "ast_hash": "41ce552f6bf3483de07f4dec318b1ef3",
+    "mtime": 1781395128.9205341,
+    "ast_hash": "89df8c1ed43921aad54e24d2de72c5e5",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/waiter/page.tsx": {
-    "mtime": 1781382799.9050972,
-    "ast_hash": "d83c19549a6a0738bebab1c18e459a38",
+    "mtime": 1781388840.831326,
+    "ast_hash": "515ad5299f8b526f3a2893c1bbb9ce7a",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/waiter/terminal/page.tsx": {
@@ -290,8 +285,8 @@
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/app/kds/layout.tsx": {
-    "mtime": 1781367669.0079694,
-    "ast_hash": "8ad2a1b2a39934476ff104f9de454303",
+    "mtime": 1781395132.4833984,
+    "ast_hash": "b3f3256dba1feeb452f91cac94215d77",
     "semantic_hash": ""
   },
   "/Users/chirag7096/Documents/GitHub/cafe/components.json": {
@@ -482,6 +477,21 @@
   "/Users/chirag7096/Documents/GitHub/cafe/app/admin/create/page.tsx": {
     "mtime": 1781378157.2191648,
     "ast_hash": "ed645d62688514233579338a277f16df",
+    "semantic_hash": ""
+  },
+  "/Users/chirag7096/Documents/GitHub/cafe/seed_products.sql": {
+    "mtime": 1781393044.9827898,
+    "ast_hash": "8611bdd5077a767ccb167a5e80ee289c",
+    "semantic_hash": ""
+  },
+  "/Users/chirag7096/Documents/GitHub/cafe/generate_seed.js": {
+    "mtime": 1781393044.9823995,
+    "ast_hash": "8e6db3b08686e5724c7da85d6fbc6d34",
+    "semantic_hash": ""
+  },
+  "/Users/chirag7096/Documents/GitHub/cafe/hooks/use-require-roles.ts": {
+    "mtime": 1781394898.0676827,
+    "ast_hash": "46eeb71187a5d99b4c3dc782b173ba1c",
     "semantic_hash": ""
   }
 }

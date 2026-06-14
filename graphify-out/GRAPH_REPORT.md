@@ -1,16 +1,16 @@
 # Graph Report - cafe  (2026-06-14)
 
 ## Corpus Check
-- 91 files · ~40,555 words
+- 93 files · ~47,355 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 422 nodes · 901 edges · 21 communities (16 shown, 5 thin omitted)
+- 438 nodes · 947 edges · 22 communities (17 shown, 5 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `66580af9`
+- Built from commit: `5aa84771`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -22,6 +22,7 @@
 - [[_COMMUNITY_Community 4|Community 4]]
 - [[_COMMUNITY_Community 5|Community 5]]
 - [[_COMMUNITY_Community 6|Community 6]]
+- [[_COMMUNITY_Community 7|Community 7]]
 - [[_COMMUNITY_Community 8|Community 8]]
 - [[_COMMUNITY_Community 9|Community 9]]
 - [[_COMMUNITY_Community 10|Community 10]]
@@ -36,34 +37,34 @@
 - [[_COMMUNITY_Community 21|Community 21]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `cn()` - 86 edges
-2. `formatCurrency()` - 21 edges
-3. `supabase` - 21 edges
-4. `useAuth()` - 20 edges
+1. `cn()` - 88 edges
+2. `useAuth()` - 22 edges
+3. `formatCurrency()` - 22 edges
+4. `supabase` - 21 edges
 5. `compilerOptions` - 16 edges
 6. `requireManager()` - 15 edges
 7. `supabaseAdmin` - 14 edges
-8. `supabaseServer` - 13 edges
-9. `Button()` - 12 edges
-10. `formatDate()` - 12 edges
+8. `UseDebouncer` - 13 edges
+9. `supabaseServer` - 13 edges
+10. `formatDate()` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `cn()` --calls--> `clsx`  [INFERRED]
   lib/utils.ts → package.json
 - `POSSystem()` --calls--> `cn()`  [EXTRACTED]
   demo.tsx → lib/utils.ts
+- `KdsPage()` --calls--> `UseDebouncer`  [EXTRACTED]
+  app/kds/page.tsx → hooks/debounce.ts
 - `AlertDialogOverlay()` --calls--> `cn()`  [EXTRACTED]
   components/ui/alert-dialog.tsx → lib/utils.ts
 - `AlertDialogMedia()` --calls--> `cn()`  [EXTRACTED]
   components/ui/alert-dialog.tsx → lib/utils.ts
-- `AdminDashboardPage()` --calls--> `formatCurrency()`  [EXTRACTED]
-  app/admin/page.tsx → lib/utils.ts
 
-## Communities (21 total, 5 thin omitted)
+## Communities (22 total, 5 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.07
-Nodes (26): GET(), POST(), DELETE(), GET(), PUT(), POST(), DELETE(), GET() (+18 more)
+Nodes (27): GET(), POST(), DELETE(), GET(), PUT(), POST(), DELETE(), GET() (+19 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.05
@@ -78,16 +79,20 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+11 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.11
-Nodes (21): AdminLayout(), AdminDashboardPage(), AdminManagersPage(), geistMono, geistSans, metadata, PosLayout(), createUserAction() (+13 more)
+Cohesion: 0.10
+Nodes (26): AdminLayout(), ALLOWED_ROLES, AdminManagersPage(), geistMono, geistSans, metadata, ALLOWED_ROLES, PosLayout() (+18 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.07
-Nodes (38): PosDashboardPage(), DraggableTicketCard(), KdsItem, KdsTicket, MOCK_TICKETS, Category, Coupon, Customer (+30 more)
+Nodes (40): AdminDashboardPage(), CartItem, NumpadMode, PaymentMethod, PosDashboardPage(), PosTerminalPage(), DraggableTicketCard(), KdsItem (+32 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.20
 Nodes (9): CartItem, CATEGORIES, Category, NumpadMode, PAYMENT_METHODS, PaymentMethod, POSSystem(), Product (+1 more)
+
+### Community 7 - "Community 7"
+Cohesion: 0.40
+Nodes (3): categories, fs, products
 
 ### Community 8 - "Community 8"
 Cohesion: 0.40
@@ -114,11 +119,11 @@ Cohesion: 0.21
 Nodes (11): DeleteDialogProps, AlertDialog(), AlertDialogAction(), AlertDialogCancel(), AlertDialogContent(), AlertDialogDescription(), AlertDialogFooter(), AlertDialogHeader() (+3 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.14
-Nodes (27): CategoriesPage(), UseDebouncer, KdsPage(), formatDateDDMMYYYY(), DeleteDialog(), AdminProductsPage(), AvailabilityFilter, ProductsPage() (+19 more)
+Cohesion: 0.12
+Nodes (30): CategoriesPage(), UseDebouncer, DeleteDialog(), AvailabilityFilter, ProductsPage(), AdminStaffPage(), Badge(), badgeVariants (+22 more)
 
 ## Knowledge Gaps
-- **132 isolated node(s):** `Category`, `Product`, `CartItem`, `PaymentMethod`, `NumpadMode` (+127 more)
+- **143 isolated node(s):** `Category`, `Product`, `CartItem`, `PaymentMethod`, `NumpadMode` (+138 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -126,13 +131,13 @@ Nodes (27): CategoriesPage(), UseDebouncer, KdsPage(), formatDateDDMMYYYY(), Del
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `cn()` connect `Community 2` to `Community 1`, `Community 5`, `Community 6`, `Community 20`, `Community 21`?**
-  _High betweenness centrality (0.250) - this node is a cross-community bridge._
+  _High betweenness centrality (0.247) - this node is a cross-community bridge._
 - **Why does `clsx` connect `Community 1` to `Community 2`?**
-  _High betweenness centrality (0.130) - this node is a cross-community bridge._
+  _High betweenness centrality (0.125) - this node is a cross-community bridge._
 - **What connects `Category`, `Product`, `CartItem` to the rest of the system?**
-  _132 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _143 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.06758832565284179 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06746031746031746 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.05128205128205128 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**

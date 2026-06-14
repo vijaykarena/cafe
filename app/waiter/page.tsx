@@ -4,15 +4,16 @@ import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/utils";
 import {
   ShoppingBag,
-  Coffee,
   Sparkles,
   CheckCircle2,
   Plus,
   Minus,
   Loader2,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { useDebouncer } from "@/hooks/debounce";
 
 interface Product {
   id: string;
@@ -63,6 +64,7 @@ export default function WaiterDashboard() {
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [cart, setCart] = useState<OrderItem[]>([]);
+  const [search, setSearch, debouncedSearch] = useDebouncer("", 300);
 
   // UI States
   const [actionLoading, setActionLoading] = useState(false);
@@ -71,65 +73,64 @@ export default function WaiterDashboard() {
 
   // Fetch initial data
   useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true);
+      try {
+        // Fetch session
+        const sessRes = await fetch("/api/sessions");
+        const sessData = await sessRes.json();
+        let sessionId = null;
+        if (sessData.active) {
+          setActiveSessionId(sessData.session.id);
+          sessionId = sessData.session.id;
+        } else {
+          toast.warning(
+            "No active POS session. Please ask cashier to open a shift.",
+          );
+        }
+
+        // Fetch categories
+        const catsRes = await fetch("/api/categories");
+        const cats = await catsRes.json();
+        setCategories(cats || []);
+
+        // Fetch products
+        const prodsRes = await fetch("/api/products");
+        const prods = await prodsRes.json();
+        setProducts(prods || []);
+
+        // Fetch tables & floors
+        const tablesRes = await fetch("/api/tables");
+        const tablesData = await tablesRes.json();
+        const loadedTables = tablesData.tables || [];
+        const loadedFloors = tablesData.floors || [];
+
+        setDbTables(loadedTables);
+        setFloors(loadedFloors);
+
+        if (loadedFloors.length > 0) {
+          setSelectedFloorId(loadedFloors[0].id);
+          const firstTable = loadedTables.find(
+            (t: any) => t.floor_id === loadedFloors[0].id,
+          );
+          if (firstTable) {
+            setSelectedTableId(firstTable.id);
+          }
+        }
+
+        // Fetch active session orders to check table occupancy
+        if (sessionId) {
+          await fetchActiveOrders(sessionId);
+        }
+      } catch (err) {
+        console.error("Error loading waiter data:", err);
+        toast.error("Failed to connect to database APIs.");
+      } finally {
+        setLoading(false);
+      }
+    };
     loadInitialData();
   }, []);
-
-  const loadInitialData = async () => {
-    setLoading(true);
-    try {
-      // Fetch session
-      const sessRes = await fetch("/api/sessions");
-      const sessData = await sessRes.json();
-      let sessionId = null;
-      if (sessData.active) {
-        setActiveSessionId(sessData.session.id);
-        sessionId = sessData.session.id;
-      } else {
-        toast.warning(
-          "No active POS session. Please ask cashier/manager to open a shift.",
-        );
-      }
-
-      // Fetch categories
-      const catsRes = await fetch("/api/categories");
-      const cats = await catsRes.json();
-      setCategories(cats || []);
-
-      // Fetch products
-      const prodsRes = await fetch("/api/products");
-      const prods = await prodsRes.json();
-      setProducts(prods || []);
-
-      // Fetch tables & floors
-      const tablesRes = await fetch("/api/tables");
-      const tablesData = await tablesRes.json();
-      const loadedTables = tablesData.tables || [];
-      const loadedFloors = tablesData.floors || [];
-
-      setDbTables(loadedTables);
-      setFloors(loadedFloors);
-
-      if (loadedFloors.length > 0) {
-        setSelectedFloorId(loadedFloors[0].id);
-        const firstTable = loadedTables.find(
-          (t: any) => t.floor_id === loadedFloors[0].id,
-        );
-        if (firstTable) {
-          setSelectedTableId(firstTable.id);
-        }
-      }
-
-      // Fetch active session orders to check table occupancy
-      if (sessionId) {
-        await fetchActiveOrders(sessionId);
-      }
-    } catch (err) {
-      console.error("Error loading waiter data:", err);
-      toast.error("Failed to connect to database APIs.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchActiveOrders = async (sessionId: string) => {
     try {
@@ -259,7 +260,9 @@ export default function WaiterDashboard() {
 
   // Cart operations
   const addToCart = (product: Product) => {
-    const existing = cart.find((item) => item.product.id === product.id && !item.isServed);
+    const existing = cart.find(
+      (item) => item.product.id === product.id && !item.isServed,
+    );
     if (existing) {
       setCart(
         cart.map((item) =>
@@ -288,7 +291,9 @@ export default function WaiterDashboard() {
   };
 
   const removeFromCart = (productId: string) => {
-    setCart(cart.filter((item) => !(item.product.id === productId && !item.isServed)));
+    setCart(
+      cart.filter((item) => !(item.product.id === productId && !item.isServed)),
+    );
   };
 
   const clearCart = () => {
@@ -457,10 +462,16 @@ export default function WaiterDashboard() {
   // Filtered products list
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      if (activeCategory === "all") return true;
-      return p.category_id === activeCategory;
+      const matchesSearch =
+        !debouncedSearch.trim() ||
+        p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+      if (debouncedSearch.trim()) {
+        return matchesSearch;
+      }
+      if (activeCategory === "all") return matchesSearch;
+      return p.category_id === activeCategory && matchesSearch;
     });
-  }, [products, activeCategory]);
+  }, [products, activeCategory, debouncedSearch]);
 
   const hasServedItems = useMemo(() => {
     return cart.some((item) => item.isServed);
@@ -587,8 +598,8 @@ export default function WaiterDashboard() {
         </div>
 
         {/* Menu items Selector */}
-        <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl flex-1 space-y-4 shadow-xl">
-          <div className="flex items-center justify-between">
+        <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl flex-1 space-y-4 shadow-xl flex flex-col min-h-[400px]">
+          <div className="flex items-center justify-between shrink-0">
             <h3 className="font-bold text-white text-sm uppercase tracking-wider">
               Menu Catalog
             </h3>
@@ -597,61 +608,84 @@ export default function WaiterDashboard() {
             </span>
           </div>
 
-          {/* Quick Category Chips */}
-          <div className="flex gap-2 pb-2 overflow-x-auto select-none no-scrollbar">
-            <button
-              onClick={() => setActiveCategory("all")}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
-                activeCategory === "all"
-                  ? "bg-[#F9F5F2] text-black border-[#F9F5F2] font-bold shadow-sm"
-                  : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900"
-              }`}
-            >
-              <Coffee className="w-3.5 h-3.5" /> All Items
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
-                  activeCategory === cat.id
-                    ? "bg-[#F9F5F2] text-black border-[#F9F5F2] font-bold shadow-sm"
-                    : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900"
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
+          {/* Search Box on Top */}
+          <div className="relative shrink-0">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search menu items…"
+              className="w-full rounded-xl border border-zinc-800 pl-4 pr-10 py-2 text-sm outline-none focus:border-[#F9F5F2] transition-colors bg-zinc-950 text-zinc-100 placeholder-zinc-650"
+            />
+            <Search
+              size={14}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
+            />
           </div>
 
-          {/* Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredProducts.map((prod) => (
+          {/* Category selection and Product grid layout */}
+          <div className="flex gap-4 flex-1 overflow-hidden min-h-0">
+            {/* Category sidebar */}
+            <aside className="flex flex-col gap-2 w-36 shrink-0 overflow-y-auto pr-1">
               <button
-                key={prod.id}
-                onClick={() => addToCart(prod)}
-                className="p-4 bg-zinc-950 border border-zinc-850 hover:border-[#F9F5F2]/50 rounded-xl text-left flex flex-col justify-between h-28 cursor-pointer transition-all hover:bg-zinc-900 group"
+                onClick={() => {
+                  setActiveCategory("all");
+                  setSearch("");
+                }}
+                className={`rounded-xl px-4 py-3 text-xs font-bold text-left transition-all border cursor-pointer ${
+                  activeCategory === "all" && !search
+                    ? "bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-sm"
+                    : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-[#F9F5F2] hover:text-[#F9F5F2]"
+                }`}
               >
-                <div>
-                  <h4 className="font-bold text-white text-sm group-hover:text-[#F9F5F2] transition-colors">
-                    {prod.name}
-                  </h4>
-                </div>
-                <div className="flex justify-between items-center w-full border-t border-zinc-900/60 pt-2">
-                  <span className="text-[#F9F5F2] font-bold text-sm">
-                    {formatCurrency(prod.price)}
-                  </span>
-                  <span className="text-[9px] text-zinc-300 font-bold px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded-full group-hover:bg-[#F9F5F2] group-hover:text-black transition-colors">
-                    + Add
-                  </span>
-                </div>
+                All Items
               </button>
-            ))}
-            {filteredProducts.length === 0 && (
-              <p className="col-span-full text-center text-zinc-500 py-12 text-sm">
-                No products found in this category.
-              </p>
-            )}
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setActiveCategory(cat.id);
+                    setSearch("");
+                  }}
+                  className={`rounded-xl px-4 py-3 text-xs font-bold text-left transition-all border cursor-pointer ${
+                    activeCategory === cat.id && !search
+                      ? "bg-[#F9F5F2] text-black border-[#F9F5F2] shadow-sm"
+                      : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-[#F9F5F2] hover:text-[#F9F5F2]"
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </aside>
+
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 overflow-y-auto flex-1 content-start pr-1">
+              {filteredProducts.map((prod) => (
+                <button
+                  key={prod.id}
+                  onClick={() => addToCart(prod)}
+                  className="p-4 bg-zinc-950 border border-zinc-850 hover:border-[#F9F5F2]/50 rounded-xl text-left flex flex-col justify-between h-28 cursor-pointer transition-all hover:bg-zinc-900 group"
+                >
+                  <div>
+                    <h4 className="font-bold text-white text-xs group-hover:text-[#F9F5F2] transition-colors line-clamp-2 leading-tight">
+                      {prod.name}
+                    </h4>
+                  </div>
+                  <div className="flex justify-between items-center w-full border-t border-zinc-905 pt-2">
+                    <span className="text-[#F9F5F2] font-bold text-xs">
+                      {formatCurrency(prod.price)}
+                    </span>
+                    <span className="text-[9px] text-zinc-300 font-bold px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded-full group-hover:bg-[#F9F5F2] group-hover:text-black transition-colors">
+                      + Add
+                    </span>
+                  </div>
+                </button>
+              ))}
+              {filteredProducts.length === 0 && (
+                <p className="col-span-full text-center text-zinc-500 py-12 text-sm">
+                  No products found.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -685,7 +719,7 @@ export default function WaiterDashboard() {
 
               return (
                 <div
-                  key={`${item.product.id}-${isItemServed ? 'served' : 'new'}`}
+                  key={`${item.product.id}-${isItemServed ? "served" : "new"}`}
                   className="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-850"
                 >
                   <div className="min-w-0 flex-1 pr-2">

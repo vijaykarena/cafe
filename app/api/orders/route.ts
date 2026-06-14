@@ -85,11 +85,85 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { order_id, items } = body;
+    const {
+      order_id,
+      items,
+      status,
+      payment_method,
+      payment_reference,
+      subtotal,
+      tax,
+      discount_amount,
+      total,
+    } = body;
 
-    if (!order_id || !items || items.length === 0) {
+    if (!order_id) {
+      return NextResponse.json({ error: "Missing order_id" }, { status: 400 });
+    }
+
+    if (status === "paid") {
+      // 1. Update order status and payment fields
+      const { data: order, error: orderErr } = await supabaseAdmin
+        .from("orders")
+        .update({
+          status: "paid",
+          payment_method: payment_method || null,
+          payment_reference: payment_reference || null,
+          subtotal: subtotal,
+          tax: tax,
+          discount_amount: discount_amount || 0,
+          total: total,
+        })
+        .eq("id", order_id)
+        .select()
+        .single();
+
+      if (orderErr) throw orderErr;
+
+      // 2. If there are items to append, insert them
+      if (items && items.length > 0) {
+        const itemsPayload = items.map((item: any) => ({
+          order_id: order_id,
+          product_id: item.product.id,
+          quantity: item.quantity,
+          unit_price: Number(item.product.price),
+          tax_rate: Number(item.product.tax || 0),
+          total_price: Number(item.product.price) * item.quantity,
+          is_completed_in_kitchen: false,
+        }));
+
+        const { error: itemsErr } = await supabaseAdmin
+          .from("order_items")
+          .insert(itemsPayload);
+
+        if (itemsErr) throw itemsErr;
+
+        // Also create/update KDS ticket to 'to_cook' for the appended items
+        const { data: kdsTicket } = await supabaseAdmin
+          .from("kds_tickets")
+          .select("*")
+          .eq("order_id", order_id)
+          .maybeSingle();
+
+        if (kdsTicket) {
+          await supabaseAdmin
+            .from("kds_tickets")
+            .update({ status: "to_cook" })
+            .eq("id", kdsTicket.id);
+        } else {
+          await supabaseAdmin
+            .from("kds_tickets")
+            .insert({ order_id, status: "to_cook" });
+        }
+      }
+
+      return NextResponse.json({ success: true, order });
+    }
+
+    // Existing append logic (waiter "Send to Kitchen")
+    if (!items || items.length === 0) {
       return NextResponse.json(
-        { error: "Missing order_id or items" },
+        { error: "Missing items to append" },
         { status: 400 },
       );
     }
@@ -136,11 +210,7 @@ export async function PUT(request: Request) {
     // 3. Update order totals
     const { error: updateOrderErr } = await supabaseAdmin
       .from("orders")
-      .update({
-        subtotal: newSubtotal,
-        tax: newTax,
-        total: newTotal,
-      })
+      .update({ subtotal: newSubtotal, tax: newTax, total: newTotal })
       .eq("id", order_id);
 
     if (updateOrderErr) throw updateOrderErr;

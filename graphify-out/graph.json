@@ -472,6 +472,51 @@
       "norm_label": "trusteddependencies"
     },
     {
+      "label": "generate_seed.js",
+      "file_type": "code",
+      "source_file": "generate_seed.js",
+      "source_location": "L1",
+      "id": "generate_seed_js",
+      "community": 7,
+      "norm_label": "generate_seed.js"
+    },
+    {
+      "label": "fs",
+      "file_type": "code",
+      "source_file": "generate_seed.js",
+      "source_location": "L1",
+      "id": "cafe_generate_seed_fs",
+      "community": 7,
+      "norm_label": "fs"
+    },
+    {
+      "label": "categories",
+      "file_type": "code",
+      "source_file": "generate_seed.js",
+      "source_location": "L5",
+      "id": "cafe_generate_seed_categories",
+      "community": 7,
+      "norm_label": "categories"
+    },
+    {
+      "label": "products",
+      "file_type": "code",
+      "source_file": "generate_seed.js",
+      "source_location": "L15",
+      "id": "cafe_generate_seed_products",
+      "community": 7,
+      "norm_label": "products"
+    },
+    {
+      "label": "addProducts()",
+      "file_type": "code",
+      "source_file": "generate_seed.js",
+      "source_location": "L18",
+      "id": "cafe_generate_seed_addproducts",
+      "community": 7,
+      "norm_label": "addproducts()"
+    },
+    {
       "label": "proxy.ts",
       "file_type": "code",
       "source_file": "proxy.ts",
@@ -493,7 +538,7 @@
       "label": "config",
       "file_type": "code",
       "source_file": "proxy.ts",
-      "source_location": "L219",
+      "source_location": "L206",
       "id": "cafe_proxy_config",
       "community": 9,
       "norm_label": "config"
@@ -943,7 +988,7 @@
       "label": "DatabaseWithoutInternals",
       "file_type": "code",
       "source_file": "types/supabase.ts",
-      "source_location": "L502",
+      "source_location": "L535",
       "id": "types_supabase_databasewithoutinternals",
       "community": 17,
       "norm_label": "databasewithoutinternals"
@@ -952,7 +997,7 @@
       "label": "DefaultSchema",
       "file_type": "code",
       "source_file": "types/supabase.ts",
-      "source_location": "L504",
+      "source_location": "L537",
       "id": "types_supabase_defaultschema",
       "community": 17,
       "norm_label": "defaultschema"
@@ -961,7 +1006,7 @@
       "label": "Tables",
       "file_type": "code",
       "source_file": "types/supabase.ts",
-      "source_location": "L506",
+      "source_location": "L542",
       "id": "types_supabase_tables",
       "community": 17,
       "norm_label": "tables"
@@ -970,7 +1015,7 @@
       "label": "TablesInsert",
       "file_type": "code",
       "source_file": "types/supabase.ts",
-      "source_location": "L535",
+      "source_location": "L571",
       "id": "types_supabase_tablesinsert",
       "community": 17,
       "norm_label": "tablesinsert"
@@ -979,7 +1024,7 @@
       "label": "TablesUpdate",
       "file_type": "code",
       "source_file": "types/supabase.ts",
-      "source_location": "L560",
+      "source_location": "L596",
       "id": "types_supabase_tablesupdate",
       "community": 17,
       "norm_label": "tablesupdate"
@@ -988,7 +1033,7 @@
       "label": "Enums",
       "file_type": "code",
       "source_file": "types/supabase.ts",
-      "source_location": "L585",
+      "source_location": "L621",
       "id": "types_supabase_enums",
       "community": 17,
       "norm_label": "enums"
@@ -997,7 +1042,7 @@
       "label": "CompositeTypes",
       "file_type": "code",
       "source_file": "types/supabase.ts",
-      "source_location": "L602",
+      "source_location": "L638",
       "id": "types_supabase_compositetypes",
       "community": 17,
       "norm_label": "compositetypes"
@@ -1006,7 +1051,7 @@
       "label": "Constants",
       "file_type": "code",
       "source_file": "types/supabase.ts",
-      "source_location": "L619",
+      "source_location": "L655",
       "id": "types_supabase_constants",
       "community": 17,
       "norm_label": "constants"
@@ -1084,6 +1129,15 @@
       "norm_label": "layout.tsx"
     },
     {
+      "label": "ALLOWED_ROLES",
+      "file_type": "code",
+      "source_file": "app/cashier/layout.tsx",
+      "source_location": "L5",
+      "id": "cashier_layout_allowed_roles",
+      "community": 4,
+      "norm_label": "allowed_roles"
+    },
+    {
       "label": "PosLayout()",
       "file_type": "code",
       "source_file": "app/cashier/layout.tsx",
@@ -1102,56 +1156,38 @@
       "norm_label": "page.tsx"
     },
     {
-      "label": "PosDashboardPage()",
-      "file_type": "code",
-      "source_file": "app/cashier/page.tsx",
-      "source_location": "L9",
-      "id": "cashier_page_posdashboardpage",
-      "community": 5,
-      "norm_label": "posdashboardpage()"
-    },
-    {
-      "label": "page.tsx",
-      "file_type": "code",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L1",
-      "id": "app_cashier_terminal_page_tsx",
-      "community": 5,
-      "norm_label": "page.tsx"
-    },
-    {
       "label": "CartItem",
       "file_type": "code",
-      "source_file": "app/waiter/terminal/page.tsx",
-      "source_location": "L10",
-      "id": "terminal_page_cartitem",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L34",
+      "id": "cashier_page_cartitem",
       "community": 5,
       "norm_label": "cartitem"
     },
     {
       "label": "PaymentMethod",
       "file_type": "code",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L39",
-      "id": "terminal_page_paymentmethod",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L41",
+      "id": "cashier_page_paymentmethod",
       "community": 5,
       "norm_label": "paymentmethod"
     },
     {
       "label": "NumpadMode",
       "file_type": "code",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L40",
-      "id": "terminal_page_numpadmode",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L42",
+      "id": "cashier_page_numpadmode",
       "community": 5,
       "norm_label": "numpadmode"
     },
     {
       "label": "PosTerminalPage()",
       "file_type": "code",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L42",
-      "id": "terminal_page_posterminalpage",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L44",
+      "id": "cashier_page_posterminalpage",
       "community": 5,
       "norm_label": "posterminalpage()"
     },
@@ -1165,10 +1201,19 @@
       "norm_label": "layout.tsx"
     },
     {
+      "label": "ALLOWED_ROLES",
+      "file_type": "code",
+      "source_file": "app/kds/layout.tsx",
+      "source_location": "L8",
+      "id": "kds_layout_allowed_roles",
+      "community": 4,
+      "norm_label": "allowed_roles"
+    },
+    {
       "label": "KdsLayout()",
       "file_type": "code",
       "source_file": "app/kds/layout.tsx",
-      "source_location": "L7",
+      "source_location": "L10",
       "id": "kds_layout_kdslayout",
       "community": 4,
       "norm_label": "kdslayout()"
@@ -1186,7 +1231,7 @@
       "label": "KdsItem",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L28",
+      "source_location": "L17",
       "id": "kds_page_kdsitem",
       "community": 5,
       "norm_label": "kdsitem"
@@ -1195,7 +1240,7 @@
       "label": "KdsTicket",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L36",
+      "source_location": "L25",
       "id": "kds_page_kdsticket",
       "community": 5,
       "norm_label": "kdsticket"
@@ -1204,7 +1249,7 @@
       "label": "DraggableTicketCard()",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L46",
+      "source_location": "L35",
       "id": "kds_page_draggableticketcard",
       "community": 5,
       "norm_label": "draggableticketcard()"
@@ -1213,7 +1258,7 @@
       "label": "DroppableColumn()",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L151",
+      "source_location": "L140",
       "id": "kds_page_droppablecolumn",
       "community": 5,
       "norm_label": "droppablecolumn()"
@@ -1222,9 +1267,9 @@
       "label": "KdsPage()",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
-      "source_location": "L203",
+      "source_location": "L192",
       "id": "kds_page_kdspage",
-      "community": 21,
+      "community": 5,
       "norm_label": "kdspage()"
     },
     {
@@ -1237,10 +1282,19 @@
       "norm_label": "layout.tsx"
     },
     {
-      "label": "AdminLayout()",
+      "label": "ALLOWED_ROLES",
       "file_type": "code",
       "source_file": "app/admin/layout.tsx",
       "source_location": "L8",
+      "id": "admin_layout_allowed_roles",
+      "community": 4,
+      "norm_label": "allowed_roles"
+    },
+    {
+      "label": "AdminLayout()",
+      "file_type": "code",
+      "source_file": "app/admin/layout.tsx",
+      "source_location": "L10",
       "id": "admin_layout_adminlayout",
       "community": 4,
       "norm_label": "adminlayout()"
@@ -1309,10 +1363,19 @@
       "norm_label": "layout.tsx"
     },
     {
-      "label": "ManagerLayout()",
+      "label": "ALLOWED_ROLES",
       "file_type": "code",
       "source_file": "app/manager/layout.tsx",
       "source_location": "L9",
+      "id": "manager_layout_allowed_roles",
+      "community": 4,
+      "norm_label": "allowed_roles"
+    },
+    {
+      "label": "ManagerLayout()",
+      "file_type": "code",
+      "source_file": "app/manager/layout.tsx",
+      "source_location": "L11",
       "id": "manager_layout_managerlayout",
       "community": 4,
       "norm_label": "managerlayout()"
@@ -1480,10 +1543,19 @@
       "norm_label": "layout.tsx"
     },
     {
+      "label": "ALLOWED_ROLES",
+      "file_type": "code",
+      "source_file": "app/waiter/layout.tsx",
+      "source_location": "L8",
+      "id": "waiter_layout_allowed_roles",
+      "community": 4,
+      "norm_label": "allowed_roles"
+    },
+    {
       "label": "WaiterLayout()",
       "file_type": "code",
       "source_file": "app/waiter/layout.tsx",
-      "source_location": "L7",
+      "source_location": "L10",
       "id": "waiter_layout_waiterlayout",
       "community": 4,
       "norm_label": "waiterlayout()"
@@ -1494,61 +1566,61 @@
       "source_file": "app/waiter/page.tsx",
       "source_location": "L1",
       "id": "app_waiter_page_tsx",
-      "community": 5,
+      "community": 21,
       "norm_label": "page.tsx"
     },
     {
       "label": "Product",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L17",
+      "source_location": "L19",
       "id": "waiter_page_product",
-      "community": 5,
+      "community": 21,
       "norm_label": "product"
     },
     {
       "label": "Category",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L26",
+      "source_location": "L28",
       "id": "waiter_page_category",
-      "community": 5,
+      "community": 21,
       "norm_label": "category"
     },
     {
       "label": "Table",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L31",
+      "source_location": "L33",
       "id": "waiter_page_table",
-      "community": 5,
+      "community": 21,
       "norm_label": "table"
     },
     {
       "label": "Floor",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L39",
+      "source_location": "L41",
       "id": "waiter_page_floor",
-      "community": 5,
+      "community": 21,
       "norm_label": "floor"
     },
     {
       "label": "OrderItem",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L44",
+      "source_location": "L46",
       "id": "waiter_page_orderitem",
-      "community": 5,
+      "community": 21,
       "norm_label": "orderitem"
     },
     {
       "label": "WaiterDashboard()",
       "file_type": "code",
       "source_file": "app/waiter/page.tsx",
-      "source_location": "L49",
+      "source_location": "L52",
       "id": "waiter_page_waiterdashboard",
-      "community": 5,
+      "community": 21,
       "norm_label": "waiterdashboard()"
     },
     {
@@ -1559,6 +1631,15 @@
       "id": "app_waiter_terminal_page_tsx",
       "community": 5,
       "norm_label": "page.tsx"
+    },
+    {
+      "label": "CartItem",
+      "file_type": "code",
+      "source_file": "app/waiter/terminal/page.tsx",
+      "source_location": "L10",
+      "id": "terminal_page_cartitem",
+      "community": 5,
+      "norm_label": "cartitem"
     },
     {
       "label": "WaiterTerminalPage()",
@@ -1636,7 +1717,7 @@
       "label": "PUT()",
       "file_type": "code",
       "source_file": "app/api/kds/route.ts",
-      "source_location": "L35",
+      "source_location": "L46",
       "id": "kds_route_put",
       "community": 0,
       "norm_label": "put()"
@@ -1645,7 +1726,7 @@
       "label": "DELETE()",
       "file_type": "code",
       "source_file": "app/api/kds/route.ts",
-      "source_location": "L67",
+      "source_location": "L88",
       "id": "kds_route_delete",
       "community": 0,
       "norm_label": "delete()"
@@ -3136,6 +3217,24 @@
       "norm_label": "usedebouncer"
     },
     {
+      "label": "use-require-roles.ts",
+      "file_type": "code",
+      "source_file": "hooks/use-require-roles.ts",
+      "source_location": "L1",
+      "id": "hooks_use_require_roles_ts",
+      "community": 4,
+      "norm_label": "use-require-roles.ts"
+    },
+    {
+      "label": "useRequireRoles()",
+      "file_type": "code",
+      "source_file": "hooks/use-require-roles.ts",
+      "source_location": "L5",
+      "id": "hooks_use_require_roles_userequireroles",
+      "community": 4,
+      "norm_label": "userequireroles()"
+    },
+    {
       "label": "supabase-server.ts",
       "file_type": "code",
       "source_file": "lib/supabase-server.ts",
@@ -3276,7 +3375,7 @@
       "source_file": "lib/utils.ts",
       "source_location": "L33",
       "id": "lib_utils_formatdateddmmyyyy",
-      "community": 21,
+      "community": 5,
       "norm_label": "formatdateddmmyyyy()"
     },
     {
@@ -3640,6 +3739,51 @@
       "norm_label": "graphify"
     },
     {
+      "label": "PosDashboardPage()",
+      "file_type": "code",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L6",
+      "community": 5,
+      "norm_label": "posdashboardpage()",
+      "id": "cashier_page_posdashboardpage"
+    },
+    {
+      "label": "page.tsx",
+      "file_type": "code",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L1",
+      "community": 5,
+      "norm_label": "page.tsx",
+      "id": "app_cashier_terminal_page_tsx"
+    },
+    {
+      "label": "PaymentMethod",
+      "file_type": "code",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L41",
+      "community": 5,
+      "norm_label": "paymentmethod",
+      "id": "terminal_page_paymentmethod"
+    },
+    {
+      "label": "NumpadMode",
+      "file_type": "code",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L42",
+      "community": 5,
+      "norm_label": "numpadmode",
+      "id": "terminal_page_numpadmode"
+    },
+    {
+      "label": "PosTerminalPage()",
+      "file_type": "code",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L44",
+      "community": 5,
+      "norm_label": "posterminalpage()",
+      "id": "terminal_page_posterminalpage"
+    },
+    {
       "label": "MOCK_TICKETS",
       "file_type": "code",
       "source_file": "app/kds/page.tsx",
@@ -3653,7 +3797,7 @@
       "file_type": "code",
       "source_file": "app/admin/page.tsx",
       "source_location": "L6",
-      "community": 4,
+      "community": 5,
       "norm_label": "admindashboardpage()",
       "id": "admin_page_admindashboardpage"
     },
@@ -3671,7 +3815,7 @@
       "file_type": "code",
       "source_file": "app/manager/staff/create/actions.ts",
       "source_location": "L1",
-      "community": 4,
+      "community": 0,
       "norm_label": "actions.ts",
       "id": "app_manager_staff_create_actions_ts"
     },
@@ -3689,7 +3833,7 @@
       "file_type": "code",
       "source_file": "app/manager/products/page.tsx",
       "source_location": "L7",
-      "community": 21,
+      "community": 5,
       "norm_label": "adminproductspage()",
       "id": "products_page_adminproductspage"
     },
@@ -4326,6 +4470,46 @@
       "confidence_score": 1.0,
       "source": "cafe_package_devdependencies",
       "target": "cafe_package_devdependencies_typescript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_seed.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generate_seed_js",
+      "target": "cafe_generate_seed_fs"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_seed.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generate_seed_js",
+      "target": "cafe_generate_seed_categories"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_seed.js",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generate_seed_js",
+      "target": "cafe_generate_seed_products"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_seed.js",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generate_seed_js",
+      "target": "cafe_generate_seed_addproducts"
     },
     {
       "relation": "imports_from",
@@ -4981,6 +5165,48 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_cashier_layout_tsx",
+      "target": "hooks_use_require_roles_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/layout.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_layout_tsx",
+      "target": "hooks_use_require_roles_userequireroles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_layout_tsx",
+      "target": "cashier_layout_allowed_roles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/layout.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_layout_tsx",
+      "target": "cashier_layout_poslayout"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/layout.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_layout_tsx",
       "target": "providers_auth_provider_tsx"
     },
     {
@@ -4993,16 +5219,6 @@
       "confidence_score": 1.0,
       "source": "app_cashier_layout_tsx",
       "target": "providers_auth_provider_useauth"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/layout.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_layout_tsx",
-      "target": "cashier_layout_poslayout"
     },
     {
       "relation": "imports_from",
@@ -5054,10 +5270,87 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/cashier/layout.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "cashier_layout_poslayout",
+      "target": "hooks_use_require_roles_userequireroles"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/cashier/layout.tsx",
       "source_location": "L9",
       "weight": 1.0,
       "source": "cashier_layout_poslayout",
       "target": "providers_auth_provider_useauth"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_types_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_types_product",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_types_category",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_types_table",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_types_customer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_types_floor",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -5086,11 +5379,105 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "app/cashier/page.tsx",
-      "source_location": "L6",
+      "source_location": "L7",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_cashier_page_tsx",
-      "target": "lib_types_ts"
+      "target": "lib_utils_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_utils_formatcurrency"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_utils_calculatetaxamount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_utils_formatdate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "lib_utils_cn",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "cashier_page_cartitem",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "cashier_page_paymentmethod",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "cashier_page_numpadmode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "cashier_page_posterminalpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_page_tsx",
+      "target": "cashier_page_posdashboardpage"
     },
     {
       "relation": "imports",
@@ -5104,282 +5491,14 @@
       "target": "lib_types_session"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_page_tsx",
-      "target": "lib_utils_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_page_tsx",
-      "target": "lib_utils_formatcurrency"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_page_tsx",
-      "target": "lib_utils_formatdate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/page.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_page_tsx",
-      "target": "cashier_page_posdashboardpage"
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/cashier/page.tsx",
-      "source_location": "L163",
+      "source_location": "L633",
       "weight": 1.0,
-      "source": "cashier_page_posdashboardpage",
-      "target": "lib_utils_formatdate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "app/cashier/page.tsx",
-      "source_location": "L168",
-      "weight": 1.0,
-      "source": "cashier_page_posdashboardpage",
-      "target": "lib_utils_formatcurrency"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_types_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_types_product"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_types_category"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_types_table"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_types_customer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_types_floor"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_utils_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_utils_formatcurrency"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_utils_calculatetaxamount"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_utils_formatdate"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_utils_cn"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "terminal_page_cartitem"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "terminal_page_paymentmethod"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "terminal_page_numpadmode"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "terminal_page_posterminalpage"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_supabase_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_cashier_terminal_page_tsx",
-      "target": "lib_supabase_supabase"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/waiter/terminal/page.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_waiter_terminal_page_tsx",
-      "target": "terminal_page_cartitem"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/pos/terminal/page.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_pos_terminal_page_tsx",
-      "target": "terminal_page_cartitem"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "app/cashier/terminal/page.tsx",
-      "source_location": "L354",
-      "weight": 1.0,
-      "source": "terminal_page_posterminalpage",
+      "source": "cashier_page_posterminalpage",
       "target": "lib_utils_cn"
     },
     {
@@ -5387,10 +5506,10 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "app/pos/terminal/page.tsx",
-      "source_location": "L366",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L1094",
       "weight": 1.0,
-      "source": "terminal_page_posterminalpage",
+      "source": "cashier_page_posterminalpage",
       "target": "lib_utils_formatcurrency"
     },
     {
@@ -5398,21 +5517,11 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "app/pos/terminal/page.tsx",
-      "source_location": "L664",
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L1377",
       "weight": 1.0,
-      "source": "terminal_page_posterminalpage",
+      "source": "cashier_page_posterminalpage",
       "target": "lib_utils_formatdate"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "app/pos/terminal/page.tsx",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_pos_terminal_page_tsx",
-      "target": "terminal_page_posterminalpage"
     },
     {
       "relation": "imports_from",
@@ -5435,6 +5544,38 @@
       "confidence_score": 1.0,
       "source": "app_kds_layout_tsx",
       "target": "providers_auth_provider_useauth"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/kds/layout.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_kds_layout_tsx",
+      "target": "hooks_use_require_roles_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/kds/layout.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_kds_layout_tsx",
+      "target": "hooks_use_require_roles_userequireroles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/kds/layout.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_kds_layout_tsx",
+      "target": "kds_layout_allowed_roles"
     },
     {
       "relation": "contains",
@@ -5496,6 +5637,17 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/kds/layout.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "kds_layout_kdslayout",
+      "target": "hooks_use_require_roles_userequireroles"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/kds/layout.tsx",
       "source_location": "L9",
       "weight": 1.0,
       "source": "kds_layout_kdslayout",
@@ -5546,28 +5698,6 @@
       "target": "lib_utils_formatdate"
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/kds/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_kds_page_tsx",
-      "target": "hooks_debounce_ts"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "app/kds/page.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "app_kds_page_tsx",
-      "target": "hooks_debounce_usedebouncer"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/kds/page.tsx",
@@ -5616,6 +5746,28 @@
       "confidence_score": 1.0,
       "source": "app_kds_page_tsx",
       "target": "kds_page_kdspage"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/kds/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_kds_page_tsx",
+      "target": "hooks_debounce_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/kds/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_kds_page_tsx",
+      "target": "hooks_debounce_usedebouncer"
     },
     {
       "relation": "imports",
@@ -5694,6 +5846,38 @@
       "target": "providers_auth_provider_useauth"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/layout.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_layout_tsx",
+      "target": "hooks_use_require_roles_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/layout.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_layout_tsx",
+      "target": "hooks_use_require_roles_userequireroles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/admin/layout.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_admin_layout_tsx",
+      "target": "admin_layout_allowed_roles"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/admin/layout.tsx",
@@ -5746,6 +5930,17 @@
       "confidence_score": 1.0,
       "source": "app_admin_layout_tsx",
       "target": "lib_types_profile"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/admin/layout.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "admin_layout_adminlayout",
+      "target": "hooks_use_require_roles_userequireroles"
     },
     {
       "relation": "calls",
@@ -6040,6 +6235,38 @@
       "target": "ui_sonner_toaster"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/manager/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_manager_layout_tsx",
+      "target": "hooks_use_require_roles_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/manager/layout.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_manager_layout_tsx",
+      "target": "hooks_use_require_roles_userequireroles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/manager/layout.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_manager_layout_tsx",
+      "target": "manager_layout_allowed_roles"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/manager/layout.tsx",
@@ -6092,6 +6319,17 @@
       "confidence_score": 1.0,
       "source": "app_manager_layout_tsx",
       "target": "lib_types_profile"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/manager/layout.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "manager_layout_managerlayout",
+      "target": "hooks_use_require_roles_userequireroles"
     },
     {
       "relation": "calls",
@@ -6307,7 +6545,7 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_manager_products_page_tsx",
-      "target": "lib_storage_ts"
+      "target": "lib_supabase_ts"
     },
     {
       "relation": "imports",
@@ -6318,7 +6556,7 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_manager_products_page_tsx",
-      "target": "lib_storage_getproductimageurl"
+      "target": "lib_supabase_getproductimageurl"
     },
     {
       "relation": "imports_from",
@@ -6745,7 +6983,7 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_manager_products_page_tsx",
-      "target": "lib_supabase_ts"
+      "target": "lib_storage_ts"
     },
     {
       "relation": "imports",
@@ -6756,7 +6994,7 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_manager_products_page_tsx",
-      "target": "lib_supabase_getproductimageurl"
+      "target": "lib_storage_getproductimageurl"
     },
     {
       "relation": "contains",
@@ -7622,6 +7860,38 @@
       "target": "providers_auth_provider_useauth"
     },
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/waiter/layout.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_waiter_layout_tsx",
+      "target": "hooks_use_require_roles_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/waiter/layout.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_waiter_layout_tsx",
+      "target": "hooks_use_require_roles_userequireroles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/waiter/layout.tsx",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_waiter_layout_tsx",
+      "target": "waiter_layout_allowed_roles"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/waiter/layout.tsx",
@@ -7681,6 +7951,17 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/waiter/layout.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "waiter_layout_waiterlayout",
+      "target": "hooks_use_require_roles_userequireroles"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/waiter/layout.tsx",
       "source_location": "L9",
       "weight": 1.0,
       "source": "waiter_layout_waiterlayout",
@@ -7715,9 +7996,9 @@
       "source_file": "app/waiter/page.tsx",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_waiter_page_tsx",
-      "target": "lib_supabase_ts",
-      "confidence_score": 1.0
+      "target": "lib_supabase_ts"
     },
     {
       "relation": "imports",
@@ -7726,9 +8007,31 @@
       "source_file": "app/waiter/page.tsx",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "app_waiter_page_tsx",
-      "target": "lib_supabase_supabase",
-      "confidence_score": 1.0
+      "target": "lib_supabase_supabase"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/waiter/page.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_waiter_page_tsx",
+      "target": "hooks_debounce_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/waiter/page.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_waiter_page_tsx",
+      "target": "hooks_debounce_usedebouncer"
     },
     {
       "relation": "contains",
@@ -7789,6 +8092,17 @@
       "confidence_score": 1.0,
       "source": "app_waiter_page_tsx",
       "target": "waiter_page_waiterdashboard"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/waiter/page.tsx",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "waiter_page_waiterdashboard",
+      "target": "hooks_debounce_usedebouncer"
     },
     {
       "relation": "calls",
@@ -7948,11 +8262,41 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app/waiter/terminal/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_waiter_terminal_page_tsx",
+      "target": "terminal_page_cartitem"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/waiter/terminal/page.tsx",
       "source_location": "L14",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_waiter_terminal_page_tsx",
       "target": "terminal_page_waiterterminalpage"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "terminal_page_cartitem"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/pos/terminal/page.tsx",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_pos_terminal_page_tsx",
+      "target": "terminal_page_cartitem"
     },
     {
       "relation": "calls",
@@ -8112,6 +8456,17 @@
       "confidence_score": 1.0,
       "source": "app_api_kds_route_ts",
       "target": "lib_supabase_server_supabaseserver"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/api/kds/route.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "kds_route_put",
+      "target": "kds_route_get"
     },
     {
       "relation": "calls",
@@ -9321,12 +9676,45 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "hooks/use-require-roles.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hooks_use_require_roles_ts",
+      "target": "providers_auth_provider_tsx"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "app/admin/managers/create/page.tsx",
       "source_location": "L4",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "app_admin_managers_create_page_tsx",
       "target": "providers_auth_provider_tsx"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "hooks/use-require-roles.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hooks_use_require_roles_ts",
+      "target": "providers_auth_provider_useauth"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "hooks/use-require-roles.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "hooks_use_require_roles_userequireroles",
+      "target": "providers_auth_provider_useauth"
     },
     {
       "relation": "imports",
@@ -12236,6 +12624,16 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "hooks/use-require-roles.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "hooks_use_require_roles_ts",
+      "target": "hooks_use_require_roles_userequireroles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "lib/supabase-server.ts",
       "source_location": "L10",
       "weight": 1.0,
@@ -12477,6 +12875,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_utils_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "app/admin/products/page.tsx",
       "source_location": "L5",
       "weight": 1.0,
@@ -12516,6 +12925,61 @@
       "confidence_score": 1.0,
       "source": "app_pos_terminal_page_tsx",
       "target": "lib_utils_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_utils_cn"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L354",
+      "weight": 1.0,
+      "source": "terminal_page_posterminalpage",
+      "target": "lib_utils_cn"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L168",
+      "weight": 1.0,
+      "source": "cashier_page_posdashboardpage",
+      "target": "lib_utils_formatcurrency"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_utils_formatcurrency"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/pos/terminal/page.tsx",
+      "source_location": "L366",
+      "weight": 1.0,
+      "source": "terminal_page_posterminalpage",
+      "target": "lib_utils_formatcurrency"
     },
     {
       "relation": "calls",
@@ -12584,6 +13048,39 @@
       "target": "lib_utils_formatcurrency"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/cashier/page.tsx",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "cashier_page_posdashboardpage",
+      "target": "lib_utils_formatdate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_utils_formatdate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/pos/terminal/page.tsx",
+      "source_location": "L664",
+      "weight": 1.0,
+      "source": "terminal_page_posterminalpage",
+      "target": "lib_utils_formatdate"
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -12615,6 +13112,17 @@
       "confidence_score": 1.0,
       "source": "app_pos_terminal_page_tsx",
       "target": "lib_utils_formatdate"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_utils_calculatetaxamount"
     },
     {
       "relation": "imports",
@@ -12801,6 +13309,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_types_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "app/admin/settings/page.tsx",
       "source_location": "L4",
       "weight": 1.0,
@@ -12911,6 +13430,17 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_types_category"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "app/admin/products/page.tsx",
       "source_location": "L4",
       "weight": 1.0,
@@ -12928,6 +13458,17 @@
       "confidence_score": 1.0,
       "source": "app_pos_terminal_page_tsx",
       "target": "lib_types_category"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_types_product"
     },
     {
       "relation": "imports",
@@ -12966,6 +13507,17 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_types_floor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "app/admin/tables/page.tsx",
       "source_location": "L4",
       "weight": 1.0,
@@ -12983,6 +13535,17 @@
       "confidence_score": 1.0,
       "source": "app_pos_terminal_page_tsx",
       "target": "lib_types_floor"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_types_table"
     },
     {
       "relation": "imports",
@@ -13016,6 +13579,17 @@
       "confidence_score": 1.0,
       "source": "app_pos_page_tsx",
       "target": "lib_types_session"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_types_customer"
     },
     {
       "relation": "imports",
@@ -13085,6 +13659,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_supabase_ts"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "app/admin/managers/create/page.tsx",
       "source_location": "L4",
       "weight": 1.0,
@@ -13124,6 +13709,17 @@
       "confidence_score": 1.0,
       "source": "app_pos_terminal_page_tsx",
       "target": "lib_supabase_ts"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "lib_supabase_supabase"
     },
     {
       "relation": "imports",
@@ -13290,6 +13886,46 @@
       "target": "rules_graphify_graphify"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "terminal_page_paymentmethod"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "terminal_page_numpadmode"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/cashier/terminal/page.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_cashier_terminal_page_tsx",
+      "target": "terminal_page_posterminalpage"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app/pos/terminal/page.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "app_pos_terminal_page_tsx",
+      "target": "terminal_page_posterminalpage"
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -13373,5 +14009,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "66580af9d7dfff692928feed829992529074af3b"
+  "built_at_commit": "5aa847714078be6cc6f888effe83da347ae1183b"
 }
