@@ -28,10 +28,23 @@ export async function GET(request: Request) {
       .eq("manager_id", userId)
       .eq("status", "enable");
 
-    if (search.trim())
-      query = query.or(
-        `name.ilike.%${search.trim()}%,categories.name.ilike.%${search.trim()}%`,
-      );
+    if (search.trim()) {
+      const trimmedSearch = search.trim();
+      
+      const { data: matchedCategories } = await supabaseAdmin
+        .from("categories")
+        .select("id")
+        .eq("manager_id", userId)
+        .ilike("name", `%${trimmedSearch}%`);
+
+      const categoryIds = matchedCategories?.map(c => c.id) || [];
+
+      if (categoryIds.length > 0) {
+        query = query.or(`name.ilike.%${trimmedSearch}%,category_id.in.(${categoryIds.join(',')})`);
+      } else {
+        query = query.or(`name.ilike.%${trimmedSearch}%`);
+      }
+    }
 
     if (categoryFilter && categoryFilter !== "all")
       query = query.eq("category_id", categoryFilter);
