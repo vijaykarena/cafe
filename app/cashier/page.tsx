@@ -98,10 +98,7 @@ export default function PosTerminalPage() {
             const createRes = await fetch("/api/sessions", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                opened_by: user.id,
-                opening_balance: 0,
-              }),
+              body: JSON.stringify({ opened_by: user.id, opening_balance: 0 }),
             });
             const newSession = await createRes.json();
             if (newSession.id) {
@@ -1276,9 +1273,21 @@ export default function PosTerminalPage() {
               </h2>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { id: "cash" as PaymentMethod, label: "Cash", Icon: Banknote },
-                  { id: "upi" as PaymentMethod, label: "UPI", Icon: Smartphone },
-                  { id: "card" as PaymentMethod, label: "Card", Icon: CreditCard },
+                  {
+                    id: "cash" as PaymentMethod,
+                    label: "Cash",
+                    Icon: Banknote,
+                  },
+                  {
+                    id: "upi" as PaymentMethod,
+                    label: "UPI",
+                    Icon: Smartphone,
+                  },
+                  {
+                    id: "card" as PaymentMethod,
+                    label: "Card",
+                    Icon: CreditCard,
+                  },
                 ].map(({ id, label, Icon }) => (
                   <button
                     key={id}
@@ -1311,7 +1320,9 @@ export default function PosTerminalPage() {
                   : "bg-zinc-800 text-zinc-500 cursor-not-allowed",
               )}
             >
-              {actionLoading ? "Processing..." : `Checkout • ${formatCurrency(total, "INR", "en-IN")}`}
+              {actionLoading
+                ? "Processing..."
+                : `Checkout • ${formatCurrency(total, "INR", "en-IN")}`}
             </button>
           </div>
         </section>
