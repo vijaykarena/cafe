@@ -6,16 +6,21 @@ export async function GET(request: Request) {
     const userId = request.headers.get("x-user-id");
     const userRole = request.headers.get("x-user-role");
 
-    const { searchParams } = new URL(request.url);
+    const searchParams = new URL(request.url).searchParams;
     const search = searchParams.get("search") || "";
     const pageStr = searchParams.get("page");
     const limitStr = searchParams.get("limit");
+    const roleFilter = searchParams.get("role");
 
     const isPaginated = !!(pageStr && limitStr);
     const page = parseInt(pageStr || "1", 10);
     const limit = parseInt(limitStr || "10", 10);
 
     let query = supabaseServer.from("profiles").select("*", { count: "exact" });
+
+    if (roleFilter) {
+      query = query.eq("role", roleFilter);
+    }
 
     if (userRole === "manager" && userId) {
       query = query
@@ -25,9 +30,7 @@ export async function GET(request: Request) {
 
     if (search.trim()) {
       const trimmed = search.trim();
-      query = query.or(
-        `name.ilike.%${trimmed}%,email.ilike.%${trimmed}%,role.ilike.%${trimmed}%`,
-      );
+      query = query.ilike("name", `%${trimmed}%`);
     }
 
     query = query.order("name");

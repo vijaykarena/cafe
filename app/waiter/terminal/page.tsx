@@ -162,8 +162,8 @@ export default function WaiterTerminalPage() {
           <button
             onClick={() => setShowTableModal(true)}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer border ${selectedTable
-                ? 'bg-[#F9F5F2]/10 border-[#F9F5F2]/30 text-[#F9F5F2]'
-                : 'bg-zinc-950 border-zinc-800 text-zinc-400'
+              ? 'bg-[#F9F5F2]/10 border-[#F9F5F2]/30 text-[#F9F5F2]'
+              : 'bg-zinc-950 border-zinc-800 text-zinc-400'
               }`}
           >
             {selectedTable ? `Table: ${selectedTable.table_number}` : 'Select Table'}
@@ -203,8 +203,8 @@ export default function WaiterTerminalPage() {
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-5 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${activeCategory === cat.id
-                    ? 'bg-[#F9F5F2] text-black shadow-lg shadow-[#F9F5F2]/20'
-                    : 'bg-zinc-900 text-zinc-400 border border-zinc-800/80 hover:bg-zinc-850'
+                  ? 'bg-[#F9F5F2] text-black shadow-lg shadow-[#F9F5F2]/20'
+                  : 'bg-zinc-900 text-zinc-400 border border-zinc-800/80 hover:bg-zinc-850'
                   }`}
               >
                 {cat.name}
@@ -329,8 +329,8 @@ export default function WaiterTerminalPage() {
                           setShowTableModal(false);
                         }}
                         className={`p-4 rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${selectedTable?.id === table.id
-                            ? 'bg-[#F9F5F2] border-[#F9F5F2] text-black font-bold'
-                            : 'bg-zinc-950 border-zinc-850 text-zinc-300 hover:border-zinc-750'
+                          ? 'bg-[#F9F5F2] border-[#F9F5F2] text-black font-bold'
+                          : 'bg-zinc-950 border-zinc-850 text-zinc-300 hover:border-zinc-750'
                           }`}
                       >
                         <span className="text-base font-semibold">{table.table_number}</span>
