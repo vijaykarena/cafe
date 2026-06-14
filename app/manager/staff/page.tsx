@@ -65,23 +65,7 @@ export default function AdminStaffPage() {
     loadData(page, debouncedSearch);
   }, [page, debouncedSearch]);
 
-  const handleToggleArchive = async (id: string, currentStatus: boolean) => {
-    try {
-      const res = await fetch("/api/staff", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, is_archived: !currentStatus }),
-      });
 
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      toast.success(currentStatus ? "Staff unarchived" : "Staff archived");
-      loadData(page, debouncedSearch);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update archive status");
-    }
-  };
 
   const handleToggleBan = async (id: string, currentBanStatus: boolean) => {
     const action = currentBanStatus ? "Unblock" : "Block";
@@ -116,8 +100,8 @@ export default function AdminStaffPage() {
             Staff Management
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Manage terminal employee accounts, change passwords, and archive
-            credentials
+            Manage terminal employee accounts, change passwords, and block
+            access
           </p>
         </div>
 
@@ -201,30 +185,16 @@ export default function AdminStaffPage() {
                   <TableCell>
                     <div className="flex flex-col gap-1 items-start">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${profile.is_archived
-                          ? "bg-zinc-500/10 border border-zinc-500/25 text-zinc-400"
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${profile.is_banned
+                          ? "bg-red-500/10 border border-red-500/25 text-red-400"
                           : "bg-blue-500/10 border border-blue-500/25 text-blue-400"
                           }`}
                       >
-                        {profile.is_archived ? "Archived" : "Active"}
+                        {profile.is_banned ? "Banned" : "Active"}
                       </span>
-                      {profile.is_banned && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-red-500/10 border border-red-500/25 text-red-400">
-                          Banned
-                        </span>
-                      )}
                     </div>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <button
-                      onClick={() =>
-                        handleToggleArchive(profile.id, profile.is_archived)
-                      }
-                      disabled={currentUser?.id === profile.id}
-                      className="px-2.5 py-1 rounded bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {profile.is_archived ? "Unarchive" : "Archive"}
-                    </button>
                     <button
                       onClick={() =>
                         handleToggleBan(profile.id, !!profile.is_banned)

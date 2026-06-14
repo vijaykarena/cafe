@@ -367,7 +367,6 @@ export type Database = {
           created_at: string
           email: string
           id: string
-          is_archived: boolean | null
           is_banned: boolean
           manager_id: string | null
           name: string
@@ -377,7 +376,6 @@ export type Database = {
           created_at?: string
           email: string
           id: string
-          is_archived?: boolean | null
           is_banned?: boolean
           manager_id?: string | null
           name: string
@@ -387,7 +385,6 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
-          is_archived?: boolean | null
           is_banned?: boolean
           manager_id?: string | null
           name?: string

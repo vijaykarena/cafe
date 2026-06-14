@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Profile } from "@/lib/types";
 import { User } from "@supabase/supabase-js";
@@ -19,6 +19,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const currentUserRef = useRef<User | null>(null);
+
+  useEffect(() => {
+    currentUserRef.current = user;
+  }, [user]);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -75,9 +81,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
-        setLoading(true);
+      const currentUser = currentUserRef.current;
+      const newUser = session?.user || null;
+
+      const hasChanged =
+        (!currentUser && newUser) ||
+        (currentUser && !newUser) ||
+        (currentUser && newUser && currentUser.id !== newUser.id);
+
+      if (!hasChanged) {
+        if (session) {
+          document.cookie = `sb-access-token=${session.access_token || ""}; path=/; max-age=604800; SameSite=Lax`;
+        }
+        return;
       }
+
+      setLoading(true);
       if (session) {
         setUser(session.user);
         document.cookie = `sb-access-token=${session.access_token || ""}; path=/; max-age=604800; SameSite=Lax`;

@@ -32,20 +32,11 @@ export default function LoginPage() {
       // Fetch profile to check role
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("role, is_archived")
+        .select("role")
         .eq("id", data.user.id)
         .single();
 
       if (profileError) throw profileError;
-
-      if (profile.is_archived) {
-        await supabase.auth.signOut();
-        // Clear cookie
-        document.cookie = "sb-access-token=; path=/; max-age=0; SameSite=Lax";
-        throw new Error(
-          "Your account is archived. Please contact an administrator.",
-        );
-      }
 
       // Redirect based on role
       if (profile.role === "admin") {

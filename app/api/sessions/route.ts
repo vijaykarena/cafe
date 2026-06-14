@@ -1,14 +1,14 @@
-import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-server';
+import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function GET() {
   try {
     // Check for open sessions
     const { data: openSessions, error: openErr } = await supabaseAdmin
-      .from('sessions')
-      .select('*')
-      .eq('status', 'open')
-      .order('opened_at', { ascending: false });
+      .from("sessions")
+      .select("*")
+      .eq("status", "open")
+      .order("opened_at", { ascending: false });
 
     if (openErr) throw openErr;
 
@@ -18,10 +18,10 @@ export async function GET() {
 
     // Check for last closed session
     const { data: closedSessions, error: closedErr } = await supabaseAdmin
-      .from('sessions')
-      .select('*')
-      .eq('status', 'closed')
-      .order('closed_at', { ascending: false })
+      .from("sessions")
+      .select("*")
+      .eq("status", "closed")
+      .order("closed_at", { ascending: false })
       .limit(1);
 
     if (closedErr) throw closedErr;
@@ -29,7 +29,8 @@ export async function GET() {
     return NextResponse.json({
       active: false,
       session: null,
-      lastSession: closedSessions && closedSessions.length > 0 ? closedSessions[0] : null,
+      lastSession:
+        closedSessions && closedSessions.length > 0 ? closedSessions[0] : null,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -40,11 +41,11 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { data, error } = await supabaseAdmin
-      .from('sessions')
+      .from("sessions")
       .insert({
         opened_by: body.opened_by,
         opening_balance: body.opening_balance,
-        status: 'open',
+        status: "open",
       })
       .select()
       .single();
@@ -60,13 +61,13 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const { data, error } = await supabaseAdmin
-      .from('sessions')
+      .from("sessions")
       .update({
-        status: 'closed',
+        status: "closed",
         closed_at: new Date().toISOString(),
         closing_balance: body.closing_balance,
       })
-      .eq('id', body.id)
+      .eq("id", body.id)
       .select()
       .single();
 

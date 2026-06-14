@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("role, is_archived")
+        .select("role")
         .eq("id", user.id)
         .single();
       if (!error && data) {

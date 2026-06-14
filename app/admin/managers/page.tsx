@@ -30,30 +30,7 @@ export default function AdminManagersPage() {
     loadData();
   }, []);
 
-  const handleToggleArchive = async (id: string, currentStatus: boolean) => {
-    try {
-      const res = await fetch("/api/staff", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, is_archived: !currentStatus }),
-      });
 
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      setManagers(
-        managers.map((p) =>
-          p.id === id ? { ...p, is_archived: !currentStatus } : p,
-        ),
-      );
-    } catch (err) {
-      setManagers(
-        managers.map((p) =>
-          p.id === id ? { ...p, is_archived: !currentStatus } : p,
-        ),
-      );
-    }
-  };
 
   const handleToggleBan = async (id: string, currentBanStatus: boolean) => {
     const action = currentBanStatus ? "Unblock" : "Block";
@@ -105,7 +82,7 @@ export default function AdminManagersPage() {
             Managers Directory
           </h1>
           <p className="text-zinc-400 text-sm mt-1">
-            Configure and manage store manager accounts, archive credentials,
+            Configure and manage store manager accounts, block accounts,
             and review statuses
           </p>
         </div>
@@ -144,30 +121,16 @@ export default function AdminManagersPage() {
                   <td className="py-3">
                     <div className="flex flex-col gap-1 items-start">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${mgr.is_archived
-                          ? "bg-zinc-500/10 border border-zinc-500/25 text-zinc-400"
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${mgr.is_banned
+                          ? "bg-red-500/10 border border-red-500/25 text-red-400"
                           : "bg-blue-500/10 border border-blue-500/25 text-blue-400"
                           }`}
                       >
-                        {mgr.is_archived ? "Archived" : "Active"}
+                        {mgr.is_banned ? "Banned" : "Active"}
                       </span>
-                      {mgr.is_banned && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-red-500/10 border border-red-500/25 text-red-400">
-                          Banned
-                        </span>
-                      )}
                     </div>
                   </td>
                   <td className="py-3 text-right space-x-2">
-                    <button
-                      onClick={() =>
-                        handleToggleArchive(mgr.id, mgr.is_archived)
-                      }
-                      disabled={currentUser?.id === mgr.id}
-                      className="px-2.5 py-1 rounded bg-zinc-950 hover:bg-zinc-850 border border-zinc-850 text-zinc-400 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {mgr.is_archived ? "Unarchive" : "Archive"}
-                    </button>
                     <button
                       onClick={() => handleToggleBan(mgr.id, !!mgr.is_banned)}
                       disabled={currentUser?.id === mgr.id}

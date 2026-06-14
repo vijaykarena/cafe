@@ -1,16 +1,16 @@
 # Graph Report - cafe  (2026-06-14)
 
 ## Corpus Check
-- 91 files · ~45,881 words
+- 91 files · ~46,824 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 438 nodes · 947 edges · 22 communities (17 shown, 5 thin omitted)
+- 438 nodes · 951 edges · 21 communities (16 shown, 5 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `89dba670`
+- Built from commit: `21719053`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -33,7 +33,6 @@
 - [[_COMMUNITY_Community 17|Community 17]]
 - [[_COMMUNITY_Community 18|Community 18]]
 - [[_COMMUNITY_Community 19|Community 19]]
-- [[_COMMUNITY_Community 20|Community 20]]
 - [[_COMMUNITY_Community 21|Community 21]]
 
 ## God Nodes (most connected - your core abstractions)
@@ -55,12 +54,12 @@
   demo.tsx → lib/utils.ts
 - `KdsPage()` --calls--> `UseDebouncer`  [EXTRACTED]
   app/kds/page.tsx → hooks/debounce.ts
-- `AlertDialogOverlay()` --calls--> `cn()`  [EXTRACTED]
-  components/ui/alert-dialog.tsx → lib/utils.ts
-- `AlertDialogMedia()` --calls--> `cn()`  [EXTRACTED]
-  components/ui/alert-dialog.tsx → lib/utils.ts
+- `DropdownMenuLabel()` --calls--> `cn()`  [EXTRACTED]
+  components/ui/dropdown-menu.tsx → lib/utils.ts
+- `DropdownMenuSubTrigger()` --calls--> `cn()`  [EXTRACTED]
+  components/ui/dropdown-menu.tsx → lib/utils.ts
 
-## Communities (22 total, 5 thin omitted)
+## Communities (21 total, 5 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.07
@@ -72,7 +71,7 @@ Nodes (38): dependencies, @base-ui/react, class-variance-authority, clsx, cmdk, 
 
 ### Community 2 - "Community 2"
 Cohesion: 0.06
-Nodes (55): getProductImageUrl(), cn(), CategoryFormData, CategoryModal(), CategoryModalProps, PRESET_COLORS, ProductFormData, ProductModal() (+47 more)
+Nodes (58): cn(), CategoryFormData, CategoryModal(), CategoryModalProps, PRESET_COLORS, DeleteDialogProps, ProductFormData, ProductModal() (+50 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.10
@@ -80,11 +79,11 @@ Nodes (19): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModu
 
 ### Community 4 - "Community 4"
 Cohesion: 0.10
-Nodes (26): AdminLayout(), ALLOWED_ROLES, AdminManagersPage(), geistMono, geistSans, metadata, ALLOWED_ROLES, PosLayout() (+18 more)
+Nodes (27): AdminLayout(), ALLOWED_ROLES, AdminDashboardPage(), AdminManagersPage(), geistMono, geistSans, metadata, ALLOWED_ROLES (+19 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.07
-Nodes (40): AdminDashboardPage(), CartItem, NumpadMode, PaymentMethod, PosDashboardPage(), PosTerminalPage(), DraggableTicketCard(), KdsItem (+32 more)
+Cohesion: 0.08
+Nodes (37): CartItem, NumpadMode, PaymentMethod, PosDashboardPage(), PosTerminalPage(), DraggableTicketCard(), KdsItem, KdsPage() (+29 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.20
@@ -114,13 +113,9 @@ Nodes (4): name, organization_id, organization_slug, ref
 Cohesion: 0.09
 Nodes (21): aliases, components, hooks, lib, ui, utils, iconLibrary, menuAccent (+13 more)
 
-### Community 20 - "Community 20"
-Cohesion: 0.21
-Nodes (11): DeleteDialogProps, AlertDialog(), AlertDialogAction(), AlertDialogCancel(), AlertDialogContent(), AlertDialogDescription(), AlertDialogFooter(), AlertDialogHeader() (+3 more)
-
 ### Community 21 - "Community 21"
-Cohesion: 0.12
-Nodes (30): CategoriesPage(), UseDebouncer, DeleteDialog(), AvailabilityFilter, ProductsPage(), AdminStaffPage(), Badge(), badgeVariants (+22 more)
+Cohesion: 0.08
+Nodes (40): CategoriesPage(), UseDebouncer, getProductImageUrl(), formatDateDDMMYYYY(), DeleteDialog(), AdminProductsPage(), AvailabilityFilter, ProductsPage() (+32 more)
 
 ## Knowledge Gaps
 - **143 isolated node(s):** `Category`, `Product`, `CartItem`, `PaymentMethod`, `NumpadMode` (+138 more)
@@ -130,7 +125,7 @@ Nodes (30): CategoriesPage(), UseDebouncer, DeleteDialog(), AvailabilityFilter, 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `cn()` connect `Community 2` to `Community 1`, `Community 5`, `Community 6`, `Community 20`, `Community 21`?**
+- **Why does `cn()` connect `Community 2` to `Community 1`, `Community 21`, `Community 5`, `Community 6`?**
   _High betweenness centrality (0.247) - this node is a cross-community bridge._
 - **Why does `clsx` connect `Community 1` to `Community 2`?**
   _High betweenness centrality (0.125) - this node is a cross-community bridge._
@@ -141,6 +136,6 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.05128205128205128 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.05745814307458143 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.058738738738738736 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._

@@ -9,7 +9,7 @@ export function useRequireRoles(allowedRoles: string[]) {
   useEffect(() => {
     if (loading) return;
 
-    if (!profile || profile.is_archived) {
+    if (!profile) {
       signOut();
       router.push("/login");
       return;

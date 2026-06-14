@@ -152,8 +152,6 @@ export async function PUT(request: Request) {
 
     // Build update object dynamically to avoid overriding with undefined
     const updateData: any = {};
-    if (body.is_archived !== undefined)
-      updateData.is_archived = body.is_archived;
     if (body.is_banned !== undefined) updateData.is_banned = body.is_banned;
     if (body.name !== undefined) updateData.name = body.name;
     if (body.role !== undefined) updateData.role = body.role;

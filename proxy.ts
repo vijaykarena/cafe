@@ -30,20 +30,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 4. Extract role and status from DB profile, fallback to user metadata
+  // 4. Extract role from DB profile, fallback to user metadata
   const role = profile?.role || user.user_metadata?.role;
-  const isArchived =
-    profile?.is_archived === true || user.user_metadata?.is_archived === true;
-
-  if (isArchived) {
-    if (path.startsWith("/api/")) {
-      return NextResponse.json(
-        { error: "Forbidden: Account archived/suspended" },
-        { status: 403 },
-      );
-    }
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
 
   // Set request headers to forward user info to API routes
   const requestHeaders = new Headers(request.headers);

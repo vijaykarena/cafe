@@ -6,7 +6,6 @@ export interface Profile {
   name: string;
   email: string;
   role: UserRole;
-  is_archived: boolean;
   is_banned?: boolean;
   created_at: string;
 }
