@@ -8,12 +8,12 @@ export async function GET(request: Request) {
     const searchParams = new URL(request.url).searchParams;
     const period = searchParams.get('period') || 'Today';
 
-    let query = supabaseServer
+    let query = supabaseAdmin
       .from('orders')
       .select('*, order_items(*, products(*, categories(*)))');
 
     const now = new Date();
-    let startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
 
     if (period === 'This Week') {
       const dayOfWeek = now.getDay();
@@ -31,6 +31,7 @@ export async function GET(request: Request) {
 
     if (userRole === 'manager' && userId) {
       query = query.eq('manager_id', userId);
+
     }
 
     const { data: orders, error } = await query;
