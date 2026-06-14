@@ -408,6 +408,11 @@ export default function WaiterDashboard() {
 
   // Cart operations
   const addToCart = (product: Product) => {
+    if (!selectedTableId) {
+      toast.error("Please select the table first to place an order");
+      return;
+    }
+
     const existing = cart.find(
       (item) => item.product.id === product.id && !item.isServed,
     );

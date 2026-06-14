@@ -3,7 +3,6 @@
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/providers/auth-provider";
-import { Toaster } from "@/components/ui/sonner";
 import { useRequireRoles } from "@/hooks/use-require-roles";
 
 const ALLOWED_ROLES = ["manager"];
@@ -103,7 +102,6 @@ export default function ManagerLayout({
       </aside>
 
       <main className="flex-1 flex flex-col overflow-y-auto">{children}</main>
-      <Toaster richColors position="top-right" />
     </div>
   );
 }
