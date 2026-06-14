@@ -58,7 +58,7 @@ export default function WaiterTerminalPage() {
       // 3. Fetch floors & tables
       const tablesRes = await fetch('/api/tables');
       const tablesData = await tablesRes.json();
-      setFloors(tablesData.floors || []);
+      setFloors((tablesData.floors || []).filter((f: any) => f.status !== 'disable'));
       setTables(tablesData.tables || []);
 
     } catch (err) {

@@ -37,6 +37,7 @@ export interface Floor {
   id: string;
   name: string;
   created_at: string;
+  status: 'enable' | 'disable';
 }
 
 export interface Table {

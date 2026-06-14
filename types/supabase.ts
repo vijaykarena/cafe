@@ -105,16 +105,19 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          status: Database["public"]["Enums"]["floors_status"]
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          status?: Database["public"]["Enums"]["floors_status"]
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          status?: Database["public"]["Enums"]["floors_status"]
         }
         Relationships: []
       }
@@ -521,6 +524,7 @@ export type Database = {
     }
     Enums: {
       category_status: "enable" | "disable"
+      floors_status: "enable" | "disable"
       product_status: "enable" | "disable"
     }
     CompositeTypes: {
@@ -650,6 +654,7 @@ export const Constants = {
   public: {
     Enums: {
       category_status: ["enable", "disable"],
+      floors_status: ["enable", "disable"],
       product_status: ["enable", "disable"],
     },
   },

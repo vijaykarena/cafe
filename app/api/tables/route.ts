@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     if (body.type === 'floor') {
       const { data, error } = await supabaseAdmin
         .from('floors')
-        .insert({ name: body.name })
+        .insert({ name: body.name, status: body.status || 'enable' })
         .select()
         .single();
       if (error) throw error;
@@ -55,6 +55,28 @@ export async function POST(request: Request) {
         .single();
       if (error) throw error;
       return NextResponse.json(data);
+    }
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    
+    if (body.type === 'floor') {
+      const { data, error } = await supabaseAdmin
+        .from('floors')
+        .update({ name: body.name, status: body.status })
+        .eq('id', body.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return NextResponse.json(data);
+    } else {
+      // Future table updates
+      return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
     }
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
