@@ -111,7 +111,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
-          status?: Database["public"]["Enums"]["floors_status"]
+          status: Database["public"]["Enums"]["floors_status"]
         }
         Update: {
           created_at?: string
@@ -220,6 +220,7 @@ export type Database = {
           customer_id: string | null
           discount_amount: number
           id: string
+          manager_id: string | null
           order_number: string
           payment_method: string | null
           payment_reference: string | null
@@ -235,6 +236,7 @@ export type Database = {
           customer_id?: string | null
           discount_amount?: number
           id?: string
+          manager_id?: string | null
           order_number: string
           payment_method?: string | null
           payment_reference?: string | null
@@ -250,6 +252,7 @@ export type Database = {
           customer_id?: string | null
           discount_amount?: number
           id?: string
+          manager_id?: string | null
           order_number?: string
           payment_method?: string | null
           payment_reference?: string | null
@@ -266,6 +269,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
