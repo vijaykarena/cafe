@@ -1276,7 +1276,7 @@ export default function PosTerminalPage() {
               <Send size={13} />
             </button>
 
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <button
                 onClick={() => setShowCustomerModal(true)}
                 className="flex-1 flex items-center justify-center gap-1 rounded-xl border border-gray-200 py-2 text-[10px] font-bold text-zinc-350 bg-zinc-900 hover:border-[#F9F5F2] hover:text-[#F9F5F2] transition-colors cursor-pointer"
@@ -1301,7 +1301,7 @@ export default function PosTerminalPage() {
               >
                 <Tag size={11} /> Discount {discount > 0 && `(${discount}%)`}
               </button>
-            </div>
+            </div> */}
 
             {/* Totals */}
             <div className="rounded-xl bg-zinc-950 border border-zinc-800 px-4 py-3 space-y-1.5 text-xs">
