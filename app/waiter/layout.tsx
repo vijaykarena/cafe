@@ -35,7 +35,7 @@ export default function WaiterLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100 font-sans">
+    <div className="h-screen flex flex-col bg-zinc-950 text-zinc-100 font-sans overflow-hidden">
       {/* Top Header */}
       <header className="h-16 border-b border-zinc-900 bg-zinc-900/40 px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -56,7 +56,7 @@ export default function WaiterLayout({
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-y-auto">{children}</main>
+      <main className="flex-1 flex flex-col overflow-hidden">{children}</main>
     </div>
   );
 }

@@ -10,9 +10,10 @@ import {
   Minus,
   Loader2,
   Search,
+  ImageOff,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { supabase, getProductImageUrl } from "@/lib/supabase";
 import { useDebouncer } from "@/hooks/debounce";
 
 interface Product {
@@ -22,6 +23,7 @@ interface Product {
   tax: number;
   category_id: string;
   is_available: boolean;
+  image_url: string;
 }
 
 interface Category {
@@ -639,9 +641,9 @@ export default function WaiterDashboard() {
   return (
     <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 overflow-hidden bg-zinc-950 text-zinc-100 font-sans">
       {/* Middle/Left Column: Floor map & Menu Selector */}
-      <div className="lg:col-span-8 flex flex-col gap-6 overflow-y-auto pr-2">
+      <div className="lg:col-span-8 flex flex-col gap-6 overflow-hidden pr-2">
         {/* Table & Floor Selector */}
-        <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4 shadow-xl">
+        <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4 shadow-xl shrink-0">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-sm uppercase tracking-wider">
               Restaurant Floor Plan
@@ -809,14 +811,25 @@ export default function WaiterDashboard() {
                 <button
                   key={prod.id}
                   onClick={() => addToCart(prod)}
-                  className="p-4 bg-zinc-950 border border-zinc-850 hover:border-[#F9F5F2]/50 rounded-xl text-left flex flex-col justify-between h-28 cursor-pointer transition-all hover:bg-zinc-900 group"
+                  className="p-4 bg-zinc-950 border border-zinc-850 hover:border-[#F9F5F2]/50 rounded-xl text-left flex flex-col justify-between cursor-pointer transition-all hover:bg-zinc-900 group overflow-hidden h-[180px]"
                 >
+                  {prod.image_url && prod.image_url !== "pending-upload" ? (
+                    <img
+                      src={getProductImageUrl(prod.image_url)}
+                      alt={prod.name}
+                      className="w-full h-24 shrink-0 object-cover rounded-lg mb-2"
+                    />
+                  ) : (
+                    <div className="w-full h-24 shrink-0 rounded-lg mb-2 bg-zinc-900 border border-zinc-850 flex items-center justify-center">
+                      <ImageOff size={20} className="text-zinc-700" />
+                    </div>
+                  )}
                   <div>
                     <h4 className="font-bold text-white text-xs group-hover:text-[#F9F5F2] transition-colors line-clamp-2 leading-tight">
                       {prod.name}
                     </h4>
                   </div>
-                  <div className="flex justify-between items-center w-full border-t border-zinc-905 pt-2">
+                  <div className="flex justify-between items-center w-full border-t border-zinc-905 pt-2 mt-2">
                     <span className="text-[#F9F5F2] font-bold text-xs">
                       {formatCurrency(prod.price)}
                     </span>

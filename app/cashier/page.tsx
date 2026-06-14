@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Product, Category, Table, Customer, Floor } from "@/lib/types";
-import { supabase } from "@/lib/supabase";
+import { supabase, getProductImageUrl } from "@/lib/supabase";
 import {
   formatCurrency,
   calculateTaxAmount,
@@ -26,6 +26,7 @@ import {
   X,
   Delete,
   CheckCircle2,
+  ImageOff,
 } from "lucide-react";
 
 interface CartItem {
@@ -1113,13 +1114,24 @@ export default function PosTerminalPage() {
                     <button
                       key={product.id}
                       onClick={() => addToCart(product)}
-                      className="relative flex flex-col items-center justify-center rounded-2xl border px-3 py-5 text-center transition-all bg-zinc-900 border-zinc-800 hover:border-[#F9F5F2] hover:shadow-md cursor-pointer group"
+                      className="relative flex flex-col items-center justify-between rounded-2xl border px-3 py-3 text-center transition-all bg-zinc-900 border-zinc-800 hover:border-[#F9F5F2] hover:shadow-md cursor-pointer group overflow-hidden h-[160px]"
                     >
-                      <span className="absolute top-2.5 left-2.5 h-2 w-2 rounded-full bg-emerald-500" />
-                      <span className="mt-1 text-xs font-bold text-zinc-350 leading-tight group-hover:text-[#F9F5F2] transition-colors line-clamp-2">
+                      <span className="absolute top-2.5 left-2.5 h-2 w-2 rounded-full bg-emerald-500 z-10" />
+                      {product.image_url && product.image_url !== "pending-upload" ? (
+                        <img
+                          src={getProductImageUrl(product.image_url)}
+                          alt={product.name}
+                          className="w-full h-20 shrink-0 object-cover rounded-xl mb-1"
+                        />
+                      ) : (
+                        <div className="w-full h-20 shrink-0 rounded-xl mb-1 bg-zinc-800 flex items-center justify-center">
+                          <ImageOff size={18} className="text-zinc-600" />
+                        </div>
+                      )}
+                      <span className="text-xs font-bold text-zinc-350 leading-tight group-hover:text-[#F9F5F2] transition-colors line-clamp-2">
                         {product.name}
                       </span>
-                      <span className="mt-2 text-xs font-extrabold text-[#F9F5F2]">
+                      <span className="mt-1.5 text-xs font-extrabold text-[#F9F5F2]">
                         {formatCurrency(Number(product.price), "INR", "en-IN")}
                       </span>
                     </button>
