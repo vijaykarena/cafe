@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Profile } from "@/lib/types";
 import { useAuth } from "@/providers/auth-provider";
 import { Loader2 } from "lucide-react";
@@ -29,8 +29,6 @@ export default function AdminManagersPage() {
     };
     loadData();
   }, []);
-
-
 
   const handleToggleBan = async (id: string, currentBanStatus: boolean) => {
     const action = currentBanStatus ? "Unblock" : "Block";
@@ -121,10 +119,11 @@ export default function AdminManagersPage() {
                   <td className="py-3">
                     <div className="flex flex-col gap-1 items-start">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${mgr.is_banned
-                          ? "bg-red-500/10 border border-red-500/25 text-red-400"
-                          : "bg-blue-500/10 border border-blue-500/25 text-blue-400"
-                          }`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          mgr.is_banned
+                            ? "bg-red-500/10 border border-red-500/25 text-red-400"
+                            : "bg-blue-500/10 border border-blue-500/25 text-blue-400"
+                        }`}
                       >
                         {mgr.is_banned ? "Banned" : "Active"}
                       </span>
@@ -134,10 +133,11 @@ export default function AdminManagersPage() {
                     <button
                       onClick={() => handleToggleBan(mgr.id, !!mgr.is_banned)}
                       disabled={currentUser?.id === mgr.id}
-                      className={`px-2.5 py-1 rounded border cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${mgr.is_banned
-                        ? "bg-orange-950/20 hover:bg-orange-950/40 border-orange-900/30 text-orange-400"
-                        : "bg-red-950/20 hover:bg-red-950/40 border-red-900/30 text-red-400"
-                        }`}
+                      className={`px-2.5 py-1 rounded border cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        mgr.is_banned
+                          ? "bg-orange-950/20 hover:bg-orange-950/40 border-orange-900/30 text-orange-400"
+                          : "bg-red-950/20 hover:bg-red-950/40 border-red-900/30 text-red-400"
+                      }`}
                     >
                       {mgr.is_banned ? "Unblock" : "Block"}
                     </button>
