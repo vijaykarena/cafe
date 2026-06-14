@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 export default function ManagerDashboardPage() {
   const [filterPeriod, setFilterPeriod] = useState('Today');
   const [loading, setLoading] = useState(true);
-  
+
   // Metrics state
   const [metrics, setMetrics] = useState({
     totalOrders: 0,
@@ -20,14 +20,14 @@ export default function ManagerDashboardPage() {
 
   useEffect(() => {
     fetchAnalytics();
-  }, []);
+  }, [filterPeriod]);
 
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/analytics');
+      const res = await fetch(`/api/analytics?period=${encodeURIComponent(filterPeriod)}`);
       const data = await res.json();
-      
+
       if (data.error) throw new Error(data.error);
 
       if (data.totalOrders > 0) {
@@ -45,7 +45,7 @@ export default function ManagerDashboardPage() {
           (order.order_items || []).forEach((item: any) => {
             const name = item.products?.name || 'Unknown Item';
             const catName = item.products?.categories?.name || 'Other';
-            
+
             // Product metrics
             if (!productCounts[name]) {
               productCounts[name] = { qty: 0, rev: 0 };
@@ -76,34 +76,24 @@ export default function ManagerDashboardPage() {
 
         setCategorySales(formattedCats);
       } else {
-        loadMocks();
+        setEmptyState();
       }
     } catch (err) {
-      console.error('API analytics error, loading mock details.', err);
-      loadMocks();
+      console.error('API analytics error.', err);
+      setEmptyState();
     } finally {
       setLoading(false);
     }
   };
 
-  const loadMocks = () => {
+  const setEmptyState = () => {
     setMetrics({
-      totalOrders: 64,
-      revenue: 720.50,
-      avgOrderValue: 11.25,
+      totalOrders: 0,
+      revenue: 0.00,
+      avgOrderValue: 0.00,
     });
-    setTopProducts([
-      { name: 'Iced Latte', sold: 24, revenue: 102.00 },
-      { name: 'Espresso', sold: 18, revenue: 45.00 },
-      { name: 'Butter Croissant', sold: 15, revenue: 52.50 },
-      { name: 'Club Sandwich', sold: 12, revenue: 78.00 },
-    ]);
-    setCategorySales([
-      { name: 'Cold Drinks', share: '40%', revenue: 288.20 },
-      { name: 'Hot Coffee', share: '30%', revenue: 216.15 },
-      { name: 'Bakery', share: '20%', revenue: 144.10 },
-      { name: 'Snacks', share: '10%', revenue: 72.05 },
-    ]);
+    setTopProducts([]);
+    setCategorySales([]);
   };
 
   if (loading) {
@@ -151,6 +141,7 @@ export default function ManagerDashboardPage() {
             <option>Today</option>
             <option>This Week</option>
             <option>This Month</option>
+            <option>All Time</option>
           </select>
         </div>
       </div>
@@ -177,8 +168,8 @@ export default function ManagerDashboardPage() {
       </div>
 
       {/* Charts & Tables Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Trend Visual Block */}
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
         <div className="p-6 rounded-xl bg-zinc-900 border border-zinc-850 space-y-4">
           <h3 className="font-bold text-white text-sm uppercase tracking-wider">Store Hourly Sales</h3>
           <div className="h-60 rounded-lg bg-zinc-950 border border-zinc-850 flex items-end justify-between p-4 pt-10">
@@ -194,7 +185,6 @@ export default function ManagerDashboardPage() {
           </div>
         </div>
 
-        {/* Top Product sales */}
         <div className="p-6 rounded-xl bg-zinc-900 border border-zinc-850 space-y-4">
           <h3 className="font-bold text-white text-sm uppercase tracking-wider">Top Store Items</h3>
           <div className="overflow-x-auto">
@@ -219,7 +209,6 @@ export default function ManagerDashboardPage() {
           </div>
         </div>
 
-        {/* Category distribution */}
         <div className="p-6 rounded-xl bg-zinc-900 border border-zinc-855 space-y-4 lg:col-span-2">
           <h3 className="font-bold text-white text-sm uppercase tracking-wider">Sales Distribution by Category</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -236,7 +225,7 @@ export default function ManagerDashboardPage() {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -5,44 +5,32 @@ export async function GET(request: Request) {
   try {
     const userId = request.headers.get('x-user-id');
     const userRole = request.headers.get('x-user-role');
+    const searchParams = new URL(request.url).searchParams;
+    const period = searchParams.get('period') || 'Today';
 
     let query = supabaseServer
       .from('orders')
       .select('*, order_items(*, products(*, categories(*)))');
 
+    const now = new Date();
+    let startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (period === 'This Week') {
+      const dayOfWeek = now.getDay();
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Assuming Monday start
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysToSubtract);
+    } else if (period === 'This Month') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (period === 'All Time') {
+      startDate = new Date(0); // 1970
+    }
+
+    if (period !== 'All Time') {
+      query = query.gte('created_at', startDate.toISOString());
+    }
+
     if (userRole === 'manager' && userId) {
-      // 1. Fetch all profiles managed by this manager, plus the manager themselves
-      const { data: staff, error: staffErr } = await supabaseAdmin
-        .from('profiles')
-        .select('id')
-        .eq('manager_id', userId);
-
-      if (staffErr) throw staffErr;
-
-      const staffIds = [userId, ...(staff?.map((s) => s.id) || [])];
-
-      // 2. Query sessions opened by any of these staff IDs
-      const { data: sessions, error: sessionsErr } = await supabaseAdmin
-        .from('sessions')
-        .select('id')
-        .in('opened_by', staffIds);
-
-      if (sessionsErr) throw sessionsErr;
-
-      const sessionIds = sessions?.map((s) => s.id) || [];
-
-      // 3. Filter orders belonging to these sessions
-      if (sessionIds.length > 0) {
-        query = query.in('session_id', sessionIds);
-      } else {
-        // No sessions means no orders
-        return NextResponse.json({
-          totalOrders: 0,
-          revenue: 0.00,
-          avgOrderValue: 0.00,
-          rawOrders: [],
-        });
-      }
+      query = query.eq('manager_id', userId);
     }
 
     const { data: orders, error } = await query;
