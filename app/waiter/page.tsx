@@ -50,6 +50,8 @@ interface OrderItem {
   isServed?: boolean;
 }
 
+type PaymentMethod = "cash" | "upi" | "card";
+
 export default function WaiterDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -72,6 +74,7 @@ export default function WaiterDashboard() {
   const [actionLoading, setActionLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showBillModal, setShowBillModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
 
   // Fetch initial data
   useEffect(() => {
@@ -298,7 +301,7 @@ export default function WaiterDashboard() {
       const dbCartItems = (activeOrderForTable.order_items || []).map((oi: any) => {
         // Resolve full product details
         const prod = products.find((p) => p.id === oi.product_id) || {
-          id: oi.product_id,
+          id: oi.product_id || oi.id || Math.random().toString(),
           name: oi.products?.name || "Unknown Item",
           price: Number(oi.unit_price),
           tax: Number(oi.tax_rate),
@@ -576,6 +579,77 @@ export default function WaiterDashboard() {
       }, 2000);
     } catch (err: any) {
       toast.error(`Order Booking failed: ${err.message}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCheckout = async () => {
+    if (!activeOrderForTable) return;
+    setActionLoading(true);
+
+    try {
+      if (!activeSessionId) {
+        throw new Error("No active store shift session open.");
+      }
+
+      const dbItems = (activeOrderForTable.order_items || []).filter(
+        (oi: any) => !oi.is_served,
+      );
+      const itemsToAppend: OrderItem[] = [];
+
+      cart
+        .filter((item) => !item.isServed)
+        .forEach((cartItem) => {
+          const dbItem = dbItems.find(
+            (di: any) => di.product_id === cartItem.product.id,
+          );
+          const dbQty = dbItem ? dbItem.quantity : 0;
+          if (cartItem.quantity > dbQty) {
+            itemsToAppend.push({
+              product: cartItem.product,
+              quantity: cartItem.quantity - dbQty,
+              isServed: false,
+            });
+          }
+        });
+
+      const res = await fetch("/api/orders", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: activeOrderForTable.id,
+          status: "paid",
+          payment_method: paymentMethod,
+          subtotal,
+          tax: taxTotal,
+          discount_amount: 0,
+          total,
+          items: itemsToAppend,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      toast.success("Order marked as paid and table cleared!");
+      setShowBillModal(false);
+
+      // Reload active orders
+      const ordersRes = await fetch(
+        `/api/orders?session_id=${activeSessionId}`,
+      );
+      const orders = await ordersRes.json();
+      if (Array.isArray(orders)) {
+        setActiveOrders(orders);
+      } else {
+        setActiveOrders([]);
+      }
+      
+      setCart([]);
+      setSelectedTableId(null);
+    } catch (err: any) {
+      toast.error(`Checkout failed: ${err.message}`);
     } finally {
       setActionLoading(false);
     }
@@ -878,12 +952,12 @@ export default function WaiterDashboard() {
 
           {/* Cart Items List */}
           <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
-            {cart.map((item) => {
+            {cart.map((item, index) => {
               const isItemServed = item.isServed || false;
 
               return (
                 <div
-                  key={`${item.product.id}-${isItemServed ? "served" : "new"}`}
+                  key={`${item.product.id}-${isItemServed ? "served" : "new"}-${index}`}
                   className="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-850"
                 >
                   <div className="min-w-0 flex-1 pr-2">
@@ -1106,9 +1180,37 @@ export default function WaiterDashboard() {
             </div>
 
             {/* Actions */}
-            <div className="space-y-2">
-              <button
-                onClick={() => {
+            <div className="space-y-4">
+              {/* Payment Method Selector */}
+              <div className="border-t border-zinc-800 pt-4 space-y-2">
+                <label className="text-xs font-semibold text-zinc-450">Payment Method</label>
+                <div className="flex gap-2">
+                  {(["cash", "upi", "card"] as PaymentMethod[]).map((method) => (
+                    <button
+                      key={method}
+                      onClick={() => setPaymentMethod(method)}
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-colors ${
+                        paymentMethod === method
+                          ? "bg-[#F9F5F2] text-black"
+                          : "bg-zinc-800 border border-zinc-700 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300"
+                      }`}
+                    >
+                      {method}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <button
+                  onClick={handleCheckout}
+                  disabled={actionLoading}
+                  className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-black text-xs font-bold rounded-xl cursor-pointer transition-colors"
+                >
+                  {actionLoading ? "Processing..." : "Complete Payment & Clear Table"}
+                </button>
+                <button
+                  onClick={() => {
                   const printWindow = window.open("", "_blank");
                   if (printWindow) {
                     printWindow.document.write(`
@@ -1181,6 +1283,7 @@ export default function WaiterDashboard() {
               >
                 Close
               </button>
+            </div>
             </div>
           </div>
         </div>
